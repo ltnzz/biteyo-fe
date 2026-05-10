@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, SlidersHorizontal, Star } from 'lucide-react';
-import MainHeader from '../components/MainHeader';
-import BottomNav from '../components/BottomNav';
 
 export default function ExplorePage() {
   const [places, setPlaces] = useState([]);
@@ -77,8 +75,6 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24">
-      <MainHeader />
-
       <main className="max-w-7xl mx-auto px-4 md:px-8 mt-6">
         
         <div className="flex items-start justify-between mb-2">
@@ -169,7 +165,6 @@ export default function ExplorePage() {
 
       </main>
 
-      <BottomNav />
     </div>
   );
 }
