@@ -1,49 +1,91 @@
-import React, { useState, useEffect } from "react";
-import { Search, TrendingUp } from "lucide-react";
-import { Link } from "react-router-dom";
+import React, { useState, useRef } from "react";
+import { Search, MapPin, TrendingUp, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function MainHeader() {
-  const [currentUser, setCurrentUser] = useState(null);
-  
-  useEffect(() => {
-    const readUser = () => {
-      const stored = localStorage.getItem("biteyo_user");
-      setCurrentUser(stored ? JSON.parse(stored) : null);
-    };
-    readUser();
-    window.addEventListener("storage", readUser);
-    return () => window.removeEventListener("storage", readUser);
-  }, []);
+  const [query, setQuery] = useState("");
+  const [showTrending, setShowTrending] = useState(false);
+  const timeoutRef = useRef(null);
+  const navigate = useNavigate();
 
-  const trendingTags = ["Street Food", "Cafe", "Viral"];
+  const trendingTags = ["Street Food", "Cafe", "Viral", "Fine Dining", "Hidden Gems"];
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      if (value.trim()) {
+        navigate(`/explore?q=${encodeURIComponent(value)}`);
+      }
+    }, 500);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (query.trim()) {
+      navigate(`/explore?q=${encodeURIComponent(query)}`);
+    }
+  };
 
   return (
-    <>
-      <header className="sticky top-0 bg-white z-50 border-b border-gray-100 py-3">
-        <div className="flex items-center gap-4 px-4">
-          {/* Search */}
-          <div className="flex-1 max-w-2xl relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search bites..."
-              className="w-full bg-gray-50 border border-gray-100 text-gray-700 rounded-full py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm transition-all"
-            />
-          </div>
-          <div className="hidden lg:flex items-center gap-2">
+    <header className="sticky top-0 bg-white z-50 border-b border-gray-100 py-3">
+      <div className="flex items-center gap-4 px-4">
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="flex-1 max-w-3xl relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            type="text"
+            value={query}
+            onChange={handleChange}
+            placeholder="Search bites..."
+            className="w-full bg-gray-50 border border-gray-100 text-gray-700 rounded-full py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm transition-all"
+          />
+        </form>
+
+        {/* Trending Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowTrending(!showTrending)}
+            className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+          >
             <TrendingUp className="w-4 h-4 text-pink-500" />
-            {trendingTags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 bg-pink-50 text-pink-600 rounded-full text-xs font-medium cursor-pointer hover:bg-pink-100 transition-colors"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-          
+            <span className="text-sm font-medium hidden sm:block">Trending</span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${showTrending ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showTrending && (
+            <div className="absolute top-full right-0 mt-2 bg-white shadow-xl border border-gray-100 rounded-xl p-3 min-w-[200px] z-50">
+              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2 px-2">Popular now</p>
+              {trendingTags.map((tag) => (
+                <span
+                  key={tag}
+                  onClick={() => {
+                    navigate(`/explore?category=${tag}`);
+                    setShowTrending(false);
+                  }}
+                  className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-600 cursor-pointer transition-colors"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-      </header>
-    </>
+
+        {/* Maps Icon */}
+        <button 
+          onClick={() => navigate('/explore?maps=true')}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-pink-500"
+        >
+          <MapPin className="w-5 h-5" />
+        </button>
+      </div>
+    </header>
   );
 }

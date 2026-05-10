@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Home, Search, Bell, User, LogOut } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import React, { useState, useEffect } from "react";
+import { Home, Search, Bell, User, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -12,36 +12,36 @@ export default function Sidebar() {
 
   useEffect(() => {
     const readUser = () => {
-      const stored = localStorage.getItem('biteyo_user');
+      const stored = localStorage.getItem("biteyo_user");
       setCurrentUser(stored ? JSON.parse(stored) : null);
     };
 
     readUser();
 
-    window.addEventListener('storage', readUser);
+    window.addEventListener("storage", readUser);
 
-    return () => window.removeEventListener('storage', readUser);
+    return () => window.removeEventListener("storage", readUser);
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('biteyo_token');
-    localStorage.removeItem('biteyo_user');
+    localStorage.removeItem("biteyo_token");
+    localStorage.removeItem("biteyo_user");
 
     setCurrentUser(null);
     setShowLogoutModal(false);
     setShowDropdown(false);
 
-    navigate('/');
+    navigate("/");
 
     // trigger refresh component lain
-    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event("storage"));
   };
 
   const navItems = [
-    { to: '/', icon: Home, label: 'Home' },
-    { to: '/explore', icon: Search, label: 'Explore' },
-    { to: '/notifications', icon: Bell, label: 'Notifications' },
-    { to: '/profile', icon: User, label: 'Profile' },
+    { to: "/", icon: Home, label: "Home" },
+    { to: "/explore", icon: Search, label: "Explore" },
+    { to: "/notifications", icon: Bell, label: "Notifications" },
+    { to: "/profile", icon: User, label: "Profile" },
   ];
 
   return (
@@ -68,13 +68,13 @@ export default function Sidebar() {
                 to={item.to}
                 className={`flex items-center gap-4 px-4 py-3 rounded-full transition-colors ${
                   isActive
-                    ? 'font-bold text-gray-900'
-                    : 'font-normal text-gray-700 hover:bg-gray-50'
+                    ? "font-bold text-gray-900"
+                    : "font-normal text-gray-700 hover:bg-gray-50"
                 }`}
               >
                 <Icon
                   className={`w-6 h-6 ${
-                    isActive ? 'stroke-[2.5px]' : 'stroke-2'
+                    isActive ? "stroke-[2.5px]" : "stroke-2"
                   }`}
                 />
 
@@ -85,10 +85,12 @@ export default function Sidebar() {
         </div>
 
         {/* Post Button */}
-        <button className="mt-4 mx-2 bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-full text-sm transition-colors shadow-sm">
+        <button
+          onClick={() => navigate("/add")}
+          className="mt-4 mx-2 bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-full text-sm transition-colors shadow-sm"
+        >
           Post
         </button>
-
         {/* Bottom Profile Section */}
         <div className="mt-auto pt-4 relative">
           {currentUser ? (
@@ -142,9 +144,7 @@ export default function Sidebar() {
 
               <div className="text-left">
                 <p className="text-sm font-bold text-gray-900">Login</p>
-                <p className="text-xs text-gray-500">
-                  Untuk mulai menjelajah
-                </p>
+                <p className="text-xs text-gray-500">Untuk mulai menjelajah</p>
               </div>
             </Link>
           )}

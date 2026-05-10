@@ -7,6 +7,10 @@ import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import Sidebar from './components/SideBar';
 import MainHeader from './components/MainHeader';
+import ProfilePage from './pages/ProfilePage';
+import NotificationPage from './pages/NotificationPage';
+import AddPage from './pages/AddPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function AppContent() {
   const location = useLocation();
@@ -30,6 +34,10 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/Notifications" element={<NotificationPage />} />
+          <Route path="/add" element={<AddPage />} />
         </Routes>
       </div>
     </div>
