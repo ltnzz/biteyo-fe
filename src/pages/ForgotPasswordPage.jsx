@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
           text: data.message || 'Email tidak ditemukan.',
         });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Gagal terhubung ke server.' });
     } finally {
       setIsLoading(false);

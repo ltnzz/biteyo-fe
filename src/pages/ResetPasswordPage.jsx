@@ -41,7 +41,7 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `https://biteyo-be.vercel.app/api/auth/reset-password/${token}`,
         { password: formData.password, confirm_password: formData.confirm_password, }
       );

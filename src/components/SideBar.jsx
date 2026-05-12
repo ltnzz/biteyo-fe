@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Home, Search, Bell, User, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { AUTH_CHANGE_EVENT, clearAuth, getStoredUser } from "../utils/auth";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -12,29 +13,28 @@ export default function Sidebar() {
 
   useEffect(() => {
     const readUser = () => {
-      const stored = localStorage.getItem("biteyo_user");
-      setCurrentUser(stored ? JSON.parse(stored) : null);
+      setCurrentUser(getStoredUser());
     };
 
     readUser();
 
     window.addEventListener("storage", readUser);
+    window.addEventListener(AUTH_CHANGE_EVENT, readUser);
 
-    return () => window.removeEventListener("storage", readUser);
+    return () => {
+      window.removeEventListener("storage", readUser);
+      window.removeEventListener(AUTH_CHANGE_EVENT, readUser);
+    };
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("biteyo_token");
-    localStorage.removeItem("biteyo_user");
+    clearAuth();
 
     setCurrentUser(null);
     setShowLogoutModal(false);
     setShowDropdown(false);
 
     navigate("/");
-
-    // trigger refresh component lain
-    window.dispatchEvent(new Event("storage"));
   };
 
   const navItems = [
