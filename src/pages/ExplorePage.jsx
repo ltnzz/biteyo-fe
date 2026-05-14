@@ -1,27 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Camera,
-  Heart,
-  Loader2,
-  MapPin,
-  MessageCircle,
-  Pencil,
-  Save,
-  Star,
-  Trash2,
-  X,
-} from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import AdvertisementSidebar from "../components/AdvertisementSidebar";
+import ActionMessage from "../components/explore/ActionMessage";
+import ExploreFeed from "../components/explore/ExploreFeed";
+import ExploreHeader from "../components/explore/ExploreHeader";
+import LocationResults from "../components/explore/LocationResults";
+import { useFeedSocket } from "../hooks/useFeedSocket";
+import { toggleLikeBite } from "../services/feedApi";
 import { getAuthHeaders, getStoredUser } from "../utils/auth";
 import {
-  API_BASE,
-  biteCategories,
-  getCategoryLabel,
-  normalizeBites,
-  normalizeCategories,
-  normalizeCategoryValue,
-} from "../utils/bites";
+  getLikeCount,
+  isBiteLiked,
+  normalizeUpdatedBite,
+} from "../utils/biteEngagement";
+import { API_BASE, biteCategories, normalizeBites, normalizeCategories, 
+         normalizeCategoryValue, } from "../utils/bites";
 
 const parseApiError = async (response, fallback) => {
   const data = await response.json().catch(() => null);
@@ -90,6 +84,8 @@ export default function ExplorePage() {
   const [editPhotoFile, setEditPhotoFile] = useState(null);
   const [savingId, setSavingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [followingUsers, setFollowingUsers] = useState(() => new Set());
+  const [likingBiteIds, setLikingBiteIds] = useState(() => new Set());
 
   const query = searchParams.get("q") || "";
   const category = normalizeCategoryValue(searchParams.get("category") || "");
@@ -147,6 +143,8 @@ export default function ExplorePage() {
     fetchFeed();
   }, [fetchFeed]);
 
+  useFeedSocket(bites, setBites, { setFollowingUsers });
+
   const filteredBites = useMemo(() => {
     if (!category) return bites;
 
@@ -169,6 +167,31 @@ export default function ExplorePage() {
   };
 
   const getBiteId = (bite) => bite._id || bite.id;
+
+  const updateBiteInState = (biteId, updater) => {
+    setBites((prev) =>
+      prev.map((item) => (getBiteId(item) === biteId ? updater(item) : item)),
+    );
+  };
+
+  const getFollowKey = (bite) =>
+    getOwnerValues(bite)[0] || bite.user?.username || bite.user?.name || getBiteId(bite);
+
+  const toggleFollow = (followKey) => {
+    if (!followKey) return;
+
+    setFollowingUsers((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(followKey)) {
+        next.delete(followKey);
+      } else {
+        next.add(followKey);
+      }
+
+      return next;
+    });
+  };
 
   const startEdit = (bite) => {
     setActionMessage({ type: "", text: "" });
@@ -285,310 +308,101 @@ export default function ExplorePage() {
     }
   };
 
+  const handleToggleLike = async (bite) => {
+    const biteId = getBiteId(bite);
+    if (!biteId || likingBiteIds.has(biteId)) return;
+
+    const wasLiked = isBiteLiked(bite, currentUser);
+    const previousLikeCount = getLikeCount(bite);
+    const nextLiked = !wasLiked;
+    const nextLikeCount = Math.max(0, previousLikeCount + (nextLiked ? 1 : -1));
+
+    setActionMessage({ type: "", text: "" });
+    setLikingBiteIds((prev) => new Set(prev).add(biteId));
+    updateBiteInState(biteId, (item) => ({
+      ...item,
+      isLiked: nextLiked,
+      liked: nextLiked,
+      likedByMe: nextLiked,
+      likedByCurrentUser: nextLiked,
+      likesCount: nextLikeCount,
+      likeCount: nextLikeCount,
+    }));
+
+    try {
+      const data = await toggleLikeBite(biteId);
+      const updatedBite = normalizeUpdatedBite(data);
+
+      if (updatedBite && getBiteId(updatedBite)) {
+        updateBiteInState(biteId, (item) => ({ ...item, ...updatedBite }));
+      }
+    } catch (err) {
+      updateBiteInState(biteId, (item) => ({
+        ...item,
+        isLiked: wasLiked,
+        liked: wasLiked,
+        likedByMe: wasLiked,
+        likedByCurrentUser: wasLiked,
+        likesCount: previousLikeCount,
+        likeCount: previousLikeCount,
+      }));
+      setActionMessage({
+        type: "error",
+        text: err.message || "Gagal memperbarui like.",
+      });
+    } finally {
+      setLikingBiteIds((prev) => {
+        const next = new Set(prev);
+        next.delete(biteId);
+        return next;
+      });
+    }
+  };
+
+  const openBiteDetail = (bite) => {
+    const biteId = getBiteId(bite);
+    if (biteId) navigate(`/bites/${biteId}`);
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto border-x border-gray-100 min-h-screen">
-        <div className="sticky top-[65px] bg-white/95 backdrop-blur z-20 border-b border-gray-100 px-4 py-3">
-          <h1 className="text-xl font-extrabold text-gray-900">Explore</h1>
-          <p className="text-sm text-gray-500">
-            {category ? `Latest in ${getCategoryLabel(category)}` : "Latest bites from everyone"}
-          </p>
-        </div>
-
-        {actionMessage.text && (
-          <div
-            className={`px-4 py-3 text-sm font-medium border-b ${
-              actionMessage.type === "success"
-                ? "bg-green-50 text-green-700 border-green-100"
-                : "bg-red-50 text-red-700 border-red-100"
-            }`}
-          >
-            {actionMessage.text}
-          </div>
-        )}
-
-        {query && (
-          <section className="border-b border-gray-100 p-4">
-            <h2 className="text-sm font-bold text-gray-900 mb-3">
-              Hasil lokasi untuk "{query}"
-            </h2>
-
-            {loadingSearch && (
-              <div className="py-6 flex items-center justify-center">
-                <Loader2 className="w-5 h-5 animate-spin text-pink-500" />
-              </div>
-            )}
-
-            {error && (
-              <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm mb-3">
-                {error}
-              </div>
-            )}
-
-            {!loadingSearch && results.length > 0 && (
-              <div className="space-y-2">
-                {results.map((place) => (
-                  <div
-                    key={place.placeId}
-                    className="p-3 bg-white border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-pink-100 rounded-full flex items-center justify-center shrink-0">
-                        <MapPin className="w-4 h-4 text-pink-500" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{place.name}</h3>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Lat: {place.lat}, Lng: {place.lng}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!loadingSearch && results.length === 0 && !error && (
-              <p className="text-sm text-gray-400">Lokasi tidak ditemukan.</p>
-            )}
-          </section>
-        )}
-
-        <section>
-          {feedLoading ? (
-            <div className="py-16 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-            </div>
-          ) : feedError ? (
-            <div className="p-4 text-sm text-red-600 bg-red-50 border-b border-red-100">
-              {feedError}
-            </div>
-          ) : filteredBites.length === 0 ? (
-            <div className="px-6 py-16 text-center">
-              <Camera className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <h2 className="text-lg font-bold text-gray-900">Belum ada bite di feed</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Jadilah yang pertama share makanan di sini.
-              </p>
-              <button
-                onClick={() => navigate("/add")}
-                className="mt-5 px-5 py-2.5 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-600 transition-colors"
-              >
-                Post a Bite
-              </button>
-            </div>
-          ) : (
-            <div>
-              {filteredBites.map((bite, index) => {
-                const biteId = getBiteId(bite);
-                const isEditing = editingId === biteId;
-                const manageable = canManageBite(bite);
-
-                return (
-                  <article
-                    key={biteId || index}
-                    className="border-b border-gray-100 px-4 py-4 hover:bg-gray-50/70 transition-colors"
-                  >
-                    <div className="flex gap-3">
-                      <div className="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
-                        <span className="text-sm font-extrabold text-pink-500">
-                          {(bite.user?.username || bite.user?.name || "B").charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h2 className="font-bold text-gray-900 truncate">
-                              {bite.user?.username || bite.user?.name || "BiteYo User"}
-                            </h2>
-                            <p className="text-xs text-gray-500 truncate">
-                              {bite.locationName || bite.location || "Unknown location"}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <div className="flex gap-0.5">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-3.5 h-3.5 ${
-                                    i < Number(bite.rating || 0)
-                                      ? "text-yellow-400 fill-yellow-400"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-
-                            {manageable && !isEditing && (
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => startEdit(bite)}
-                                  className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                                  aria-label="Edit bite"
-                                >
-                                  <Pencil className="w-4 h-4" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDelete(bite)}
-                                  disabled={deletingId === biteId}
-                                  className="p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                                  aria-label="Delete bite"
-                                >
-                                  {deletingId === biteId ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="w-4 h-4" />
-                                  )}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {isEditing ? (
-                          <div className="mt-3 space-y-3">
-                            <input
-                              value={editForm.foodName}
-                              onChange={(e) => handleEditChange("foodName", e.target.value)}
-                              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
-                              placeholder="Food name"
-                            />
-                            <input
-                              value={editForm.locationName}
-                              onChange={(e) => handleEditChange("locationName", e.target.value)}
-                              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
-                              placeholder="Location"
-                            />
-                            <textarea
-                              value={editForm.review}
-                              onChange={(e) => handleEditChange("review", e.target.value)}
-                              rows={3}
-                              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
-                              placeholder="Review"
-                            />
-
-                            <div className="flex gap-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <button
-                                  key={star}
-                                  type="button"
-                                  onClick={() => handleEditChange("rating", star)}
-                                >
-                                  <Star
-                                    className={`w-5 h-5 ${
-                                      star <= editForm.rating
-                                        ? "text-yellow-400 fill-yellow-400"
-                                        : "text-gray-300"
-                                    }`}
-                                  />
-                                </button>
-                              ))}
-                            </div>
-
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                              {biteCategories.map((cat) => (
-                                <button
-                                  key={cat.value}
-                                  type="button"
-                                  onClick={() => handleEditChange("category", cat.value)}
-                                  className={`py-2 rounded-xl text-xs font-semibold border transition-colors ${
-                                    editForm.category === cat.value
-                                      ? "bg-pink-500 text-white border-pink-500"
-                                      : "bg-white text-gray-600 border-gray-200 hover:border-pink-300"
-                                  }`}
-                                >
-                                  {cat.label}
-                                </button>
-                              ))}
-                            </div>
-
-                            <label className="block text-xs text-gray-500">
-                              Replace photo
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setEditPhotoFile(e.target.files[0] || null)}
-                                className="mt-1 block w-full text-sm text-gray-600"
-                              />
-                            </label>
-
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleUpdate(bite)}
-                                disabled={savingId === biteId}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-600 disabled:opacity-50"
-                              >
-                                {savingId === biteId ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <Save className="w-4 h-4" />
-                                )}
-                                Save
-                              </button>
-                              <button
-                                type="button"
-                                onClick={cancelEdit}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50"
-                              >
-                                <X className="w-4 h-4" />
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <h3 className="mt-2 font-semibold text-gray-900">
-                              {bite.foodName || bite.title || "Untitled Bite"}
-                            </h3>
-                            <p className="mt-1 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                              {bite.review || bite.description}
-                            </p>
-
-                            {(bite.photoUrl || bite.image) && (
-                              <img
-                                src={bite.photoUrl || bite.image}
-                                alt={bite.foodName || bite.title || "Food"}
-                                className="mt-3 w-full max-h-[520px] rounded-2xl object-cover border border-gray-100"
-                                loading="lazy"
-                              />
-                            )}
-
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {normalizeCategories(bite.category || bite.categories).map((cat) => (
-                                <span
-                                  key={cat}
-                                  className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full font-medium"
-                                >
-                                  {getCategoryLabel(normalizeCategoryValue(cat))}
-                                </span>
-                              ))}
-                            </div>
-
-                            <div className="mt-3 flex items-center gap-6 text-gray-400">
-                              <button className="flex items-center gap-1.5 text-sm hover:text-pink-500 transition-colors">
-                                <Heart className="w-4 h-4" />
-                                <span>{bite.likesCount || bite.likes?.length || 0}</span>
-                              </button>
-                              <button className="flex items-center gap-1.5 text-sm hover:text-pink-500 transition-colors">
-                                <MessageCircle className="w-4 h-4" />
-                                <span>{bite.commentsCount || bite.comments?.length || 0}</span>
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
+      <div className="flex w-full items-start justify-start px-4">
+        <main className="w-full max-w-2xl border-x border-gray-100 min-h-screen">
+          <ExploreHeader category={category} />
+          <ActionMessage message={actionMessage} />
+          <LocationResults
+            error={error}
+            loading={loadingSearch}
+            query={query}
+            results={results}
+          />
+          <ExploreFeed
+            bites={filteredBites}
+            canManageBite={canManageBite}
+            currentUser={currentUser}
+            deletingId={deletingId}
+            editForm={editForm}
+            editingId={editingId}
+            feedError={feedError}
+            feedLoading={feedLoading}
+            followingUsers={followingUsers}
+            getBiteId={getBiteId}
+            getFollowKey={getFollowKey}
+            likingBiteIds={likingBiteIds}
+            savingId={savingId}
+            onAddBite={() => navigate("/add")}
+            onCancelEdit={cancelEdit}
+            onDelete={handleDelete}
+            onEditChange={handleEditChange}
+            onOpenBite={openBiteDetail}
+            onPhotoChange={setEditPhotoFile}
+            onStartEdit={startEdit}
+            onToggleLike={handleToggleLike}
+            onToggleFollow={toggleFollow}
+            onUpdate={handleUpdate}
+          />
+        </main>
+        <AdvertisementSidebar />
       </div>
     </div>
   );

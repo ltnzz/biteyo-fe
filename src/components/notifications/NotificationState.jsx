@@ -1,0 +1,46 @@
+import { AlertCircle, Bell, Loader2 } from "lucide-react";
+
+export function NotificationLoadingState() {
+  return (
+    <div className="flex justify-center py-20">
+      <Loader2 className="h-6 w-6 animate-spin text-pink-500" />
+    </div>
+  );
+}
+
+export function NotificationErrorState({ error, onRetry }) {
+  return (
+    <div className="mx-4 mt-6 rounded-xl border border-red-100 bg-red-50 px-4 py-4 text-red-700">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+        <div className="min-w-0">
+          <p className="font-semibold">Notifikasi belum bisa dimuat.</p>
+          <p className="mt-1 text-sm">{error}</p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-3 rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+          >
+            Coba lagi
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function NotificationEmptyState() {
+  return (
+    <div className="px-4 py-20 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+        <Bell className="h-6 w-6" />
+      </div>
+      <h2 className="mt-4 text-lg font-bold text-gray-900">
+        Belum ada notifikasi
+      </h2>
+      <p className="mt-1 text-sm text-gray-500">
+        Aktivitas terbaru dari akunmu akan muncul di sini.
+      </p>
+    </div>
+  );
+}

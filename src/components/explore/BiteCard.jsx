@@ -1,4 +1,11 @@
-import { Heart, Loader2, MessageCircle, Pencil, Star, Trash2 } from "lucide-react";
+import {
+  Heart,
+  Loader2,
+  MessageCircle,
+  Pencil,
+  Star,
+  Trash2,
+} from "lucide-react";
 import {
   getCategoryLabel,
   normalizeCategories,
@@ -11,31 +18,32 @@ import {
 } from "../../utils/biteEngagement";
 import BiteEditForm from "./BiteEditForm";
 
-export default function ProfileBiteCard({
-  avatar,
+export default function BiteCard({
   bite,
-  canManage = false,
+  biteId,
   currentUser,
-  displayName,
-  deleting,
+  deletingId,
   editForm,
-  editing,
-  handle,
+  followKey,
+  isEditing,
+  isFollowing,
   liking = false,
-  saving,
+  manageable,
+  savingId,
   onCancelEdit,
   onDelete,
-  onEdit,
   onEditChange,
-  onOpenBite,
   onPhotoChange,
+  onOpenBite,
+  onStartEdit,
   onToggleLike,
+  onToggleFollow,
   onUpdate,
 }) {
   const liked = isBiteLiked(bite, currentUser);
 
   const handleOpenBite = () => {
-    if (editing) return;
+    if (!biteId || isEditing) return;
 
     onOpenBite?.(bite);
   };
@@ -46,25 +54,39 @@ export default function ProfileBiteCard({
       className="cursor-pointer border-b border-gray-100 px-4 py-4 transition-colors hover:bg-gray-50/70"
     >
       <div className="flex gap-3">
-        <div className="w-11 h-11 rounded-full bg-pink-100 overflow-hidden flex items-center justify-center shrink-0">
-          {avatar ? (
-            <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-sm font-extrabold text-pink-500">
-              {displayName.charAt(0).toUpperCase()}
-            </span>
-          )}
+        <div className="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
+          <span className="text-sm font-extrabold text-pink-500">
+            {(bite.user?.username || bite.user?.name || "B").charAt(0).toUpperCase()}
+          </span>
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="font-bold text-gray-900 truncate">{displayName}</h2>
+              <h2 className="font-bold text-gray-900 truncate">
+                {bite.user?.username || bite.user?.name || "BiteYo User"}
+              </h2>
               <p className="text-xs text-gray-500 truncate">
-                @{handle} - {bite.locationName || bite.location || "Unknown location"}
+                {bite.locationName || bite.location || "Unknown location"}
               </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+
+            <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onToggleFollow(followKey);
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                  isFollowing
+                    ? "bg-gray-900 text-white border-gray-900 hover:bg-white hover:text-red-500 hover:border-red-200"
+                    : "bg-white text-gray-900 border-gray-200 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+                }`}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </button>
+
               <div className="flex gap-0.5">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -78,15 +100,16 @@ export default function ProfileBiteCard({
                 ))}
               </div>
 
-              {canManage && !editing && (
+              {manageable && !isEditing && (
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation();
-                      onEdit();
+                      onStartEdit(bite);
                     }}
                     className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    aria-label="Edit bite"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
@@ -94,12 +117,13 @@ export default function ProfileBiteCard({
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation();
-                      onDelete();
+                      onDelete(bite);
                     }}
-                    disabled={deleting}
+                    disabled={deletingId === biteId}
                     className="p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                    aria-label="Delete bite"
                   >
-                    {deleting ? (
+                    {deletingId === biteId ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Trash2 className="w-4 h-4" />
@@ -110,14 +134,16 @@ export default function ProfileBiteCard({
             </div>
           </div>
 
-          {editing ? (
+          {isEditing ? (
             <BiteEditForm
-              form={editForm}
-              saving={saving}
-              onCancel={onCancelEdit}
-              onChange={onEditChange}
+              bite={bite}
+              biteId={biteId}
+              editForm={editForm}
+              savingId={savingId}
+              onCancelEdit={onCancelEdit}
+              onEditChange={onEditChange}
               onPhotoChange={onPhotoChange}
-              onSave={onUpdate}
+              onUpdate={onUpdate}
             />
           ) : (
             <>

@@ -1,115 +1,280 @@
-import React from "react";
-import { Heart, MessageCircle, UserPlus, TrendingUp } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import LoginRequired from "../components/profile/LoginRequired";
+import NotificationFeedback from "../components/notifications/NotificationFeedback";
+import NotificationHeader from "../components/notifications/NotificationHeader";
+import NotificationList from "../components/notifications/NotificationList";
+import {
+  NotificationEmptyState,
+  NotificationErrorState,
+  NotificationLoadingState,
+} from "../components/notifications/NotificationState";
+import PushNotificationControls from "../components/notifications/PushNotificationControls";
+import { isAuthenticated } from "../utils/auth";
+import {
+  clearStoredFcmToken,
+  deleteNotification,
+  fetchNotifications,
+  getNotificationId,
+  getStoredFcmToken,
+  isNotificationRead,
+  markNotificationAsRead,
+  registerFcmToken,
+  unregisterFcmToken,
+} from "../utils/notifications";
 
-const notifications = [
-  {
-    id: 1,
-    user: "foodie_sarah",
-    action: "liked your review of",
-    target: "Smash Burger Deluxe",
-    time: "2m ago",
-    read: false,
-    icon: <Heart className="w-4 h-4 text-pink-500" />,
-    iconBg: "bg-pink-50",
-  },
-  {
-    id: 2,
-    user: "mike_eats",
-    action: "commented: 'I need to try this place!'",
-    target: "",
-    time: "15m ago",
-    read: false,
-    icon: <MessageCircle className="w-4 h-4 text-blue-500" />,
-    iconBg: "bg-blue-50",
-  },
-  {
-    id: 3,
-    user: "emma_nom",
-    action: "started following you.",
-    target: "",
-    time: "1h ago",
-    read: false,
-    icon: <UserPlus className="w-4 h-4 text-green-500" />,
-    iconBg: "bg-green-50",
-  },
-  {
-    id: 4,
-    user: "BiteYo",
-    action: "Your review is trending 🔥",
-    target: "",
-    time: "2h ago",
-    read: true,
-    icon: <TrendingUp className="w-4 h-4 text-orange-500" />,
-    iconBg: "bg-orange-50",
-  },
-  {
-    id: 5,
-    user: "joy_foodtrip",
-    action: "liked your review of",
-    target: "Al Pastor Tacos",
-    time: "3h ago",
-    read: true,
-    icon: <Heart className="w-4 h-4 text-pink-500" />,
-    iconBg: "bg-pink-50",
-  },
-  {
-    id: 6,
-    user: "lisa_sweed",
-    action: "commented: 'Looks amazing! 😍'",
-    target: "",
-    time: "5h ago",
-    read: true,
-    icon: <MessageCircle className="w-4 h-4 text-blue-500" />,
-    iconBg: "bg-blue-50",
-  },
-];
+export default function NotificationPage() {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
+  const [readingIds, setReadingIds] = useState(() => new Set());
+  const [deletingId, setDeletingId] = useState("");
+  const [pushLoading, setPushLoading] = useState(false);
+  const [storedFcmToken, setStoredFcmToken] = useState(getStoredFcmToken);
+  const hasSession = useMemo(() => isAuthenticated(), []);
 
-export default function AlertsPage() {
+  const unreadCount = notifications.filter(
+    (item) => !isNotificationRead(item),
+  ).length;
+
+  const loadNotifications = useCallback(async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      setNotifications(await fetchNotifications());
+    } catch (err) {
+      setNotifications([]);
+      setError(err.message || "Gagal memuat notifikasi.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hasSession) {
+      loadNotifications();
+    } else {
+      setLoading(false);
+    }
+  }, [hasSession, loadNotifications]);
+
+  useEffect(() => {
+    const token = getStoredFcmToken();
+
+    if (!token || !hasSession) return;
+
+    registerFcmToken(token)
+      .then(() => setStoredFcmToken(token))
+      .catch((err) => {
+        console.warn("Failed to register FCM token:", err);
+      });
+  }, [hasSession]);
+
+  const updateReadState = (notificationId, read) => {
+    setNotifications((prev) =>
+      prev.map((item) =>
+        getNotificationId(item) === notificationId
+          ? {
+              ...item,
+              read,
+              isRead: read,
+              readAt: read
+                ? item.readAt || new Date().toISOString()
+                : item.readAt,
+            }
+          : item,
+      ),
+    );
+  };
+
+  const handleMarkRead = async (notification) => {
+    const notificationId = getNotificationId(notification);
+
+    if (
+      !notificationId ||
+      isNotificationRead(notification) ||
+      readingIds.has(notificationId)
+    ) {
+      return;
+    }
+
+    setActionMessage({ type: "", text: "" });
+    setReadingIds((prev) => new Set(prev).add(notificationId));
+    updateReadState(notificationId, true);
+
+    try {
+      await markNotificationAsRead(notificationId);
+    } catch (err) {
+      updateReadState(notificationId, false);
+      setActionMessage({
+        type: "error",
+        text: err.message || "Gagal menandai notifikasi sebagai dibaca.",
+      });
+    } finally {
+      setReadingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(notificationId);
+        return next;
+      });
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const unreadItems = notifications.filter(
+      (item) => !isNotificationRead(item),
+    );
+
+    if (unreadItems.length === 0) return;
+
+    setActionMessage({ type: "", text: "" });
+    setNotifications((prev) =>
+      prev.map((item) => ({
+        ...item,
+        read: true,
+        isRead: true,
+        readAt: item.readAt || new Date().toISOString(),
+      })),
+    );
+
+    const results = await Promise.allSettled(
+      unreadItems.map((item) => markNotificationAsRead(getNotificationId(item))),
+    );
+    const failedIds = results
+      .map((result, index) =>
+        result.status === "rejected"
+          ? getNotificationId(unreadItems[index])
+          : "",
+      )
+      .filter(Boolean);
+
+    if (failedIds.length === 0) return;
+
+    setNotifications((prev) =>
+      prev.map((item) =>
+        failedIds.includes(getNotificationId(item))
+          ? { ...item, read: false, isRead: false, readAt: null }
+          : item,
+      ),
+    );
+    setActionMessage({
+      type: "error",
+      text: "Sebagian notifikasi gagal ditandai sebagai dibaca.",
+    });
+  };
+
+  const handleDelete = async (event, notification) => {
+    event.stopPropagation();
+
+    const notificationId = getNotificationId(notification);
+    if (!notificationId || !window.confirm("Hapus notifikasi ini?")) return;
+
+    setDeletingId(notificationId);
+    setActionMessage({ type: "", text: "" });
+
+    try {
+      await deleteNotification(notificationId);
+      setNotifications((prev) =>
+        prev.filter((item) => getNotificationId(item) !== notificationId),
+      );
+      setActionMessage({ type: "success", text: "Notifikasi dihapus." });
+    } catch (err) {
+      setActionMessage({
+        type: "error",
+        text: err.message || "Gagal menghapus notifikasi.",
+      });
+    } finally {
+      setDeletingId("");
+    }
+  };
+
+  const handleRegisterPush = async () => {
+    const token = getStoredFcmToken();
+
+    setPushLoading(true);
+    setActionMessage({ type: "", text: "" });
+
+    try {
+      const result = await registerFcmToken(token);
+
+      if (result?.skipped) {
+        setActionMessage({
+          type: "error",
+          text: "FCM token belum tersedia di browser ini.",
+        });
+      } else {
+        setStoredFcmToken(token);
+        setActionMessage({ type: "success", text: "Push notification aktif." });
+      }
+    } catch (err) {
+      setActionMessage({
+        type: "error",
+        text: err.message || "Gagal mengaktifkan push notification.",
+      });
+    } finally {
+      setPushLoading(false);
+    }
+  };
+
+  const handleUnregisterPush = async () => {
+    setPushLoading(true);
+    setActionMessage({ type: "", text: "" });
+
+    try {
+      await unregisterFcmToken();
+      clearStoredFcmToken();
+      setStoredFcmToken("");
+      setActionMessage({
+        type: "success",
+        text: "Push notification dimatikan.",
+      });
+    } catch (err) {
+      setActionMessage({
+        type: "error",
+        text: err.message || "Gagal mematikan push notification.",
+      });
+    } finally {
+      setPushLoading(false);
+    }
+  };
+
+  if (!hasSession) return <LoginRequired />;
+
   return (
-    <div className="min-h-screen bg-gray-50 font-sans pb-24">
-      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-gray-800">Notifications</h1>
-          <button className="text-sm text-pink-500 font-medium hover:text-pink-600 transition-colors">
-            Mark all as read
-          </button>
+    <div className="min-h-screen bg-white">
+      <main className="mx-auto min-h-screen max-w-2xl border-x border-gray-100">
+        <div className="sticky top-[65px] z-20 border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
+          <NotificationHeader
+            loading={loading}
+            unreadCount={unreadCount}
+            onMarkAllRead={handleMarkAllRead}
+            onRefresh={loadNotifications}
+          />
+          <PushNotificationControls
+            loading={pushLoading}
+            storedFcmToken={storedFcmToken}
+            onRegister={handleRegisterPush}
+            onUnregister={handleUnregisterPush}
+          />
         </div>
-        <div className="flex flex-col gap-2">
-          {notifications.map((notif) => (
-            <div
-              key={notif.id}
-              className={`flex items-start gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border ${
-                !notif.read ? "border-pink-100" : "border-gray-100"
-              }`}
-            >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-orange-300 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                {notif.user[0].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-700 leading-snug">
-                  <span className="font-semibold text-gray-900">
-                    {notif.user}
-                  </span>{" "}
-                  {notif.action}{" "}
-                  {notif.target && (
-                    <span className="font-semibold text-gray-900">
-                      {notif.target}
-                    </span>
-                  )}
-                </p>
-                <div className="flex items-center gap-1 mt-1">
-                  <div className={`rounded-full p-0.5 ${notif.iconBg}`}>
-                    {notif.icon}
-                  </div>
-                  <span className="text-xs text-gray-400">{notif.time}</span>
-                </div>
-              </div>
-              {!notif.read && (
-                <div className="w-2 h-2 rounded-full bg-pink-500 mt-1.5 flex-shrink-0" />
-              )}
-            </div>
-          ))}
-        </div>
+
+        <NotificationFeedback message={actionMessage} />
+
+        {loading ? (
+          <NotificationLoadingState />
+        ) : error ? (
+          <NotificationErrorState error={error} onRetry={loadNotifications} />
+        ) : notifications.length === 0 ? (
+          <NotificationEmptyState />
+        ) : (
+          <NotificationList
+            deletingId={deletingId}
+            notifications={notifications}
+            readingIds={readingIds}
+            onDelete={handleDelete}
+            onMarkRead={handleMarkRead}
+          />
+        )}
       </main>
     </div>
   );

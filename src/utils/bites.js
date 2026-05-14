@@ -1,4 +1,4 @@
-export const API_BASE = "https://biteyo-be.vercel.app";
+export { API_BASE } from "./api";
 
 export const biteCategories = [
   { label: "Street Food", value: "street_food" },

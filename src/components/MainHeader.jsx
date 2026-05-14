@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Search, MapPin, TrendingUp, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { biteCategories } from "../utils/bites";
@@ -7,7 +7,25 @@ export default function MainHeader() {
   const [query, setQuery] = useState("");
   const [showTrending, setShowTrending] = useState(false);
   const timeoutRef = useRef(null);
+  const trendingRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!trendingRef.current?.contains(event.target)) {
+        setShowTrending(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -48,7 +66,7 @@ export default function MainHeader() {
         </form>
 
         {/* Trending Dropdown */}
-        <div className="relative">
+        <div ref={trendingRef} className="relative">
           <button
             onClick={() => setShowTrending(!showTrending)}
             className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-colors text-gray-600"

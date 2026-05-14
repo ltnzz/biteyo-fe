@@ -7,10 +7,12 @@ import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import Sidebar from './components/SideBar';
 import MainHeader from './components/MainHeader';
+import ProtectedRoute from './components/ProtectedRoute';
 import ProfilePage from './pages/ProfilePage';
 import NotificationPage from './pages/NotificationPage';
 import AddPage from './pages/AddPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import BiteDetailPage from './pages/BiteDetailPage';
 
 function AppContent() {
   const location = useLocation();
@@ -36,8 +38,25 @@ function AppContent() {
           <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/Notifications" element={<NotificationPage />} />
-          <Route path="/add" element={<AddPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/bites/:biteId" element={<BiteDetailPage />} />
+          <Route path="/notifications" element={<NotificationPage />} />
+          <Route
+            path="/add"
+            element={
+              <ProtectedRoute>
+                <AddPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/post"
+            element={
+              <ProtectedRoute>
+                <AddPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </div>

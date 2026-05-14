@@ -26,6 +26,7 @@ export const getProfileViewModel = (profile, fallbackUsername) => {
     displayName,
     handle,
     avatar: profile?.avatar || profile?.avatarUrl || profile?.photoUrl,
+    banner: profile?.banner || profile?.bannerUrl || profile?.coverImage,
     bio: profile?.bio || "Sharing every bite worth remembering.",
     location: profile?.location || profile?.locationName,
     joinedAt: profile?.createdAt || profile?.joinedAt,

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Home, Search, Bell, User, LogOut } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { AlertCircle, Home, Search, Bell, User, LogOut, Loader2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
-import { AUTH_CHANGE_EVENT, clearAuth, getStoredUser } from "../utils/auth";
+import { postJson } from "../utils/api";
+import { AUTH_CHANGE_EVENT, clearAuth, getAuthHeaders, getStoredUser } from "../utils/auth";
+import { unregisterFcmToken } from "../utils/notifications";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -10,6 +12,9 @@ export default function Sidebar() {
   const [currentUser, setCurrentUser] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
+  const profileMenuRef = useRef(null);
 
   useEffect(() => {
     const readUser = () => {
@@ -27,14 +32,48 @@ export default function Sidebar() {
     };
   }, []);
 
-  const handleLogout = () => {
-    clearAuth();
+  useEffect(() => {
+    if (!showDropdown) return;
 
-    setCurrentUser(null);
-    setShowLogoutModal(false);
-    setShowDropdown(false);
+    const handleClickOutside = (event) => {
+      if (!profileMenuRef.current?.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
 
-    navigate("/");
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showDropdown]);
+
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    setLogoutError("");
+
+    try {
+      unregisterFcmToken().catch((err) => {
+        console.warn("Failed to unregister FCM token during logout:", err);
+      });
+
+      await postJson("/api/auth/logout", null, {
+        fallback: "Gagal logout. Silakan coba lagi.",
+        headers: getAuthHeaders(),
+      });
+
+      clearAuth();
+      setCurrentUser(null);
+      setShowLogoutModal(false);
+      setShowDropdown(false);
+      navigate("/login", { replace: true });
+    } catch (err) {
+      setLogoutError(err.message || "Gagal logout. Silakan coba lagi.");
+    } finally {
+      setLogoutLoading(false);
+    }
   };
 
   const navItems = [
@@ -92,12 +131,15 @@ export default function Sidebar() {
           Post
         </button>
         {/* Bottom Profile Section */}
-        <div className="mt-auto pt-4 relative">
+        <div ref={profileMenuRef} className="mt-auto pt-4 relative">
           {currentUser ? (
             <>
               {/* Profile Button */}
               <button
-                onClick={() => setShowDropdown(!showDropdown)}
+                onClick={() => {
+                  setLogoutError("");
+                  setShowDropdown(!showDropdown);
+                }}
                 className="flex items-center gap-3 p-3 rounded-full hover:bg-gray-50 transition-colors w-full"
               >
                 <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center shrink-0">
@@ -169,19 +211,37 @@ export default function Sidebar() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setShowLogoutModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors"
+                onClick={() => {
+                  if (!logoutLoading) setShowLogoutModal(false);
+                }}
+                disabled={logoutLoading}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 disabled:opacity-60 transition-colors"
               >
                 Batal
               </button>
 
               <button
                 onClick={handleLogout}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-colors"
+                disabled={logoutLoading}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-colors disabled:opacity-70"
               >
-                Ya, Keluar
+                {logoutLoading ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Keluar...
+                  </span>
+                ) : (
+                  "Ya, Keluar"
+                )}
               </button>
             </div>
+
+            {logoutError && (
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                <AlertCircle className="mt-0.5 w-4 h-4 shrink-0" />
+                <span>{logoutError}</span>
+              </div>
+            )}
           </div>
         </div>
       )}

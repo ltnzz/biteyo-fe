@@ -80,3 +80,5 @@ export const getAuthHeaders = () => {
 
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
+
+export const isAuthenticated = () => Boolean(getToken() || getStoredUser());

@@ -40,6 +40,26 @@
   }
 }
 
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -51,6 +71,14 @@
 
 .animate-pulse-slow {
   animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.animate-modal-fade {
+  animation: modal-fade 160ms ease-out both;
+}
+
+.animate-modal-rise {
+  animation: modal-rise 180ms ease-out both;
 }
 
 /* Stagger delays */
