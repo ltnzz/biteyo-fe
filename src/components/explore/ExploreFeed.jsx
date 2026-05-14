@@ -13,6 +13,8 @@ export default function ExploreFeed({
   followingUsers,
   getBiteId,
   getFollowKey,
+  commentErrors = {},
+  commentingBiteIds = new Set(),
   likingBiteIds = new Set(),
   savingId,
   onAddBite,
@@ -23,6 +25,7 @@ export default function ExploreFeed({
   onPhotoChange,
   onStartEdit,
   onToggleLike,
+  onSubmitComment,
   onToggleFollow,
   onUpdate,
 }) {
@@ -82,6 +85,8 @@ export default function ExploreFeed({
               deletingId={deletingId}
               editForm={editForm}
               followKey={followKey}
+              commentError={commentErrors[biteId] || ""}
+              commenting={commentingBiteIds.has(biteId)}
               isEditing={editingId === biteId}
               isFollowing={followingUsers.has(followKey)}
               liking={likingBiteIds.has(biteId)}
@@ -94,6 +99,7 @@ export default function ExploreFeed({
               onPhotoChange={onPhotoChange}
               onStartEdit={onStartEdit}
               onToggleLike={onToggleLike}
+              onSubmitComment={onSubmitComment}
               onToggleFollow={onToggleFollow}
               onUpdate={onUpdate}
             />

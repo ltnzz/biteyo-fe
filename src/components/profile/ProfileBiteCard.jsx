@@ -1,4 +1,5 @@
 import { Heart, Loader2, MessageCircle, Pencil, Star, Trash2 } from "lucide-react";
+import { useState } from "react";
 import {
   getCategoryLabel,
   normalizeCategories,
@@ -9,12 +10,15 @@ import {
   getLikeCount,
   isBiteLiked,
 } from "../../utils/biteEngagement";
+import BiteCommentBox from "../BiteCommentBox";
 import BiteEditForm from "./BiteEditForm";
 
 export default function ProfileBiteCard({
   avatar,
   bite,
   canManage = false,
+  commentError = "",
+  commenting = false,
   currentUser,
   displayName,
   deleting,
@@ -29,9 +33,11 @@ export default function ProfileBiteCard({
   onEditChange,
   onOpenBite,
   onPhotoChange,
+  onSubmitComment,
   onToggleLike,
   onUpdate,
 }) {
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const liked = isBiteLiked(bite, currentUser);
 
   const handleOpenBite = () => {
@@ -172,14 +178,27 @@ export default function ProfileBiteCard({
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    onOpenBite?.(bite);
+                    setCommentsOpen((open) => !open);
                   }}
-                  className="flex items-center gap-1.5 text-sm hover:text-pink-500"
+                  className={`flex items-center gap-1.5 text-sm transition-colors ${
+                    commentsOpen ? "text-pink-500" : "hover:text-pink-500"
+                  }`}
+                  aria-expanded={commentsOpen}
+                  aria-label="Toggle comment box"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>{getCommentCount(bite)}</span>
                 </button>
               </div>
+
+              {commentsOpen && (
+                <BiteCommentBox
+                  bite={bite}
+                  error={commentError}
+                  submitting={commenting}
+                  onSubmitComment={onSubmitComment}
+                />
+              )}
             </>
           )}
         </div>

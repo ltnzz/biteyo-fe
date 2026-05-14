@@ -245,8 +245,9 @@ export const useBiteMutations = ({
           return { ...item, ...updatedBite };
         }
 
+        const previousCount = getCommentCount(item);
         const comments = [...getBiteComments(item), nextComment];
-        const count = Math.max(getCommentCount(item), comments.length);
+        const count = Math.max(previousCount + 1, comments.length);
 
         return {
           ...item,

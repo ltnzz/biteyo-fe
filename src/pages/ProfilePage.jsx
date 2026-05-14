@@ -229,6 +229,8 @@ export default function ProfilePage() {
                 editingId={biteActions.editingId}
                 error={bitesError}
                 handle={handle}
+                commentErrors={biteActions.commentErrors}
+                commentingBiteIds={biteActions.commentingBiteIds}
                 likingBiteIds={biteActions.likingBiteIds}
                 loading={bitesLoading}
                 currentUser={currentUser}
@@ -241,6 +243,7 @@ export default function ProfilePage() {
                 onOpenBite={openBiteDetail}
                 onPhotoChange={biteActions.setEditPhotoFile}
                 onRetry={fetchUserBites}
+                onSubmitComment={biteActions.submitComment}
                 onToggleLike={biteActions.toggleLike}
                 onUpdateBite={biteActions.updateBite}
               />
@@ -254,11 +257,14 @@ export default function ProfilePage() {
                 emptyTitle="Belum ada saved bite"
                 error={savedError}
                 handle={handle}
+                commentErrors={savedBiteActions.commentErrors}
+                commentingBiteIds={savedBiteActions.commentingBiteIds}
                 likingBiteIds={savedBiteActions.likingBiteIds}
                 loading={savedLoading}
                 currentUser={currentUser}
                 onOpenBite={openBiteDetail}
                 onRetry={fetchSavedBites}
+                onSubmitComment={savedBiteActions.submitComment}
                 onToggleLike={savedBiteActions.toggleLike}
               />
             ) : (

@@ -16,6 +16,8 @@ export default function ProfileTimeline({
   emptyTitle = "Belum ada bite",
   error = "",
   handle,
+  commentErrors = {},
+  commentingBiteIds = new Set(),
   likingBiteIds = new Set(),
   loading = false,
   savingBiteId,
@@ -27,6 +29,7 @@ export default function ProfileTimeline({
   onOpenBite,
   onPhotoChange,
   onRetry,
+  onSubmitComment,
   onToggleLike,
   onUpdateBite,
 }) {
@@ -83,6 +86,8 @@ export default function ProfileTimeline({
               avatar={avatar}
               bite={bite}
               canManage={canManage}
+              commentError={commentErrors[biteId] || ""}
+              commenting={commentingBiteIds.has(biteId)}
               currentUser={currentUser}
               deleting={deletingBiteId === biteId}
               displayName={displayName}
@@ -97,6 +102,7 @@ export default function ProfileTimeline({
               onEditChange={onEditChange}
               onOpenBite={onOpenBite}
               onPhotoChange={onPhotoChange}
+              onSubmitComment={onSubmitComment}
               onToggleLike={onToggleLike}
               onUpdate={() => onUpdateBite(bite)}
             />

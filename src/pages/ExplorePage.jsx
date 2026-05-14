@@ -6,6 +6,7 @@ import ActionMessage from "../components/explore/ActionMessage";
 import ExploreFeed from "../components/explore/ExploreFeed";
 import ExploreHeader from "../components/explore/ExploreHeader";
 import LocationResults from "../components/explore/LocationResults";
+import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
 import { toggleLikeBite } from "../services/feedApi";
 import { getAuthHeaders, getStoredUser } from "../utils/auth";
@@ -138,6 +139,13 @@ export default function ExplorePage() {
       setFeedLoading(false);
     }
   }, []);
+
+  const commentActions = useBiteMutations({
+    currentUser,
+    refresh: fetchFeed,
+    setActionMessage,
+    setBites,
+  });
 
   useEffect(() => {
     fetchFeed();
@@ -388,6 +396,8 @@ export default function ExplorePage() {
             followingUsers={followingUsers}
             getBiteId={getBiteId}
             getFollowKey={getFollowKey}
+            commentErrors={commentActions.commentErrors}
+            commentingBiteIds={commentActions.commentingBiteIds}
             likingBiteIds={likingBiteIds}
             savingId={savingId}
             onAddBite={() => navigate("/add")}
@@ -398,6 +408,7 @@ export default function ExplorePage() {
             onPhotoChange={setEditPhotoFile}
             onStartEdit={startEdit}
             onToggleLike={handleToggleLike}
+            onSubmitComment={commentActions.submitComment}
             onToggleFollow={toggleFollow}
             onUpdate={handleUpdate}
           />
