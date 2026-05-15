@@ -1,0 +1,293 @@
+import { useState } from "react";
+import { postBiteComment, toggleLikeBite } from "../services/feedApi";
+import { getAuthHeaders } from "../utils/auth";
+import {
+  getBiteComments,
+  getBiteId as readBiteId,
+  getCommentCount,
+  getLikeCount,
+  isBiteLiked,
+  normalizeCreatedComment,
+  normalizeUpdatedBite,
+} from "../utils/biteEngagement";
+import { parseApiError } from "../utils/api";
+import {
+  API_BASE,
+  biteCategories,
+  normalizeCategories,
+  normalizeCategoryValue,
+} from "../utils/bites";
+
+export const getBiteId = readBiteId;
+
+export const useBiteMutations = ({
+  currentUser,
+  refresh,
+  setBites,
+  setActionMessage,
+}) => {
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    foodName: "",
+    locationName: "",
+    review: "",
+    rating: 0,
+    category: "",
+  });
+  const [editPhotoFile, setEditPhotoFile] = useState(null);
+  const [savingBiteId, setSavingBiteId] = useState(null);
+  const [deletingBiteId, setDeletingBiteId] = useState(null);
+  const [likingBiteIds, setLikingBiteIds] = useState(() => new Set());
+  const [commentingBiteIds, setCommentingBiteIds] = useState(() => new Set());
+  const [commentErrors, setCommentErrors] = useState({});
+
+  const updateBiteInState = (biteId, updater) => {
+    setBites((prev) =>
+      prev.map((item) => (getBiteId(item) === biteId ? updater(item) : item)),
+    );
+  };
+
+  const startEdit = (bite) => {
+    setActionMessage({ type: "", text: "" });
+    setEditingId(getBiteId(bite));
+    setEditPhotoFile(null);
+    setEditForm({
+      foodName: bite.foodName || bite.title || "",
+      locationName: bite.locationName || bite.location || "",
+      review: bite.review || bite.description || "",
+      rating: Number(bite.rating || 0),
+      category: normalizeCategoryValue(
+        bite.category || normalizeCategories(bite.categories)[0] || "",
+      ),
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditPhotoFile(null);
+  };
+
+  const updateEditForm = (field, value) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateBite = async (bite) => {
+    const biteId = getBiteId(bite);
+    if (!biteId) return;
+
+    const payload = {
+      foodName: editForm.foodName.trim(),
+      locationName: editForm.locationName.trim(),
+      review: editForm.review.trim(),
+      rating: Number(editForm.rating),
+      category: normalizeCategoryValue(editForm.category),
+    };
+
+    if (!payload.foodName || !payload.locationName || !payload.review) {
+      setActionMessage({ type: "error", text: "Food, location, and review are required." });
+      return;
+    }
+
+    if (!biteCategories.some((item) => item.value === payload.category)) {
+      setActionMessage({ type: "error", text: "Please choose a valid category." });
+      return;
+    }
+
+    setSavingBiteId(biteId);
+    setActionMessage({ type: "", text: "" });
+
+    try {
+      let body = JSON.stringify(payload);
+      let headers = {
+        ...getAuthHeaders(),
+        "Content-Type": "application/json",
+      };
+
+      if (editPhotoFile) {
+        const formData = new FormData();
+        formData.append("foodName", payload.foodName);
+        formData.append("locationName", payload.locationName);
+        formData.append("review", payload.review);
+        formData.append("rating", payload.rating);
+        formData.append("category", payload.category);
+        formData.append("photo", editPhotoFile);
+
+        body = formData;
+        headers = getAuthHeaders();
+      }
+
+      const res = await fetch(`${API_BASE}/api/feed/bites/${biteId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers,
+        body,
+      });
+
+      if (!res.ok) {
+        throw new Error(await parseApiError(res, "Failed to update bite"));
+      }
+
+      setActionMessage({ type: "success", text: "Bite updated." });
+      cancelEdit();
+      refresh();
+    } catch (err) {
+      setActionMessage({ type: "error", text: err.message });
+    } finally {
+      setSavingBiteId(null);
+    }
+  };
+
+  const deleteBite = async (bite) => {
+    const biteId = getBiteId(bite);
+    if (!biteId || !window.confirm("Delete this bite?")) return;
+
+    setDeletingBiteId(biteId);
+    setActionMessage({ type: "", text: "" });
+
+    try {
+      const res = await fetch(`${API_BASE}/api/feed/bites/${biteId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
+
+      if (!res.ok) {
+        throw new Error(await parseApiError(res, "Failed to delete bite"));
+      }
+
+      setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
+      setActionMessage({ type: "success", text: "Bite deleted." });
+    } catch (err) {
+      setActionMessage({ type: "error", text: err.message });
+    } finally {
+      setDeletingBiteId(null);
+    }
+  };
+
+  const toggleLike = async (bite) => {
+    const biteId = getBiteId(bite);
+    if (!biteId || likingBiteIds.has(biteId)) return;
+
+    const wasLiked = isBiteLiked(bite, currentUser);
+    const previousLikeCount = getLikeCount(bite);
+    const nextLiked = !wasLiked;
+    const nextLikeCount = Math.max(0, previousLikeCount + (nextLiked ? 1 : -1));
+
+    setActionMessage({ type: "", text: "" });
+    setLikingBiteIds((prev) => new Set(prev).add(biteId));
+    updateBiteInState(biteId, (item) => ({
+      ...item,
+      isLiked: nextLiked,
+      liked: nextLiked,
+      likedByMe: nextLiked,
+      likedByCurrentUser: nextLiked,
+      likesCount: nextLikeCount,
+      likeCount: nextLikeCount,
+    }));
+
+    try {
+      const data = await toggleLikeBite(biteId);
+      const updatedBite = normalizeUpdatedBite(data);
+
+      if (updatedBite && getBiteId(updatedBite)) {
+        updateBiteInState(biteId, (item) => ({ ...item, ...updatedBite }));
+      }
+    } catch (err) {
+      updateBiteInState(biteId, (item) => ({
+        ...item,
+        isLiked: wasLiked,
+        liked: wasLiked,
+        likedByMe: wasLiked,
+        likedByCurrentUser: wasLiked,
+        likesCount: previousLikeCount,
+        likeCount: previousLikeCount,
+      }));
+      setActionMessage({
+        type: "error",
+        text: err.message || "Gagal memperbarui like.",
+      });
+    } finally {
+      setLikingBiteIds((prev) => {
+        const next = new Set(prev);
+        next.delete(biteId);
+        return next;
+      });
+    }
+  };
+
+  const submitComment = async (bite, content) => {
+    const biteId = getBiteId(bite);
+    const cleanedContent = content?.trim();
+
+    if (!biteId) return false;
+
+    if (!cleanedContent) {
+      setCommentErrors((prev) => ({
+        ...prev,
+        [biteId]: "Komentar tidak boleh kosong.",
+      }));
+      return false;
+    }
+
+    if (commentingBiteIds.has(biteId)) return false;
+
+    setActionMessage({ type: "", text: "" });
+    setCommentErrors((prev) => ({ ...prev, [biteId]: "" }));
+    setCommentingBiteIds((prev) => new Set(prev).add(biteId));
+
+    try {
+      const data = await postBiteComment(biteId, cleanedContent);
+      const updatedBite = normalizeUpdatedBite(data);
+      const nextComment = normalizeCreatedComment(data, cleanedContent, currentUser);
+
+      updateBiteInState(biteId, (item) => {
+        if (updatedBite && getBiteId(updatedBite)) {
+          return { ...item, ...updatedBite };
+        }
+
+        const previousCount = getCommentCount(item);
+        const comments = [...getBiteComments(item), nextComment];
+        const count = Math.max(previousCount + 1, comments.length);
+
+        return {
+          ...item,
+          comments,
+          commentsCount: count,
+          commentCount: count,
+        };
+      });
+
+      return true;
+    } catch (err) {
+      setCommentErrors((prev) => ({
+        ...prev,
+        [biteId]: err.message || "Gagal mengirim komentar.",
+      }));
+      return false;
+    } finally {
+      setCommentingBiteIds((prev) => {
+        const next = new Set(prev);
+        next.delete(biteId);
+        return next;
+      });
+    }
+  };
+
+  return {
+    editingId,
+    editForm,
+    savingBiteId,
+    deletingBiteId,
+    likingBiteIds,
+    commentingBiteIds,
+    commentErrors,
+    startEdit,
+    cancelEdit,
+    updateEditForm,
+    setEditPhotoFile,
+    updateBite,
+    deleteBite,
+    toggleLike,
+    submitComment,
+  };
+};
