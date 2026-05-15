@@ -28,12 +28,12 @@ export const toggleLikeBite = async (biteId) => {
   );
 };
 
-export const toggleSaveBite = async (biteId, shouldSave) => {
+export const toggleSaveBite = async (biteId) => {
   if (!biteId) throw new Error("Bite id is required.");
 
   return requestJson(
     `/api/feed/bites/${encodeURIComponent(biteId)}/save`,
-    { method: shouldSave ? "POST" : "DELETE" },
+    { method: "POST" },
     "Gagal memperbarui saved bite.",
   );
 };

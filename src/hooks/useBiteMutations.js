@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { postBiteComment, toggleLikeBite, toggleSaveBite } from "../services/feedApi";
-import { getAuthHeaders } from "../utils/auth";
+import { getAuthHeaders, getToken } from "../utils/auth";
 import {
   getBiteComments,
   getBiteId as readBiteId,
@@ -52,6 +52,16 @@ export const useBiteMutations = ({
     );
   };
 
+  const requireAuth = () => {
+    if (getToken()) return true;
+
+    setActionMessage({
+      type: "error",
+      text: "Sesi login tidak valid. Silakan login ulang.",
+    });
+    return false;
+  };
+
   const startEdit = (bite) => {
     setActionMessage({ type: "", text: "" });
     setEditingId(getBiteId(bite));
@@ -77,6 +87,8 @@ export const useBiteMutations = ({
   };
 
   const updateBite = async (bite) => {
+    if (!requireAuth()) return;
+
     const biteId = getBiteId(bite);
     if (!biteId) return;
 
@@ -143,6 +155,8 @@ export const useBiteMutations = ({
   };
 
   const deleteBite = async (bite) => {
+    if (!requireAuth()) return;
+
     const biteId = getBiteId(bite);
     if (!biteId || !window.confirm("Delete this bite?")) return;
 
@@ -170,6 +184,8 @@ export const useBiteMutations = ({
   };
 
   const toggleLike = async (bite) => {
+    if (!requireAuth()) return;
+
     const biteId = getBiteId(bite);
     if (!biteId || likingBiteIds.has(biteId)) return;
 
@@ -229,6 +245,8 @@ export const useBiteMutations = ({
   };
 
   const toggleSave = async (bite) => {
+    if (!requireAuth()) return;
+
     const biteId = getBiteId(bite);
     if (!biteId || savingBiteIds.has(biteId)) return;
 
@@ -289,6 +307,8 @@ export const useBiteMutations = ({
   };
 
   const submitComment = async (bite, content) => {
+    if (!requireAuth()) return false;
+
     const biteId = getBiteId(bite);
     const cleanedContent = content?.trim();
 

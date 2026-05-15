@@ -10,7 +10,7 @@ import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
 import { toggleLikeBite } from "../services/feedApi";
 import { followUser, unfollowUser } from "../services/profileApi";
-import { getAuthHeaders, getStoredUser } from "../utils/auth";
+import { getAuthHeaders, getStoredUser, getToken } from "../utils/auth";
 import {
   getLikeCount,
   isBiteLiked,
@@ -242,6 +242,14 @@ export default function ExplorePage() {
     Boolean(getFollowUsername(bite)) && !isOwnBite(bite, currentUser);
 
   const toggleFollow = async (bite) => {
+    if (!getToken()) {
+      setActionMessage({
+        type: "error",
+        text: "Sesi login tidak valid. Silakan login ulang.",
+      });
+      return;
+    }
+
     const username = getFollowUsername(bite);
     const followKey = toFollowKey(username);
 
@@ -312,6 +320,14 @@ export default function ExplorePage() {
   };
 
   const handleUpdate = async (bite) => {
+    if (!getToken()) {
+      setActionMessage({
+        type: "error",
+        text: "Sesi login tidak valid. Silakan login ulang.",
+      });
+      return;
+    }
+
     const biteId = getBiteId(bite);
     if (!biteId) return;
 
@@ -378,6 +394,14 @@ export default function ExplorePage() {
   };
 
   const handleDelete = async (bite) => {
+    if (!getToken()) {
+      setActionMessage({
+        type: "error",
+        text: "Sesi login tidak valid. Silakan login ulang.",
+      });
+      return;
+    }
+
     const biteId = getBiteId(bite);
     if (!biteId || !window.confirm("Delete this bite?")) return;
 
@@ -405,6 +429,14 @@ export default function ExplorePage() {
   };
 
   const handleToggleLike = async (bite) => {
+    if (!getToken()) {
+      setActionMessage({
+        type: "error",
+        text: "Sesi login tidak valid. Silakan login ulang.",
+      });
+      return;
+    }
+
     const biteId = getBiteId(bite);
     if (!biteId || likingBiteIds.has(biteId)) return;
 
