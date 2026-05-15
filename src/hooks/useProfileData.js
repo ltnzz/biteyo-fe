@@ -9,6 +9,7 @@ import {
 import { getAuthHeaders, saveAuth } from "../utils/auth";
 import { API_BASE } from "../utils/bites";
 import { parseApiError } from "../utils/api";
+import { cacheFollowState } from "../utils/followState";
 import { getProfileUsername, normalizeProfile } from "../utils/profile";
 
 const normalizeUsername = (username) => username?.trim().toLowerCase() || "";
@@ -75,6 +76,9 @@ export const useProfileData = (currentUser, routeUsername = "") => {
       }
 
       setProfile(nextProfile);
+      if (!isOwnProfile) {
+        cacheFollowState(currentUser, profileUsername, getFollowingState(nextProfile));
+      }
       setProfileForm({
         username: nextProfile?.username || profileUsername,
         bio: nextProfile?.bio || "",
@@ -85,7 +89,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     } finally {
       setProfileLoading(false);
     }
-  }, [profileUsername]);
+  }, [currentUser, isOwnProfile, profileUsername]);
 
   const fetchUserBites = useCallback(async () => {
     if (!profileUsername) return;
@@ -212,6 +216,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
           }
         : prev,
     );
+    cacheFollowState(currentUser, profileUsername, !wasFollowing);
 
     try {
       const data = wasFollowing
@@ -234,6 +239,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
             }
           : prev,
       );
+      cacheFollowState(currentUser, profileUsername, wasFollowing);
       throw err;
     } finally {
       setFollowLoading(false);

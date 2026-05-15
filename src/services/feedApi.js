@@ -38,6 +38,16 @@ export const getBiteDetail = async (biteId) => {
   );
 };
 
+export const getBiteComments = async (biteId) => {
+  if (!biteId) throw new Error("Bite id is required.");
+
+  return requestJson(
+    `/api/feed/bites/${encodeURIComponent(biteId)}/comments`,
+    { method: "GET" },
+    "Gagal memuat komentar.",
+  );
+};
+
 export const postBiteComment = async (biteId, content) => {
   if (!biteId) throw new Error("Bite id is required.");
 

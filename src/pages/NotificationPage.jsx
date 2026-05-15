@@ -8,18 +8,14 @@ import {
   NotificationErrorState,
   NotificationLoadingState,
 } from "../components/notifications/NotificationState";
-import PushNotificationControls from "../components/notifications/PushNotificationControls";
+import socket from "../lib/socket";
 import { isAuthenticated } from "../utils/auth";
 import {
-  clearStoredFcmToken,
   deleteNotification,
   fetchNotifications,
   getNotificationId,
-  getStoredFcmToken,
   isNotificationRead,
   markNotificationAsRead,
-  registerFcmToken,
-  unregisterFcmToken,
 } from "../utils/notifications";
 
 export default function NotificationPage() {
@@ -29,8 +25,6 @@ export default function NotificationPage() {
   const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
   const [readingIds, setReadingIds] = useState(() => new Set());
   const [deletingId, setDeletingId] = useState("");
-  const [pushLoading, setPushLoading] = useState(false);
-  const [storedFcmToken, setStoredFcmToken] = useState(getStoredFcmToken);
   const hasSession = useMemo(() => isAuthenticated(), []);
 
   const unreadCount = notifications.filter(
@@ -60,16 +54,26 @@ export default function NotificationPage() {
   }, [hasSession, loadNotifications]);
 
   useEffect(() => {
-    const token = getStoredFcmToken();
+    if (!hasSession) return undefined;
 
-    if (!token || !hasSession) return;
+    const refreshNotifications = () => {
+      loadNotifications();
+    };
 
-    registerFcmToken(token)
-      .then(() => setStoredFcmToken(token))
-      .catch((err) => {
-        console.warn("Failed to register FCM token:", err);
-      });
-  }, [hasSession]);
+    socket.on("notification_created", refreshNotifications);
+    socket.on("new_notification", refreshNotifications);
+    socket.on("bite_liked", refreshNotifications);
+    socket.on("new_comment", refreshNotifications);
+    socket.on("follow_status_updated", refreshNotifications);
+
+    return () => {
+      socket.off("notification_created", refreshNotifications);
+      socket.off("new_notification", refreshNotifications);
+      socket.off("bite_liked", refreshNotifications);
+      socket.off("new_comment", refreshNotifications);
+      socket.off("follow_status_updated", refreshNotifications);
+    };
+  }, [hasSession, loadNotifications]);
 
   const updateReadState = (notificationId, read) => {
     setNotifications((prev) =>
@@ -188,56 +192,6 @@ export default function NotificationPage() {
     }
   };
 
-  const handleRegisterPush = async () => {
-    const token = getStoredFcmToken();
-
-    setPushLoading(true);
-    setActionMessage({ type: "", text: "" });
-
-    try {
-      const result = await registerFcmToken(token);
-
-      if (result?.skipped) {
-        setActionMessage({
-          type: "error",
-          text: "FCM token belum tersedia di browser ini.",
-        });
-      } else {
-        setStoredFcmToken(token);
-        setActionMessage({ type: "success", text: "Push notification aktif." });
-      }
-    } catch (err) {
-      setActionMessage({
-        type: "error",
-        text: err.message || "Gagal mengaktifkan push notification.",
-      });
-    } finally {
-      setPushLoading(false);
-    }
-  };
-
-  const handleUnregisterPush = async () => {
-    setPushLoading(true);
-    setActionMessage({ type: "", text: "" });
-
-    try {
-      await unregisterFcmToken();
-      clearStoredFcmToken();
-      setStoredFcmToken("");
-      setActionMessage({
-        type: "success",
-        text: "Push notification dimatikan.",
-      });
-    } catch (err) {
-      setActionMessage({
-        type: "error",
-        text: err.message || "Gagal mematikan push notification.",
-      });
-    } finally {
-      setPushLoading(false);
-    }
-  };
-
   if (!hasSession) return <LoginRequired />;
 
   return (
@@ -249,12 +203,6 @@ export default function NotificationPage() {
             unreadCount={unreadCount}
             onMarkAllRead={handleMarkAllRead}
             onRefresh={loadNotifications}
-          />
-          <PushNotificationControls
-            loading={pushLoading}
-            storedFcmToken={storedFcmToken}
-            onRegister={handleRegisterPush}
-            onUnregister={handleUnregisterPush}
           />
         </div>
 

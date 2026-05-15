@@ -8,6 +8,7 @@ import {
   getLikeCount,
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
+import { toFollowKey } from "../utils/followState";
 
 const isDevelopment = import.meta.env.DEV;
 
@@ -266,8 +267,11 @@ export const useFeedSocket = (
         setFollowingUsers((prev) => {
           const next = new Set(prev);
           targetValues.forEach((value) => {
-            if (isFollowing) next.add(value);
-            else next.delete(value);
+            const followKey = toFollowKey(value);
+            if (!followKey) return;
+
+            if (isFollowing) next.add(followKey);
+            else next.delete(followKey);
           });
           return next;
         });

@@ -26,14 +26,15 @@ export default function BiteCard({
   currentUser,
   deletingId,
   editForm,
-  followKey,
   commentError = "",
   commenting = false,
+  followLoading = false,
   isEditing,
   isFollowing,
   liking = false,
   manageable,
   savingId,
+  showFollow = true,
   onCancelEdit,
   onDelete,
   onEditChange,
@@ -78,20 +79,29 @@ export default function BiteCard({
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onToggleFollow(followKey);
-                }}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
-                  isFollowing
-                    ? "bg-gray-900 text-white border-gray-900 hover:bg-white hover:text-red-500 hover:border-red-200"
-                    : "bg-white text-gray-900 border-gray-200 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
-                }`}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </button>
+              {showFollow && (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onToggleFollow(bite);
+                  }}
+                  disabled={followLoading}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${
+                    isFollowing
+                      ? "bg-gray-900 text-white border-gray-900 hover:bg-white hover:text-red-500 hover:border-red-200"
+                      : "bg-white text-gray-900 border-gray-200 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+                  }`}
+                >
+                  {followLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : isFollowing ? (
+                    "Following"
+                  ) : (
+                    "Follow"
+                  )}
+                </button>
+              )}
 
               <div className="flex gap-0.5">
                 {[...Array(5)].map((_, i) => (

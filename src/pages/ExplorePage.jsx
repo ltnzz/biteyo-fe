@@ -9,6 +9,7 @@ import LocationResults from "../components/explore/LocationResults";
 import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
 import { toggleLikeBite } from "../services/feedApi";
+import { followUser, unfollowUser } from "../services/profileApi";
 import { getAuthHeaders, getStoredUser } from "../utils/auth";
 import {
   getLikeCount,
@@ -17,6 +18,12 @@ import {
 } from "../utils/biteEngagement";
 import { API_BASE, biteCategories, normalizeBites, normalizeCategories, 
          normalizeCategoryValue, } from "../utils/bites";
+import {
+  cacheFollowState,
+  getCachedFollowingUsers,
+  mergeFollowingUsers,
+  toFollowKey,
+} from "../utils/followState";
 
 const parseApiError = async (response, fallback) => {
   const data = await response.json().catch(() => null);
@@ -64,6 +71,43 @@ const getCurrentUserValues = (user) =>
     user?.email,
   ].filter(Boolean).map(String);
 
+const getFollowUsername = (bite) => {
+  const owner = bite?.user || bite?.author || bite?.createdBy || bite?.owner;
+
+  if (typeof owner === "string") return bite?.username || bite?.createdByUsername || "";
+
+  return (
+    owner?.username ||
+    bite?.username ||
+    bite?.createdByUsername ||
+    ""
+  );
+};
+
+const getFollowState = (bite) => {
+  const owner = bite?.user || bite?.author || bite?.createdBy || bite?.owner;
+
+  return Boolean(
+    bite?.isFollowingAuthor ??
+      bite?.isFollowingUser ??
+      bite?.isFollowing ??
+      owner?.isFollowing ??
+      owner?.following ??
+      owner?.followedByMe,
+  );
+};
+
+const isOwnBite = (bite, currentUser) => {
+  if (!currentUser) return false;
+
+  const ownerValues = getOwnerValues(bite).map((value) => value.toLowerCase());
+  const currentValues = getCurrentUserValues(currentUser).map((value) =>
+    value.toLowerCase(),
+  );
+
+  return ownerValues.some((value) => currentValues.includes(value));
+};
+
 export default function ExplorePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -85,7 +129,10 @@ export default function ExplorePage() {
   const [editPhotoFile, setEditPhotoFile] = useState(null);
   const [savingId, setSavingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [followingUsers, setFollowingUsers] = useState(() => new Set());
+  const [followingUsers, setFollowingUsers] = useState(() =>
+    getCachedFollowingUsers(getStoredUser()),
+  );
+  const [followLoadingUsers, setFollowLoadingUsers] = useState(() => new Set());
   const [likingBiteIds, setLikingBiteIds] = useState(() => new Set());
 
   const query = searchParams.get("q") || "";
@@ -130,7 +177,14 @@ export default function ExplorePage() {
       if (!res.ok) throw new Error("Failed to load bites");
 
       const data = await res.json();
-      setBites(normalizeBites(data));
+      const normalizedBites = normalizeBites(data);
+      setBites(normalizedBites);
+      const followedFromFeed = normalizedBites
+        .filter(getFollowState)
+        .map(getFollowUsername)
+        .filter(Boolean);
+
+      setFollowingUsers(mergeFollowingUsers(currentUser, followedFromFeed));
     } catch (err) {
       console.error("Feed error:", err);
       setFeedError("Feed belum bisa dimuat. Coba refresh halaman.");
@@ -138,7 +192,7 @@ export default function ExplorePage() {
     } finally {
       setFeedLoading(false);
     }
-  }, []);
+  }, [currentUser]);
 
   const commentActions = useBiteMutations({
     currentUser,
@@ -182,23 +236,57 @@ export default function ExplorePage() {
     );
   };
 
-  const getFollowKey = (bite) =>
-    getOwnerValues(bite)[0] || bite.user?.username || bite.user?.name || getBiteId(bite);
+  const getFollowKey = (bite) => toFollowKey(getFollowUsername(bite));
 
-  const toggleFollow = (followKey) => {
-    if (!followKey) return;
+  const canFollowBite = (bite) =>
+    Boolean(getFollowUsername(bite)) && !isOwnBite(bite, currentUser);
 
+  const toggleFollow = async (bite) => {
+    const username = getFollowUsername(bite);
+    const followKey = toFollowKey(username);
+
+    if (!username || !followKey || isOwnBite(bite, currentUser) || followLoadingUsers.has(followKey)) {
+      return;
+    }
+
+    const wasFollowing = followingUsers.has(followKey) || getFollowState(bite);
+
+    setActionMessage({ type: "", text: "" });
+    setFollowLoadingUsers((prev) => new Set(prev).add(followKey));
     setFollowingUsers((prev) => {
       const next = new Set(prev);
 
-      if (next.has(followKey)) {
-        next.delete(followKey);
-      } else {
-        next.add(followKey);
-      }
+      if (wasFollowing) next.delete(followKey);
+      else next.add(followKey);
 
       return next;
     });
+    cacheFollowState(currentUser, username, !wasFollowing);
+
+    try {
+      if (wasFollowing) await unfollowUser(username);
+      else await followUser(username);
+    } catch (err) {
+      setFollowingUsers((prev) => {
+        const next = new Set(prev);
+
+        if (wasFollowing) next.add(followKey);
+        else next.delete(followKey);
+
+        return next;
+      });
+      cacheFollowState(currentUser, username, wasFollowing);
+      setActionMessage({
+        type: "error",
+        text: err.message || "Gagal memperbarui follow.",
+      });
+    } finally {
+      setFollowLoadingUsers((prev) => {
+        const next = new Set(prev);
+        next.delete(followKey);
+        return next;
+      });
+    }
   };
 
   const startEdit = (bite) => {
@@ -393,9 +481,11 @@ export default function ExplorePage() {
             editingId={editingId}
             feedError={feedError}
             feedLoading={feedLoading}
+            followLoadingUsers={followLoadingUsers}
             followingUsers={followingUsers}
             getBiteId={getBiteId}
             getFollowKey={getFollowKey}
+            canFollowBite={canFollowBite}
             commentErrors={commentActions.commentErrors}
             commentingBiteIds={commentActions.commentingBiteIds}
             likingBiteIds={likingBiteIds}

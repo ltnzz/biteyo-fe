@@ -9,17 +9,25 @@ import {
   Star,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getBiteDetail, postBiteComment, toggleLikeBite } from "../services/feedApi";
+import AdvertisementSidebar from "../components/AdvertisementSidebar";
+import {
+  getBiteComments as fetchBiteComments,
+  getBiteDetail,
+  postBiteComment,
+  toggleLikeBite,
+} from "../services/feedApi";
 import { getStoredUser } from "../utils/auth";
 import {
   getBiteComments,
   getBiteId,
+  getCommentAuthorAvatar,
   getCommentAuthorName,
   getCommentContent,
   getCommentCount,
   getCommentId,
   getLikeCount,
   isBiteLiked,
+  normalizeBiteComments,
   normalizeCreatedComment,
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
@@ -46,8 +54,11 @@ export default function BiteDetailPage() {
   const navigate = useNavigate();
   const currentUser = useMemo(() => getStoredUser(), []);
   const [bite, setBite] = useState(null);
+  const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsError, setCommentsError] = useState("");
   const [liking, setLiking] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [commenting, setCommenting] = useState(false);
@@ -66,6 +77,13 @@ export default function BiteDetailPage() {
       }
 
       setBite(nextBite);
+      setComments((prev) => {
+        const embeddedComments = getBiteComments(nextBite);
+
+        return prev.length > 0 || embeddedComments.length === 0
+          ? prev
+          : embeddedComments;
+      });
     } catch (err) {
       setError(err.message || "Postingan belum bisa dimuat.");
     } finally {
@@ -73,9 +91,37 @@ export default function BiteDetailPage() {
     }
   }, [biteId]);
 
+  const loadComments = useCallback(async () => {
+    setCommentsLoading(true);
+    setCommentsError("");
+
+    try {
+      const data = await fetchBiteComments(biteId);
+      const nextComments = normalizeBiteComments(data);
+
+      setComments(nextComments);
+      setBite((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          comments: nextComments,
+          commentsCount: nextComments.length,
+          commentCount: nextComments.length,
+        };
+      });
+    } catch (err) {
+      setCommentsError(err.message || "Komentar belum bisa dimuat.");
+    } finally {
+      setCommentsLoading(false);
+    }
+  }, [biteId]);
+
   useEffect(() => {
+    setComments([]);
     loadBite();
-  }, [loadBite]);
+    loadComments();
+  }, [loadBite, loadComments]);
 
   const handleToggleLike = async () => {
     if (!bite || liking) return;
@@ -133,21 +179,28 @@ export default function BiteDetailPage() {
       const data = await postBiteComment(getBiteId(bite), content);
       const updatedBite = normalizeUpdatedBite(data);
       const nextComment = normalizeCreatedComment(data, content, currentUser);
+      const returnedComments = normalizeBiteComments(data);
 
       setBite((prev) => {
-        if (updatedBite && getBiteId(updatedBite)) return { ...prev, ...updatedBite };
+        if (!prev) return prev;
 
-        const comments = [...getBiteComments(prev), nextComment];
-        const count = Math.max(getCommentCount(prev), comments.length);
+        const nextComments =
+          returnedComments.length > 0 ? returnedComments : [...comments, nextComment];
+        const count = Math.max(getCommentCount(prev) + 1, nextComments.length);
 
         return {
           ...prev,
-          comments,
+          ...(updatedBite && getBiteId(updatedBite) ? updatedBite : {}),
+          comments: nextComments,
           commentsCount: count,
           commentCount: count,
         };
       });
+      setComments((prev) =>
+        returnedComments.length > 0 ? returnedComments : [...prev, nextComment],
+      );
       setCommentDraft("");
+      loadComments();
     } catch (err) {
       setCommentError(err.message || "Gagal mengirim komentar.");
     } finally {
@@ -155,12 +208,17 @@ export default function BiteDetailPage() {
     }
   };
 
-  const comments = getBiteComments(bite);
+  const displayedComments = comments.length > 0 ? comments : getBiteComments(bite);
+  const displayedCommentCount = Math.max(
+    getCommentCount(bite),
+    displayedComments.length,
+  );
   const liked = isBiteLiked(bite, currentUser);
 
   return (
     <div className="min-h-screen bg-white">
-      <main className="mx-auto min-h-screen max-w-2xl border-x border-gray-100">
+      <div className="flex w-full items-start justify-start px-4">
+        <main className="min-h-screen w-full max-w-2xl border-x border-gray-100">
         <div className="sticky top-[65px] z-20 flex items-center gap-3 border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
           <button
             type="button"
@@ -172,7 +230,7 @@ export default function BiteDetailPage() {
           </button>
           <div>
             <h1 className="text-xl font-extrabold text-gray-900">Postingan</h1>
-            <p className="text-sm text-gray-500">{getCommentCount(bite)} komentar</p>
+            <p className="text-sm text-gray-500">{displayedCommentCount} komentar</p>
           </div>
         </div>
 
@@ -267,7 +325,7 @@ export default function BiteDetailPage() {
               </button>
               <span className="inline-flex items-center gap-2 text-sm font-semibold">
                 <MessageCircle className="h-4 w-4" />
-                {getCommentCount(bite)}
+                {displayedCommentCount}
               </span>
             </div>
 
@@ -298,7 +356,22 @@ export default function BiteDetailPage() {
             </form>
 
             <section className="divide-y divide-gray-100">
-              {comments.length === 0 ? (
+              {commentsLoading ? (
+                <div className="flex justify-center px-6 py-12">
+                  <Loader2 className="h-5 w-5 animate-spin text-pink-500" />
+                </div>
+              ) : commentsError ? (
+                <div className="px-6 py-8 text-center">
+                  <p className="text-sm font-medium text-red-500">{commentsError}</p>
+                  <button
+                    type="button"
+                    onClick={loadComments}
+                    className="mt-4 rounded-full bg-gray-900 px-4 py-2 text-xs font-bold text-white hover:bg-pink-500"
+                  >
+                    Muat ulang komentar
+                  </button>
+                </div>
+              ) : displayedComments.length === 0 ? (
                 <div className="px-6 py-14 text-center">
                   <MessageCircle className="mx-auto mb-3 h-10 w-10 text-gray-300" />
                   <h2 className="text-lg font-bold text-gray-900">Belum ada komentar</h2>
@@ -307,18 +380,28 @@ export default function BiteDetailPage() {
                   </p>
                 </div>
               ) : (
-                comments.map((comment, index) => {
+                displayedComments.map((comment, index) => {
                   const commentId =
                     getCommentId(comment) || `${getCommentContent(comment)}-${index}`;
+                  const authorAvatar = getCommentAuthorAvatar(comment);
+                  const authorName = getCommentAuthorName(comment);
 
                   return (
                     <article key={commentId} className="flex gap-3 px-4 py-4">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-600">
-                        {getCommentAuthorName(comment).charAt(0).toUpperCase()}
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xs font-bold text-gray-600">
+                        {authorAvatar ? (
+                          <img
+                            src={authorAvatar}
+                            alt={authorName}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          authorName.charAt(0).toUpperCase()
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <h3 className="text-sm font-bold text-gray-900">
-                          {getCommentAuthorName(comment)}
+                          {authorName}
                         </h3>
                         <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-gray-700">
                           {getCommentContent(comment)}
@@ -331,7 +414,9 @@ export default function BiteDetailPage() {
             </section>
           </>
         )}
-      </main>
+        </main>
+        <AdvertisementSidebar />
+      </div>
     </div>
   );
 }

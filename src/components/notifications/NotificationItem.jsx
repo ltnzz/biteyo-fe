@@ -10,6 +10,7 @@ import {
 import { getNotificationId, isNotificationRead } from "../../utils/notifications";
 import {
   formatNotificationTime,
+  getActorAvatar,
   getActorName,
   getNotificationMessage,
   getNotificationTarget,
@@ -66,6 +67,7 @@ export default function NotificationItem({
 }) {
   const notificationId = getNotificationId(notification);
   const actorName = getActorName(notification);
+  const actorAvatar = getActorAvatar(notification);
   const message = getNotificationMessage(notification);
   const target = getNotificationTarget(notification);
   const read = isNotificationRead(notification);
@@ -88,8 +90,16 @@ export default function NotificationItem({
         read ? "bg-white hover:bg-gray-50" : "bg-pink-50/70 hover:bg-pink-50"
       }`}
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-orange-300 text-sm font-bold text-white">
-        {actorName.charAt(0).toUpperCase()}
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-400 to-orange-300 text-sm font-bold text-white">
+        {actorAvatar ? (
+          <img
+            src={actorAvatar}
+            alt={actorName}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          actorName.charAt(0).toUpperCase()
+        )}
       </div>
 
       <div className="min-w-0 flex-1">

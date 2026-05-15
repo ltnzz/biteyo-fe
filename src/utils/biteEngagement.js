@@ -44,6 +44,17 @@ export const getBiteComments = (bite) => {
   return [];
 };
 
+export const normalizeBiteComments = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.comments)) return data.comments;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.data?.comments)) return data.data.comments;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.results)) return data.results;
+
+  return [];
+};
+
 export const isBiteLiked = (bite, currentUser) => {
   const explicit =
     bite?.isLiked ??
@@ -63,7 +74,11 @@ export const getCommentId = (comment) =>
   comment?._id || comment?.id || comment?.commentId || "";
 
 export const getCommentAuthorName = (comment) => {
-  const author = comment?.user || comment?.author || comment?.createdBy;
+  const author =
+    comment?.user ||
+    comment?.author ||
+    comment?.createdBy ||
+    comment?.fromUser;
   if (typeof author === "string") return author;
 
   return (
@@ -73,6 +88,18 @@ export const getCommentAuthorName = (comment) => {
     comment?.authorName ||
     "User"
   );
+};
+
+export const getCommentAuthorAvatar = (comment) => {
+  const author =
+    comment?.user ||
+    comment?.author ||
+    comment?.createdBy ||
+    comment?.fromUser;
+
+  if (!author || typeof author === "string") return "";
+
+  return author.avatarUrl || author.avatar || author.imageUrl || author.photoUrl || "";
 };
 
 export const getCommentContent = (comment) =>

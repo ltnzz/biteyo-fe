@@ -10,9 +10,11 @@ export default function ExploreFeed({
   editingId,
   feedError,
   feedLoading,
+  followLoadingUsers = new Set(),
   followingUsers,
   getBiteId,
   getFollowKey,
+  canFollowBite,
   commentErrors = {},
   commentingBiteIds = new Set(),
   likingBiteIds = new Set(),
@@ -75,6 +77,7 @@ export default function ExploreFeed({
         {bites.map((bite, index) => {
           const biteId = getBiteId(bite);
           const followKey = getFollowKey(bite) || `bite-${index}`;
+          const showFollow = canFollowBite ? canFollowBite(bite) : true;
 
           return (
             <BiteCard
@@ -89,6 +92,8 @@ export default function ExploreFeed({
               commenting={commentingBiteIds.has(biteId)}
               isEditing={editingId === biteId}
               isFollowing={followingUsers.has(followKey)}
+              followLoading={followLoadingUsers.has(followKey)}
+              showFollow={showFollow}
               liking={likingBiteIds.has(biteId)}
               manageable={canManageBite(bite)}
               savingId={savingId}

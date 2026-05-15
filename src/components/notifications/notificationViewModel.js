@@ -1,5 +1,6 @@
 export const getActorName = (notification) => {
   const actor =
+    notification.fromUser ||
     notification.user ||
     notification.actor ||
     notification.sender ||
@@ -17,6 +18,19 @@ export const getActorName = (notification) => {
     notification.title ||
     "BiteYo"
   );
+};
+
+export const getActorAvatar = (notification) => {
+  const actor =
+    notification.fromUser ||
+    notification.user ||
+    notification.actor ||
+    notification.sender ||
+    notification.from;
+
+  if (!actor || typeof actor === "string") return "";
+
+  return actor.avatarUrl || actor.avatar || actor.imageUrl || actor.photoUrl || "";
 };
 
 export const getNotificationMessage = (notification) =>
@@ -38,6 +52,7 @@ export const getNotificationTarget = (notification) => {
     target?.name ||
     notification.targetName ||
     notification.foodName ||
+    notification.biteName ||
     ""
   );
 };
