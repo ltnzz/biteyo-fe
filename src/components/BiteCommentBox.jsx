@@ -2,6 +2,7 @@ import { Loader2, Send } from "lucide-react";
 import { useState } from "react";
 import {
   getBiteComments,
+  getCommentAuthorHandle,
   getCommentAuthorName,
   getCommentContent,
   getCommentId,
@@ -12,6 +13,7 @@ export default function BiteCommentBox({
   disabled = false,
   error = "",
   submitting = false,
+  onOpenProfile,
   onSubmitComment,
 }) {
   const [draft, setDraft] = useState("");
@@ -65,14 +67,24 @@ export default function BiteCommentBox({
             const content = getCommentContent(comment);
             if (!content) return null;
 
+            const authorName = getCommentAuthorName(comment);
+            const authorHandle = getCommentAuthorHandle(comment);
+
             return (
               <div
                 key={getCommentId(comment) || `${content}-${index}`}
                 className="rounded-2xl bg-gray-50 px-3 py-2"
               >
-                <p className="text-xs font-bold text-gray-900">
-                  {getCommentAuthorName(comment)}
-                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (authorHandle) onOpenProfile?.(authorHandle);
+                  }}
+                  disabled={!authorHandle}
+                  className="block text-left text-xs font-bold text-gray-900 transition-colors hover:text-pink-500 disabled:hover:text-gray-900"
+                >
+                  {authorName}
+                </button>
                 <p className="mt-0.5 text-sm text-gray-700">{content}</p>
               </div>
             );

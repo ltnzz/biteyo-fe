@@ -4,6 +4,7 @@ import { AtSign, Mail, Lock, ArrowRight, PenTool, Search, Users, Facebook, Loade
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import LegalModal from "../components/LegalModal"; 
+import { API_BASE } from "../utils/api";
 
 // --- KOMPONEN IKON GOOGLE ---
 const GoogleIcon = () => (
@@ -94,7 +95,7 @@ export default function SignupPage() {
 
     try {
       const response = await axios.post(
-        "https://biteyo-be.vercel.app/api/auth/signup",
+        `${API_BASE}/api/auth/signup`,
         formData,
         { withCredentials: true },
       );

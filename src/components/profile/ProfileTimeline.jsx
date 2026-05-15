@@ -20,17 +20,21 @@ export default function ProfileTimeline({
   commentingBiteIds = new Set(),
   likingBiteIds = new Set(),
   loading = false,
+  savingBiteIds = new Set(),
   savingBiteId,
   showCreateAction = false,
+  useBiteAuthor = false,
   onCancelEdit,
   onDeleteBite,
   onEditBite,
   onEditChange,
   onOpenBite,
+  onOpenProfile,
   onPhotoChange,
   onRetry,
   onSubmitComment,
   onToggleLike,
+  onToggleSave,
   onUpdateBite,
 }) {
   if (loading) {
@@ -83,27 +87,30 @@ export default function ProfileTimeline({
           return (
             <ProfileBiteCard
               key={biteId || index}
-              avatar={avatar}
+              avatar={useBiteAuthor ? undefined : avatar}
               bite={bite}
               canManage={canManage}
               commentError={commentErrors[biteId] || ""}
               commenting={commentingBiteIds.has(biteId)}
               currentUser={currentUser}
               deleting={deletingBiteId === biteId}
-              displayName={displayName}
+              displayName={useBiteAuthor ? undefined : displayName}
               editForm={editForm}
               editing={editingId === biteId}
-              handle={handle}
+              handle={useBiteAuthor ? undefined : handle}
               liking={likingBiteIds.has(biteId)}
+              saveLoading={savingBiteIds.has(biteId)}
               saving={savingBiteId === biteId}
               onCancelEdit={onCancelEdit}
               onDelete={() => onDeleteBite(bite)}
               onEdit={() => onEditBite(bite)}
               onEditChange={onEditChange}
               onOpenBite={onOpenBite}
+              onOpenProfile={onOpenProfile}
               onPhotoChange={onPhotoChange}
               onSubmitComment={onSubmitComment}
               onToggleLike={onToggleLike}
+              onToggleSave={onToggleSave}
               onUpdate={() => onUpdateBite(bite)}
             />
           );

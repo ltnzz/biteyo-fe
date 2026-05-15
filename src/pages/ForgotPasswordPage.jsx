@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, ArrowLeft, Loader2, KeyRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from "../assets/logo.png";
+import { API_BASE } from "../utils/api";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -14,7 +15,7 @@ export default function ForgotPasswordPage() {
     setMessage({ type: '', text: '' });
 
     try {
-      const response = await fetch('https://biteyo-be.vercel.app/api/auth/forgot-password', {
+      const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

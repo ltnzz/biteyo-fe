@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { postBiteComment, toggleLikeBite } from "../services/feedApi";
+import { postBiteComment, toggleLikeBite, toggleSaveBite } from "../services/feedApi";
 import { getAuthHeaders } from "../utils/auth";
 import {
   getBiteComments,
@@ -7,6 +7,7 @@ import {
   getCommentCount,
   getLikeCount,
   isBiteLiked,
+  isBiteSaved,
   normalizeCreatedComment,
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
@@ -22,6 +23,8 @@ export const getBiteId = readBiteId;
 
 export const useBiteMutations = ({
   currentUser,
+  onSaveChange,
+  removeOnUnsave = false,
   refresh,
   setBites,
   setActionMessage,
@@ -38,6 +41,7 @@ export const useBiteMutations = ({
   const [savingBiteId, setSavingBiteId] = useState(null);
   const [deletingBiteId, setDeletingBiteId] = useState(null);
   const [likingBiteIds, setLikingBiteIds] = useState(() => new Set());
+  const [savingBiteIds, setSavingBiteIds] = useState(() => new Set());
   const [commentingBiteIds, setCommentingBiteIds] = useState(() => new Set());
   const [commentErrors, setCommentErrors] = useState({});
 
@@ -215,6 +219,66 @@ export const useBiteMutations = ({
     }
   };
 
+  const toggleSave = async (bite) => {
+    const biteId = getBiteId(bite);
+    if (!biteId || savingBiteIds.has(biteId)) return;
+
+    const wasSaved = isBiteSaved(bite, currentUser);
+    const nextSaved = !wasSaved;
+
+    setActionMessage({ type: "", text: "" });
+    setSavingBiteIds((prev) => new Set(prev).add(biteId));
+    updateBiteInState(biteId, (item) => ({
+      ...item,
+      isSaved: nextSaved,
+      saved: nextSaved,
+      savedByMe: nextSaved,
+      savedByCurrentUser: nextSaved,
+      bookmarked: nextSaved,
+      isBookmarked: nextSaved,
+    }));
+
+    try {
+      const data = await toggleSaveBite(biteId, nextSaved);
+      const updatedBite = normalizeUpdatedBite(data);
+
+      if (updatedBite && getBiteId(updatedBite)) {
+        updateBiteInState(biteId, (item) => ({ ...item, ...updatedBite }));
+      }
+
+      onSaveChange?.({
+        bite,
+        biteId,
+        saved: nextSaved,
+        updatedBite,
+      });
+
+      if (removeOnUnsave && !nextSaved) {
+        setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
+      }
+    } catch (err) {
+      updateBiteInState(biteId, (item) => ({
+        ...item,
+        isSaved: wasSaved,
+        saved: wasSaved,
+        savedByMe: wasSaved,
+        savedByCurrentUser: wasSaved,
+        bookmarked: wasSaved,
+        isBookmarked: wasSaved,
+      }));
+      setActionMessage({
+        type: "error",
+        text: err.message || "Gagal memperbarui saved bite.",
+      });
+    } finally {
+      setSavingBiteIds((prev) => {
+        const next = new Set(prev);
+        next.delete(biteId);
+        return next;
+      });
+    }
+  };
+
   const submitComment = async (bite, content) => {
     const biteId = getBiteId(bite);
     const cleanedContent = content?.trim();
@@ -279,6 +343,7 @@ export const useBiteMutations = ({
     savingBiteId,
     deletingBiteId,
     likingBiteIds,
+    savingBiteIds,
     commentingBiteIds,
     commentErrors,
     startEdit,
@@ -288,6 +353,7 @@ export const useBiteMutations = ({
     updateBite,
     deleteBite,
     toggleLike,
+    toggleSave,
     submitComment,
   };
 };

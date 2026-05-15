@@ -1,5 +1,8 @@
-export const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "https://biteyo-be.vercel.app";
+const normalizeBaseUrl = (value) => String(value || "").replace(/\/+$/, "");
+
+export const API_BASE = normalizeBaseUrl(
+  import.meta.env.VITE_API_BASE_URL || "https://biteyo-be.vercel.app",
+);
 
 export const parseApiError = async (response, fallback) => {
   const data = await response.json().catch(() => null);

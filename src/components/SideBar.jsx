@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { AlertCircle, Home, Search, Bell, User, LogOut, Loader2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { getUserProfile } from "../services/profileApi";
 import { postJson } from "../utils/api";
-import { AUTH_CHANGE_EVENT, clearAuth, getAuthHeaders, getStoredUser } from "../utils/auth";
+import { AUTH_CHANGE_EVENT, clearAuth, getAuthHeaders, getStoredUser, saveAuth } from "../utils/auth";
 import { unregisterFcmToken } from "../utils/notifications";
+import { getProfileAvatar, getProfileUsername } from "../utils/profile";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -15,6 +17,9 @@ export default function Sidebar() {
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [logoutError, setLogoutError] = useState("");
   const profileMenuRef = useRef(null);
+  const profileUsername = getProfileUsername(currentUser);
+  const profileAvatar = getProfileAvatar(currentUser);
+  const profileName = currentUser?.username || currentUser?.name || "BiteYo User";
 
   useEffect(() => {
     const readUser = () => {
@@ -49,6 +54,31 @@ export default function Sidebar() {
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [showDropdown]);
+
+  useEffect(() => {
+    if (!profileUsername) return undefined;
+
+    let ignore = false;
+
+    const loadProfile = async () => {
+      try {
+        const profile = await getUserProfile(profileUsername);
+        if (ignore || !profile) return;
+
+        const mergedUser = { ...(getStoredUser() || {}), ...profile };
+        setCurrentUser(mergedUser);
+        saveAuth({ user: mergedUser });
+      } catch (err) {
+        console.warn("Failed to load sidebar profile:", err);
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      ignore = true;
+    };
+  }, [profileUsername]);
 
   const handleLogout = async () => {
     setLogoutLoading(true);
@@ -142,17 +172,23 @@ export default function Sidebar() {
                 }}
                 className="flex items-center gap-3 p-3 rounded-full hover:bg-gray-50 transition-colors w-full"
               >
-                <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center shrink-0">
-                  <User className="w-5 h-5 text-pink-500" />
+                <div className="w-10 h-10 bg-pink-100 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+                  {profileAvatar ? (
+                    <img src={profileAvatar} alt={profileName} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-extrabold text-pink-500">
+                      {profileName.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
 
                 <div className="text-left overflow-hidden flex-1">
                   <p className="text-sm font-bold text-gray-900 truncate">
-                    {currentUser.username || currentUser.name}
+                    {profileName}
                   </p>
 
                   <p className="text-xs text-gray-500 truncate">
-                    @{currentUser.username}
+                    @{currentUser.username || profileUsername}
                   </p>
                 </div>
               </button>

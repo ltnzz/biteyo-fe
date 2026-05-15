@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import { API_BASE } from "../utils/api";
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -42,7 +43,7 @@ export default function ResetPasswordPage() {
 
     try {
       await axios.post(
-        `https://biteyo-be.vercel.app/api/auth/reset-password/${token}`,
+        `${API_BASE}/api/auth/reset-password/${token}`,
         { password: formData.password, confirm_password: formData.confirm_password, }
       );
 

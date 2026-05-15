@@ -7,6 +7,30 @@ export const normalizeProfile = (data) =>
   data ||
   null;
 
+const mediaFields = [
+  "avatar",
+  "avatarUrl",
+  "imageUrl",
+  "photoUrl",
+  "profileImage",
+  "profileImageUrl",
+  "profilePicture",
+  "profilePictureUrl",
+  "profilePic",
+  "picture",
+];
+
+const getFirstString = (value, fields) => {
+  if (!value || typeof value !== "object") return "";
+
+  return fields.map((field) => value[field]).find((item) => typeof item === "string" && item) || "";
+};
+
+export const getProfileAvatar = (profile) => getFirstString(profile, mediaFields);
+
+export const getProfileBanner = (profile) =>
+  getFirstString(profile, ["banner", "bannerUrl", "coverImage", "coverImageUrl"]);
+
 export const formatProfileDate = (date) => {
   if (!date) return "";
 
@@ -25,8 +49,8 @@ export const getProfileViewModel = (profile, fallbackUsername) => {
   return {
     displayName,
     handle,
-    avatar: profile?.avatar || profile?.avatarUrl || profile?.photoUrl,
-    banner: profile?.banner || profile?.bannerUrl || profile?.coverImage,
+    avatar: getProfileAvatar(profile),
+    banner: getProfileBanner(profile),
     bio: profile?.bio || "Sharing every bite worth remembering.",
     location: profile?.location || profile?.locationName,
     joinedAt: profile?.createdAt || profile?.joinedAt,

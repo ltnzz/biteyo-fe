@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
-import { normalizeAuthResponse, postJson } from "../utils/api";
+import { API_BASE, normalizeAuthResponse, postJson } from "../utils/api";
 import { saveAuth } from "../utils/auth";
 
 // --- KOMPONEN INPUT (Diperbarui untuk menerima state) ---
@@ -81,7 +81,7 @@ export default function LoginPage() {
 
     try {
       const response = await axios.post(
-        "https://biteyo-be.vercel.app/api/auth/signin",
+        `${API_BASE}/api/auth/signin`,
         formData,
         { withCredentials: true },
       );

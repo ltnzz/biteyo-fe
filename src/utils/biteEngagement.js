@@ -1,3 +1,5 @@
+import { getProfileAvatar } from "./profile";
+
 export const getBiteId = (bite) => bite?._id || bite?.id || bite?.biteId || "";
 
 const getIdentityValues = (value) => {
@@ -70,6 +72,73 @@ export const isBiteLiked = (bite, currentUser) => {
     : false;
 };
 
+export const isBiteSaved = (bite, currentUser) => {
+  const explicit =
+    bite?.isSaved ??
+    bite?.saved ??
+    bite?.savedByMe ??
+    bite?.savedByCurrentUser ??
+    bite?.bookmarked ??
+    bite?.isBookmarked ??
+    bite?.hasSaved ??
+    bite?.hasBookmarked;
+
+  if (typeof explicit === "boolean") return explicit;
+
+  const savedUsers = bite?.savedBy || bite?.savedUsers || bite?.bookmarks;
+
+  return Array.isArray(savedUsers)
+    ? savedUsers.some((savedUser) => currentUserMatches(savedUser, currentUser))
+    : false;
+};
+
+export const getBiteAuthor = (bite) =>
+  bite?.user || bite?.author || bite?.createdBy || bite?.owner || null;
+
+export const getBiteAuthorName = (bite) => {
+  const author = getBiteAuthor(bite);
+
+  if (typeof author === "string") {
+    return bite?.username || bite?.authorName || bite?.createdByUsername || author;
+  }
+
+  return (
+    author?.username ||
+    author?.name ||
+    bite?.username ||
+    bite?.authorName ||
+    bite?.createdByUsername ||
+    "BiteYo User"
+  );
+};
+
+export const getBiteAuthorHandle = (bite) => {
+  const author = getBiteAuthor(bite);
+
+  if (typeof author === "string") {
+    return bite?.username || bite?.createdByUsername || author;
+  }
+
+  return author?.username || bite?.username || bite?.createdByUsername || "";
+};
+
+export const getBiteAuthorAvatar = (bite) => {
+  const author = getBiteAuthor(bite);
+  const authorAvatar =
+    author && typeof author === "object" ? getProfileAvatar(author) : "";
+
+  return (
+    authorAvatar ||
+    bite?.userAvatar ||
+    bite?.userAvatarUrl ||
+    bite?.authorAvatar ||
+    bite?.authorAvatarUrl ||
+    bite?.createdByAvatar ||
+    bite?.createdByAvatarUrl ||
+    ""
+  );
+};
+
 export const getCommentId = (comment) =>
   comment?._id || comment?.id || comment?.commentId || "";
 
@@ -88,6 +157,18 @@ export const getCommentAuthorName = (comment) => {
     comment?.authorName ||
     "User"
   );
+};
+
+export const getCommentAuthorHandle = (comment) => {
+  const author =
+    comment?.user ||
+    comment?.author ||
+    comment?.createdBy ||
+    comment?.fromUser;
+
+  if (typeof author === "string") return comment?.username || author;
+
+  return author?.username || comment?.username || comment?.authorName || "";
 };
 
 export const getCommentAuthorAvatar = (comment) => {

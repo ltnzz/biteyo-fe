@@ -194,7 +194,7 @@ export default function ExplorePage() {
     }
   }, [currentUser]);
 
-  const commentActions = useBiteMutations({
+  const biteActions = useBiteMutations({
     currentUser,
     refresh: fetchFeed,
     setActionMessage,
@@ -460,6 +460,10 @@ export default function ExplorePage() {
     if (biteId) navigate(`/bites/${biteId}`);
   };
 
+  const openUserProfile = (username) => {
+    if (username) navigate(`/profile/${encodeURIComponent(username)}`);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="flex w-full items-start justify-start px-4">
@@ -486,19 +490,22 @@ export default function ExplorePage() {
             getBiteId={getBiteId}
             getFollowKey={getFollowKey}
             canFollowBite={canFollowBite}
-            commentErrors={commentActions.commentErrors}
-            commentingBiteIds={commentActions.commentingBiteIds}
+            commentErrors={biteActions.commentErrors}
+            commentingBiteIds={biteActions.commentingBiteIds}
             likingBiteIds={likingBiteIds}
+            savingBiteIds={biteActions.savingBiteIds}
             savingId={savingId}
             onAddBite={() => navigate("/add")}
             onCancelEdit={cancelEdit}
             onDelete={handleDelete}
             onEditChange={handleEditChange}
             onOpenBite={openBiteDetail}
+            onOpenProfile={openUserProfile}
             onPhotoChange={setEditPhotoFile}
             onStartEdit={startEdit}
             onToggleLike={handleToggleLike}
-            onSubmitComment={commentActions.submitComment}
+            onToggleSave={biteActions.toggleSave}
+            onSubmitComment={biteActions.submitComment}
             onToggleFollow={toggleFollow}
             onUpdate={handleUpdate}
           />

@@ -30,6 +30,16 @@ const updateFollowerCount = (value, delta) => {
   return Math.max(0, count + delta);
 };
 
+const markBiteSaved = (bite) => ({
+  ...bite,
+  isSaved: true,
+  saved: true,
+  savedByMe: true,
+  savedByCurrentUser: true,
+  bookmarked: true,
+  isBookmarked: true,
+});
+
 export const useProfileData = (currentUser, routeUsername = "") => {
   const initialUsername = getProfileUsername(currentUser);
   const [ownUsername, setOwnUsername] = useState(initialUsername);
@@ -119,7 +129,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     setSavedError("");
 
     try {
-      setSavedBites(await getSavedBites());
+      setSavedBites((await getSavedBites()).map(markBiteSaved));
     } catch (err) {
       console.error("Saved bites error:", err);
       setSavedError(err.message || "Saved bites belum bisa dimuat.");

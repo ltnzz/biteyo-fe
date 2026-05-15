@@ -19,8 +19,12 @@ import {
 import { getStoredUser } from "../utils/auth";
 import {
   getBiteComments,
+  getBiteAuthorAvatar,
+  getBiteAuthorHandle,
+  getBiteAuthorName,
   getBiteId,
   getCommentAuthorAvatar,
+  getCommentAuthorHandle,
   getCommentAuthorName,
   getCommentContent,
   getCommentCount,
@@ -36,18 +40,6 @@ import {
   normalizeCategories,
   normalizeCategoryValue,
 } from "../utils/bites";
-
-const getAuthor = (bite) => bite?.user || bite?.author || bite?.createdBy || {};
-
-const getAuthorName = (bite) => {
-  const author = getAuthor(bite);
-
-  if (typeof author === "string") return author;
-
-  return author?.username || author?.name || bite?.username || "BiteYo User";
-};
-
-const getAuthorInitial = (bite) => getAuthorName(bite).charAt(0).toUpperCase();
 
 export default function BiteDetailPage() {
   const { biteId } = useParams();
@@ -208,12 +200,19 @@ export default function BiteDetailPage() {
     }
   };
 
+  const openUserProfile = (username) => {
+    if (username) navigate(`/profile/${encodeURIComponent(username)}`);
+  };
+
   const displayedComments = comments.length > 0 ? comments : getBiteComments(bite);
   const displayedCommentCount = Math.max(
     getCommentCount(bite),
     displayedComments.length,
   );
   const liked = isBiteLiked(bite, currentUser);
+  const biteAuthorName = bite ? getBiteAuthorName(bite) : "";
+  const biteAuthorHandle = bite ? getBiteAuthorHandle(bite) : "";
+  const biteAuthorAvatar = bite ? getBiteAuthorAvatar(bite) : "";
 
   return (
     <div className="min-h-screen bg-white">
@@ -255,12 +254,33 @@ export default function BiteDetailPage() {
           <>
             <article className="border-b border-gray-100 px-4 py-5">
               <div className="flex gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pink-100 text-sm font-extrabold text-pink-500">
-                  {getAuthorInitial(bite)}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => openUserProfile(biteAuthorHandle)}
+                  disabled={!biteAuthorHandle}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pink-100 text-sm font-extrabold text-pink-500 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
+                  aria-label={`Open ${biteAuthorName} profile`}
+                >
+                  {biteAuthorAvatar ? (
+                    <img
+                      src={biteAuthorAvatar}
+                      alt={biteAuthorName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    biteAuthorName.charAt(0).toUpperCase()
+                  )}
+                </button>
 
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-bold text-gray-900">{getAuthorName(bite)}</h2>
+                  <button
+                    type="button"
+                    onClick={() => openUserProfile(biteAuthorHandle)}
+                    disabled={!biteAuthorHandle}
+                    className="text-left font-bold text-gray-900 transition-colors hover:text-pink-500 disabled:hover:text-gray-900"
+                  >
+                    {biteAuthorName}
+                  </button>
                   <p className="text-xs text-gray-500">
                     {bite.locationName || bite.location || "Unknown location"}
                   </p>
@@ -385,10 +405,17 @@ export default function BiteDetailPage() {
                     getCommentId(comment) || `${getCommentContent(comment)}-${index}`;
                   const authorAvatar = getCommentAuthorAvatar(comment);
                   const authorName = getCommentAuthorName(comment);
+                  const authorHandle = getCommentAuthorHandle(comment);
 
                   return (
                     <article key={commentId} className="flex gap-3 px-4 py-4">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xs font-bold text-gray-600">
+                      <button
+                        type="button"
+                        onClick={() => openUserProfile(authorHandle)}
+                        disabled={!authorHandle}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xs font-bold text-gray-600 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
+                        aria-label={`Open ${authorName} profile`}
+                      >
                         {authorAvatar ? (
                           <img
                             src={authorAvatar}
@@ -398,11 +425,16 @@ export default function BiteDetailPage() {
                         ) : (
                           authorName.charAt(0).toUpperCase()
                         )}
-                      </div>
+                      </button>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-bold text-gray-900">
+                        <button
+                          type="button"
+                          onClick={() => openUserProfile(authorHandle)}
+                          disabled={!authorHandle}
+                          className="text-left text-sm font-bold text-gray-900 transition-colors hover:text-pink-500 disabled:hover:text-gray-900"
+                        >
                           {authorName}
-                        </h3>
+                        </button>
                         <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-gray-700">
                           {getCommentContent(comment)}
                         </p>

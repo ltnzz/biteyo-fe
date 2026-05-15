@@ -1,4 +1,4 @@
-import { Heart, Loader2, MessageCircle, Pencil, Star, Trash2 } from "lucide-react";
+import { Bookmark, Heart, Loader2, MessageCircle, Pencil, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import {
   getCategoryLabel,
@@ -6,9 +6,13 @@ import {
   normalizeCategoryValue,
 } from "../../utils/bites";
 import {
+  getBiteAuthorAvatar,
+  getBiteAuthorHandle,
+  getBiteAuthorName,
   getCommentCount,
   getLikeCount,
   isBiteLiked,
+  isBiteSaved,
 } from "../../utils/biteEngagement";
 import BiteCommentBox from "../BiteCommentBox";
 import BiteEditForm from "./BiteEditForm";
@@ -26,24 +30,36 @@ export default function ProfileBiteCard({
   editing,
   handle,
   liking = false,
+  saveLoading = false,
   saving,
   onCancelEdit,
   onDelete,
   onEdit,
   onEditChange,
   onOpenBite,
+  onOpenProfile,
   onPhotoChange,
   onSubmitComment,
   onToggleLike,
+  onToggleSave,
   onUpdate,
 }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const liked = isBiteLiked(bite, currentUser);
+  const saved = isBiteSaved(bite, currentUser);
+  const authorName = displayName || getBiteAuthorName(bite);
+  const authorHandle = handle || getBiteAuthorHandle(bite);
+  const authorAvatar = avatar || getBiteAuthorAvatar(bite);
 
   const handleOpenBite = () => {
     if (editing) return;
 
     onOpenBite?.(bite);
+  };
+
+  const handleOpenProfile = (event) => {
+    event.stopPropagation();
+    if (authorHandle) onOpenProfile?.(authorHandle);
   };
 
   return (
@@ -52,22 +68,36 @@ export default function ProfileBiteCard({
       className="cursor-pointer border-b border-gray-100 px-4 py-4 transition-colors hover:bg-gray-50/70"
     >
       <div className="flex gap-3">
-        <div className="w-11 h-11 rounded-full bg-pink-100 overflow-hidden flex items-center justify-center shrink-0">
-          {avatar ? (
-            <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
+        <button
+          type="button"
+          onClick={handleOpenProfile}
+          disabled={!authorHandle}
+          className="w-11 h-11 rounded-full bg-pink-100 overflow-hidden flex items-center justify-center shrink-0 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
+          aria-label={`Open ${authorName} profile`}
+        >
+          {authorAvatar ? (
+            <img src={authorAvatar} alt={authorName} className="w-full h-full object-cover" />
           ) : (
             <span className="text-sm font-extrabold text-pink-500">
-              {displayName.charAt(0).toUpperCase()}
+              {authorName.charAt(0).toUpperCase()}
             </span>
           )}
-        </div>
+        </button>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="font-bold text-gray-900 truncate">{displayName}</h2>
+              <button
+                type="button"
+                onClick={handleOpenProfile}
+                disabled={!authorHandle}
+                className="block max-w-full truncate text-left font-bold text-gray-900 transition-colors hover:text-pink-500 disabled:hover:text-gray-900"
+              >
+                {authorName}
+              </button>
               <p className="text-xs text-gray-500 truncate">
-                @{handle} - {bite.locationName || bite.location || "Unknown location"}
+                {authorHandle ? `@${authorHandle} - ` : ""}
+                {bite.locationName || bite.location || "Unknown location"}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -178,6 +208,24 @@ export default function ProfileBiteCard({
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
+                    onToggleSave?.(bite);
+                  }}
+                  disabled={saveLoading}
+                  className={`flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                    saved ? "text-pink-500" : "hover:text-pink-500"
+                  }`}
+                  aria-label={saved ? "Unsave bite" : "Save bite"}
+                >
+                  {saveLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Bookmark className={`w-4 h-4 ${saved ? "fill-current" : ""}`} />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
                     setCommentsOpen((open) => !open);
                   }}
                   className={`flex items-center gap-1.5 text-sm transition-colors ${
@@ -195,6 +243,7 @@ export default function ProfileBiteCard({
                 <BiteCommentBox
                   bite={bite}
                   error={commentError}
+                  onOpenProfile={onOpenProfile}
                   submitting={commenting}
                   onSubmitComment={onSubmitComment}
                 />

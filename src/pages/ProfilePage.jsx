@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { AlertCircle, Loader2, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import ActionMessage from "../components/profile/ActionMessage";
@@ -11,6 +11,7 @@ import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
 import { useProfileData } from "../hooks/useProfileData";
 import { getStoredUser } from "../utils/auth";
+import { getBiteId } from "../utils/biteEngagement";
 import { getProfileViewModel } from "../utils/profile";
 
 export default function ProfilePage() {
@@ -49,15 +50,48 @@ export default function ProfilePage() {
     toggleFollow,
     updateProfileForm,
   } = useProfileData(currentUser, username);
+  const syncSavedBites = useCallback(
+    ({ bite, biteId, saved, updatedBite }) => {
+      const nextBite = {
+        ...bite,
+        ...(updatedBite || {}),
+        isSaved: saved,
+        saved,
+        savedByMe: saved,
+        savedByCurrentUser: saved,
+        bookmarked: saved,
+        isBookmarked: saved,
+      };
+
+      setBites((prev) =>
+        prev.map((item) =>
+          getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
+        ),
+      );
+      setSavedBites((prev) => {
+        if (!saved) return prev.filter((item) => getBiteId(item) !== biteId);
+
+        return prev.some((item) => getBiteId(item) === biteId)
+          ? prev.map((item) =>
+              getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
+            )
+          : [nextBite, ...prev];
+      });
+    },
+    [setBites, setSavedBites],
+  );
   const biteActions = useBiteMutations({
     currentUser,
+    onSaveChange: syncSavedBites,
     refresh: fetchUserBites,
     setActionMessage,
     setBites,
   });
   const savedBiteActions = useBiteMutations({
     currentUser,
+    onSaveChange: syncSavedBites,
     refresh: fetchSavedBites,
+    removeOnUnsave: true,
     setActionMessage,
     setBites: setSavedBites,
   });
@@ -134,6 +168,10 @@ export default function ProfilePage() {
   const openBiteDetail = (bite) => {
     const biteId = bite?._id || bite?.id || bite?.biteId;
     if (biteId) navigate(`/bites/${biteId}`);
+  };
+
+  const openUserProfile = (targetUsername) => {
+    if (targetUsername) navigate(`/profile/${encodeURIComponent(targetUsername)}`);
   };
 
   const renderProfileState = (type) => {
@@ -232,6 +270,7 @@ export default function ProfilePage() {
                 commentErrors={biteActions.commentErrors}
                 commentingBiteIds={biteActions.commentingBiteIds}
                 likingBiteIds={biteActions.likingBiteIds}
+                savingBiteIds={biteActions.savingBiteIds}
                 loading={bitesLoading}
                 currentUser={currentUser}
                 savingBiteId={biteActions.savingBiteId}
@@ -241,10 +280,12 @@ export default function ProfilePage() {
                 onEditBite={biteActions.startEdit}
                 onEditChange={biteActions.updateEditForm}
                 onOpenBite={openBiteDetail}
+                onOpenProfile={openUserProfile}
                 onPhotoChange={biteActions.setEditPhotoFile}
                 onRetry={fetchUserBites}
                 onSubmitComment={biteActions.submitComment}
                 onToggleLike={biteActions.toggleLike}
+                onToggleSave={biteActions.toggleSave}
                 onUpdateBite={biteActions.updateBite}
               />
             ) : resolvedActiveTab === "save" ? (
@@ -260,12 +301,16 @@ export default function ProfilePage() {
                 commentErrors={savedBiteActions.commentErrors}
                 commentingBiteIds={savedBiteActions.commentingBiteIds}
                 likingBiteIds={savedBiteActions.likingBiteIds}
+                savingBiteIds={savedBiteActions.savingBiteIds}
                 loading={savedLoading}
                 currentUser={currentUser}
+                useBiteAuthor
                 onOpenBite={openBiteDetail}
+                onOpenProfile={openUserProfile}
                 onRetry={fetchSavedBites}
                 onSubmitComment={savedBiteActions.submitComment}
                 onToggleLike={savedBiteActions.toggleLike}
+                onToggleSave={savedBiteActions.toggleSave}
               />
             ) : (
               <ProfileTabPlaceholder type={resolvedActiveTab} />
