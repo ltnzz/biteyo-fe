@@ -8,8 +8,8 @@ import {
   NotificationErrorState,
   NotificationLoadingState,
 } from "../components/notifications/NotificationState";
-import socket from "../lib/socket";
-import { isAuthenticated } from "../utils/auth";
+import { supabase } from "../lib/supabase";
+import { getStoredUser, isAuthenticated } from "../utils/auth";
 import {
   deleteNotification,
   fetchNotifications,
@@ -56,22 +56,22 @@ export default function NotificationPage() {
   useEffect(() => {
     if (!hasSession) return undefined;
 
-    const refreshNotifications = () => {
-      loadNotifications();
+    const currentUser = getStoredUser();
+    const currentUserId =
+      currentUser?._id || currentUser?.id || currentUser?.userId || "";
+    const subscription = {
+      event: "*",
+      schema: "public",
+      table: "notifications",
+      ...(currentUserId ? { filter: `to_user_id=eq.${currentUserId}` } : {}),
     };
-
-    socket.on("notification_created", refreshNotifications);
-    socket.on("new_notification", refreshNotifications);
-    socket.on("bite_liked", refreshNotifications);
-    socket.on("new_comment", refreshNotifications);
-    socket.on("follow_status_updated", refreshNotifications);
+    const channel = supabase
+      .channel(`notifications-realtime-${crypto.randomUUID()}`)
+      .on("postgres_changes", subscription, loadNotifications)
+      .subscribe();
 
     return () => {
-      socket.off("notification_created", refreshNotifications);
-      socket.off("new_notification", refreshNotifications);
-      socket.off("bite_liked", refreshNotifications);
-      socket.off("new_comment", refreshNotifications);
-      socket.off("follow_status_updated", refreshNotifications);
+      supabase.removeChannel(channel);
     };
   }, [hasSession, loadNotifications]);
 
