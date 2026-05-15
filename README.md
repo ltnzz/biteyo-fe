@@ -1,16 +1,93 @@
-# React + Vite
+# Biteyo Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend untuk aplikasi Biteyo, dibangun menggunakan React, Vite, Tailwind CSS, React Router, Axios, Google OAuth, dan Socket.IO client.
 
-Currently, two official plugins are available:
+## Fitur Utama
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Autentikasi pengguna dengan email/password dan Google OAuth.
+- Halaman home, explore, detail bite, profil, notifikasi, dan tambah post.
+- Proteksi route untuk halaman yang membutuhkan login.
+- Integrasi API backend Biteyo.
+- Koneksi realtime menggunakan Socket.IO.
+- Konfigurasi deployment SPA untuk Vercel.
 
-## React Compiler
+## Teknologi
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- Vite
+- Tailwind CSS
+- React Router DOM
+- Axios
+- Socket.IO Client
+- Lucide React
 
-## Expanding the ESLint configuration
+## Persiapan
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Pastikan sudah menginstall:
+
+- Node.js
+- npm
+
+## Instalasi
+
+```bash
+npm install
+```
+
+## Environment Variable
+
+Buat file `.env.local` di root project jika ingin memakai konfigurasi lokal.
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+```
+
+## Menjalankan Project
+
+Jalankan mode development:
+
+```bash
+npm run dev
+```
+
+Build untuk production:
+
+```bash
+npm run build
+```
+
+Preview hasil build:
+
+```bash
+npm run preview
+```
+
+Menjalankan lint:
+
+```bash
+npm run lint
+```
+
+## Struktur Folder
+
+```txt
+src/
+  assets/       Asset gambar dan ikon
+  components/   Komponen UI reusable
+  constants/    Data konstan aplikasi
+  hooks/        Custom React hooks
+  lib/          Konfigurasi library eksternal
+  pages/        Halaman utama aplikasi
+  services/     Service untuk request API
+  utils/        Helper dan utility function
+```
+
+## Deployment
+
+Project ini sudah memiliki konfigurasi `vercel.json` untuk mendukung routing SPA di Vercel. Semua route akan diarahkan ke `index.html`.
+
+## Catatan
+
+Pastikan backend sudah berjalan dan environment variable sudah sesuai sebelum menggunakan fitur login, post, notifikasi, dan realtime.
