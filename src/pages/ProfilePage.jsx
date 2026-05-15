@@ -12,7 +12,11 @@ import { useFeedSocket } from "../hooks/useFeedSocket";
 import { useProfileData } from "../hooks/useProfileData";
 import { getStoredUser } from "../utils/auth";
 import { getBiteId } from "../utils/biteEngagement";
-import { getProfileViewModel } from "../utils/profile";
+import {
+  getFollowersCount,
+  getFollowingCount,
+  getProfileViewModel,
+} from "../utils/profile";
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -284,8 +288,8 @@ export default function ProfilePage() {
               displayName={displayName}
               editorOpen={editorOpen}
               followLoading={followLoading}
-              followersCount={profile?.followersCount}
-              followingCount={profile?.followingCount}
+              followersCount={getFollowersCount(profile)}
+              followingCount={getFollowingCount(profile)}
               handle={handle}
               isFollowing={isFollowing}
               isOwnProfile={isOwnProfile}

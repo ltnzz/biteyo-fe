@@ -11,7 +11,11 @@ import { getAuthHeaders, saveAuth } from "../utils/auth";
 import { API_BASE } from "../utils/bites";
 import { parseApiError } from "../utils/api";
 import { cacheFollowState } from "../utils/followState";
-import { getProfileUsername, normalizeProfile } from "../utils/profile";
+import {
+  getFollowersCount,
+  getProfileUsername,
+  normalizeProfile,
+} from "../utils/profile";
 
 const normalizeUsername = (username) => username?.trim().toLowerCase() || "";
 
@@ -254,7 +258,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
             isFollowing: !wasFollowing,
             following: !wasFollowing,
             followedByMe: !wasFollowing,
-            followersCount: updateFollowerCount(prev.followersCount, delta),
+            followersCount: updateFollowerCount(getFollowersCount(prev), delta),
           }
         : prev,
     );
@@ -268,6 +272,12 @@ export const useProfileData = (currentUser, routeUsername = "") => {
 
       if (updatedProfile) {
         setProfile((prev) => ({ ...prev, ...updatedProfile }));
+      } else {
+        const latestProfile = await getUserProfile(profileUsername);
+
+        if (latestProfile) {
+          setProfile((prev) => ({ ...prev, ...latestProfile }));
+        }
       }
     } catch (err) {
       setProfile((prev) =>
@@ -277,7 +287,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
               isFollowing: wasFollowing,
               following: wasFollowing,
               followedByMe: wasFollowing,
-              followersCount: updateFollowerCount(prev.followersCount, -delta),
+              followersCount: updateFollowerCount(getFollowersCount(prev), -delta),
             }
           : prev,
       );
