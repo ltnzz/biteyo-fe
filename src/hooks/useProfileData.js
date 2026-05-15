@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   followUser,
+  getLikedBites,
   getSavedBites,
   getUserBites,
   getUserProfile,
@@ -40,18 +41,29 @@ const markBiteSaved = (bite) => ({
   isBookmarked: true,
 });
 
+const markBiteLiked = (bite) => ({
+  ...bite,
+  isLiked: true,
+  liked: true,
+  likedByMe: true,
+  likedByCurrentUser: true,
+});
+
 export const useProfileData = (currentUser, routeUsername = "") => {
   const initialUsername = getProfileUsername(currentUser);
   const [ownUsername, setOwnUsername] = useState(initialUsername);
   const profileUsername = routeUsername || ownUsername;
   const [profile, setProfile] = useState(currentUser);
   const [bites, setBites] = useState([]);
+  const [likedBites, setLikedBites] = useState([]);
   const [savedBites, setSavedBites] = useState([]);
   const [profileLoading, setProfileLoading] = useState(Boolean(profileUsername));
   const [profileError, setProfileError] = useState("");
   const [profileNotFound, setProfileNotFound] = useState(false);
   const [bitesLoading, setBitesLoading] = useState(Boolean(profileUsername));
   const [bitesError, setBitesError] = useState("");
+  const [likedLoading, setLikedLoading] = useState(false);
+  const [likedError, setLikedError] = useState("");
   const [savedLoading, setSavedLoading] = useState(false);
   const [savedError, setSavedError] = useState("");
   const [profileForm, setProfileForm] = useState({
@@ -138,6 +150,22 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     }
   }, [isOwnProfile]);
 
+  const fetchLikedBites = useCallback(async () => {
+    if (!profileUsername) return;
+
+    setLikedLoading(true);
+    setLikedError("");
+
+    try {
+      setLikedBites((await getLikedBites(profileUsername)).map(markBiteLiked));
+    } catch (err) {
+      console.error("Liked bites error:", err);
+      setLikedError(err.message || "Liked bites belum bisa dimuat.");
+    } finally {
+      setLikedLoading(false);
+    }
+  }, [profileUsername]);
+
   useEffect(() => {
     fetchProfile();
     fetchUserBites();
@@ -146,6 +174,10 @@ export const useProfileData = (currentUser, routeUsername = "") => {
   useEffect(() => {
     fetchSavedBites();
   }, [fetchSavedBites]);
+
+  useEffect(() => {
+    fetchLikedBites();
+  }, [fetchLikedBites]);
 
   const updateProfileForm = (field, value) => {
     setProfileForm((prev) => ({ ...prev, [field]: value }));
@@ -260,8 +292,10 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     profileUsername,
     profile,
     bites,
+    likedBites,
     savedBites,
     setBites,
+    setLikedBites,
     setProfile,
     setSavedBites,
     loading: profileLoading,
@@ -271,6 +305,8 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     profileNotFound,
     bitesLoading,
     bitesError,
+    likedLoading,
+    likedError,
     savedLoading,
     savedError,
     isOwnProfile,
@@ -282,6 +318,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     savingProfile,
     fetchProfile,
     fetchUserBites,
+    fetchLikedBites,
     fetchSavedBites,
     toggleFollow,
     updateProfileForm,

@@ -23,6 +23,7 @@ export const getBiteId = readBiteId;
 
 export const useBiteMutations = ({
   currentUser,
+  onLikeChange,
   onSaveChange,
   removeOnUnsave = false,
   refresh,
@@ -196,6 +197,14 @@ export const useBiteMutations = ({
       if (updatedBite && getBiteId(updatedBite)) {
         updateBiteInState(biteId, (item) => ({ ...item, ...updatedBite }));
       }
+
+      onLikeChange?.({
+        bite,
+        biteId,
+        likeCount: updatedBite ? getLikeCount(updatedBite) : nextLikeCount,
+        liked: nextLiked,
+        updatedBite,
+      });
     } catch (err) {
       updateBiteInState(biteId, (item) => ({
         ...item,

@@ -26,12 +26,16 @@ export default function ProfilePage() {
     bitesError,
     bitesLoading,
     error,
+    fetchLikedBites,
     fetchSavedBites,
     fetchProfile,
     fetchUserBites,
     followLoading,
     isFollowing,
     isOwnProfile,
+    likedBites,
+    likedError,
+    likedLoading,
     loading,
     profile,
     profileForm,
@@ -45,6 +49,7 @@ export default function ProfilePage() {
     setAvatarFile,
     setBannerFile,
     setBites,
+    setLikedBites,
     setProfile,
     setSavedBites,
     toggleFollow,
@@ -68,6 +73,11 @@ export default function ProfilePage() {
           getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
         ),
       );
+      setLikedBites((prev) =>
+        prev.map((item) =>
+          getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
+        ),
+      );
       setSavedBites((prev) => {
         if (!saved) return prev.filter((item) => getBiteId(item) !== biteId);
 
@@ -78,10 +88,42 @@ export default function ProfilePage() {
           : [nextBite, ...prev];
       });
     },
-    [setBites, setSavedBites],
+    [setBites, setLikedBites, setSavedBites],
+  );
+  const syncLikedBites = useCallback(
+    ({ bite, biteId, liked, likeCount, updatedBite }) => {
+      const nextBite = {
+        ...bite,
+        ...(updatedBite || {}),
+        isLiked: liked,
+        liked,
+        likedByMe: liked,
+        likedByCurrentUser: liked,
+        likesCount: likeCount,
+        likeCount,
+      };
+      const syncList = (prev) =>
+        prev.map((item) =>
+          getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
+        );
+
+      setBites(syncList);
+      setSavedBites(syncList);
+      setLikedBites((prev) => {
+        if (!liked) return prev.filter((item) => getBiteId(item) !== biteId);
+
+        return prev.some((item) => getBiteId(item) === biteId)
+          ? prev.map((item) =>
+              getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
+            )
+          : [nextBite, ...prev];
+      });
+    },
+    [setBites, setLikedBites, setSavedBites],
   );
   const biteActions = useBiteMutations({
     currentUser,
+    onLikeChange: syncLikedBites,
     onSaveChange: syncSavedBites,
     refresh: fetchUserBites,
     setActionMessage,
@@ -89,11 +131,20 @@ export default function ProfilePage() {
   });
   const savedBiteActions = useBiteMutations({
     currentUser,
+    onLikeChange: syncLikedBites,
     onSaveChange: syncSavedBites,
     refresh: fetchSavedBites,
     removeOnUnsave: true,
     setActionMessage,
     setBites: setSavedBites,
+  });
+  const likedBiteActions = useBiteMutations({
+    currentUser,
+    onLikeChange: syncLikedBites,
+    onSaveChange: syncSavedBites,
+    refresh: fetchLikedBites,
+    setActionMessage,
+    setBites: setLikedBites,
   });
   const resolvedActiveTab = !isOwnProfile && activeTab === "save" ? "posts" : activeTab;
   const acceptsProfileBite = (bite) => {
@@ -124,6 +175,7 @@ export default function ProfilePage() {
     setProfile,
   });
   useFeedSocket(savedBites, setSavedBites, { acceptNewBite: () => false });
+  useFeedSocket(likedBites, setLikedBites, { acceptNewBite: () => false });
 
   if (!profileUsername) return <LoginRequired />;
 
@@ -311,6 +363,30 @@ export default function ProfilePage() {
                 onSubmitComment={savedBiteActions.submitComment}
                 onToggleLike={savedBiteActions.toggleLike}
                 onToggleSave={savedBiteActions.toggleSave}
+              />
+            ) : resolvedActiveTab === "likes" ? (
+              <ProfileTimeline
+                avatar={avatar}
+                bites={likedBites}
+                canManage={false}
+                displayName={displayName}
+                emptyDescription="Bite yang kamu sukai akan muncul di sini."
+                emptyTitle="Belum ada likes"
+                error={likedError}
+                handle={handle}
+                commentErrors={likedBiteActions.commentErrors}
+                commentingBiteIds={likedBiteActions.commentingBiteIds}
+                likingBiteIds={likedBiteActions.likingBiteIds}
+                savingBiteIds={likedBiteActions.savingBiteIds}
+                loading={likedLoading}
+                currentUser={currentUser}
+                useBiteAuthor
+                onOpenBite={openBiteDetail}
+                onOpenProfile={openUserProfile}
+                onRetry={fetchLikedBites}
+                onSubmitComment={likedBiteActions.submitComment}
+                onToggleLike={likedBiteActions.toggleLike}
+                onToggleSave={likedBiteActions.toggleSave}
               />
             ) : (
               <ProfileTabPlaceholder type={resolvedActiveTab} />

@@ -66,6 +66,34 @@ export const getSavedBites = async () => {
   return normalizeBites(data);
 };
 
+export const getLikedBites = async (username = "") => {
+  const paths = username
+    ? [
+        `/api/profile/${encodeURIComponent(username)}/likes`,
+        `/api/profile/${encodeURIComponent(username)}/liked`,
+      ]
+    : ["/api/profile/likes", "/api/profile/liked"];
+
+  let lastError = null;
+
+  for (const path of paths) {
+    try {
+      const data = await requestJson(path, {
+        fallback: "Failed to load liked bites",
+        allowNotFound: true,
+      });
+
+      if (data !== null) return normalizeBites(data);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  if (lastError) throw lastError;
+
+  return [];
+};
+
 export const followUser = async (username) => {
   if (!username) throw new Error("Username is required.");
 
