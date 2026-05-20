@@ -16,6 +16,7 @@ import {
   postBiteComment,
   toggleLikeBite,
 } from "../services/feedApi";
+import { broadcastFeedChange } from "../services/feedRealtime";
 import { getStoredUser } from "../utils/auth";
 import {
   getBiteComments,
@@ -139,6 +140,7 @@ export default function BiteDetailPage() {
       const updatedBite = normalizeUpdatedBite(data);
 
       if (updatedBite) setBite((prev) => ({ ...prev, ...updatedBite }));
+      broadcastFeedChange({ type: "refresh", biteId: getBiteId(bite) });
     } catch {
       setBite((prev) => ({
         ...prev,
@@ -192,6 +194,7 @@ export default function BiteDetailPage() {
         returnedComments.length > 0 ? returnedComments : [...prev, nextComment],
       );
       setCommentDraft("");
+      broadcastFeedChange({ type: "refresh", biteId: getBiteId(bite) });
       loadComments();
     } catch (err) {
       setCommentError(err.message || "Gagal mengirim komentar.");

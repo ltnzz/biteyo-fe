@@ -1,149 +1,81 @@
 import { useEffect, useRef } from "react";
-import socket from "../lib/socket";
-import {
-  getBiteComments,
-  getBiteId,
-  getCommentCount,
-  getCommentId,
-  getLikeCount,
-  normalizeUpdatedBite,
-} from "../utils/biteEngagement";
+import { getBiteDetail } from "../services/feedApi";
+import { subscribeToFeedChanges } from "../services/feedRealtime";
+import { supabase } from "../lib/supabase";
+import { getStoredUser } from "../utils/auth";
+import { getBiteId } from "../utils/biteEngagement";
 import { toFollowKey } from "../utils/followState";
 
 const isDevelopment = import.meta.env.DEV;
 
-const logSocketEvent = (event, payload) => {
-  if (isDevelopment) console.log(`[socket] ${event}`, payload);
+const logRealtimeEvent = (table, payload) => {
+  if (isDevelopment) console.log(`[supabase:${table}]`, payload);
 };
 
-const getPayloadBite = (payload) =>
-  normalizeUpdatedBite(payload) ||
-  normalizeUpdatedBite(payload?.bite) ||
-  normalizeUpdatedBite(payload?.data?.bite);
+const getCurrentUserId = () => {
+  const currentUser = getStoredUser();
+  return currentUser?._id || currentUser?.id || currentUser?.userId || "";
+};
 
-const getPayloadBiteId = (payload) =>
-  getBiteId(getPayloadBite(payload)) ||
-  payload?.biteId ||
-  payload?.id ||
-  payload?._id ||
-  payload?.data?.biteId ||
-  payload?.data?.id ||
+const getChangedBiteId = (payload) =>
+  payload?.new?.bite_id ||
+  payload?.old?.bite_id ||
+  payload?.new?.id ||
+  payload?.old?.id ||
   "";
 
-const getUserIdentityValues = (value) => {
-  if (!value) return [];
-  if (typeof value === "string" || typeof value === "number") return [String(value)];
+const refreshBite = async (biteId, setFeed) => {
+  if (!biteId) return;
 
-  return [
-    value._id,
-    value.id,
-    value.userId,
-    value.username,
-    value.email,
-  ].filter(Boolean).map(String);
+  try {
+    const updatedBite = await getBiteDetail(biteId);
+
+    if (!updatedBite || !getBiteId(updatedBite)) return;
+
+    setFeed((prev) =>
+      prev.map((bite) =>
+        getBiteId(bite) === biteId ? { ...bite, ...updatedBite } : bite,
+      ),
+    );
+  } catch (error) {
+    if (isDevelopment) console.warn("[supabase] gagal refresh bite", error);
+  }
 };
 
-const sameIdentity = (a, b) => {
-  const left = getUserIdentityValues(a).map((value) => value.toLowerCase());
-  const right = getUserIdentityValues(b).map((value) => value.toLowerCase());
+const insertBite = async (biteId, setFeed, acceptNewBite) => {
+  if (!biteId) return;
 
-  return left.some((value) => right.includes(value));
+  try {
+    const bite = await getBiteDetail(biteId);
+    if (!bite || !getBiteId(bite)) return;
+    if (acceptNewBite && !acceptNewBite(bite)) return;
+
+    setFeed((prev) =>
+      prev.some((item) => getBiteId(item) === biteId)
+        ? prev
+        : [bite, ...prev],
+    );
+  } catch (error) {
+    if (isDevelopment) console.warn("[supabase] gagal ambil bite baru", error);
+  }
 };
 
-const mergeBite = (bite, updates) => {
-  if (!updates) return bite;
+const fetchUsername = async (userId) => {
+  if (!userId) return "";
 
-  return {
-    ...bite,
-    ...updates,
-  };
+  const { data, error } = await supabase
+    .from("users")
+    .select("username")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    if (isDevelopment) console.warn("[supabase] gagal ambil username", error);
+    return "";
+  }
+
+  return data?.username || "";
 };
-
-const setLikeState = (bite, payload, liked) => {
-  const nextCount = payload?.likesCount ?? payload?.likeCount ?? getLikeCount(bite);
-
-  return {
-    ...bite,
-    isLiked: liked,
-    liked,
-    likedByMe: liked,
-    likedByCurrentUser: liked,
-    likesCount: nextCount,
-    likeCount: nextCount,
-  };
-};
-
-const setEngagementState = (bite, payload) => {
-  const likesCount = payload?.likesCount ?? payload?.likeCount ?? getLikeCount(bite);
-  const commentsCount =
-    payload?.commentsCount ?? payload?.commentCount ?? getCommentCount(bite);
-
-  return {
-    ...bite,
-    likesCount,
-    likeCount: likesCount,
-    commentsCount,
-    commentCount: commentsCount,
-  };
-};
-
-const getCommentPayload = (payload) =>
-  payload?.comment ||
-  payload?.data?.comment ||
-  payload?.data ||
-  payload;
-
-const appendComment = (bite, payload) => {
-  const comment = getCommentPayload(payload);
-  const commentId = getCommentId(comment);
-  const comments = getBiteComments(bite);
-  const hasComment =
-    commentId && comments.some((item) => getCommentId(item) === commentId);
-  const nextComments = hasComment ? comments : [...comments, comment];
-  const nextCount =
-    payload?.commentsCount ??
-    payload?.commentCount ??
-    Math.max(getCommentCount(bite) + (hasComment ? 0 : 1), nextComments.length);
-
-  return {
-    ...bite,
-    comments: nextComments,
-    commentsCount: nextCount,
-    commentCount: nextCount,
-  };
-};
-
-const getFollowTargetValues = (payload) =>
-  [
-    payload?.user,
-    payload?.targetUser,
-    payload?.followedUser,
-    payload?.following,
-    payload?.profile,
-    payload?.username,
-    payload?.userId,
-    payload?.targetUserId,
-    payload?.data?.user,
-    payload?.data?.targetUser,
-    payload?.data?.username,
-    payload?.data?.userId,
-  ].flatMap(getUserIdentityValues);
-
-const getFollowState = (payload) =>
-  Boolean(
-    payload?.isFollowing ??
-      payload?.following ??
-      payload?.followedByMe ??
-      payload?.is_following ??
-      payload?.data?.isFollowing ??
-      payload?.data?.following,
-  );
-
-const getFollowCount = (payload) =>
-  payload?.followersCount ??
-  payload?.followerCount ??
-  payload?.data?.followersCount ??
-  payload?.data?.followerCount;
 
 export const useFeedSocket = (
   feed,
@@ -169,149 +101,135 @@ export const useFeedSocket = (
   useEffect(() => {
     if (!setFeed) return undefined;
 
-    const handleNewBite = (payload) => {
-      logSocketEvent("new_bite", payload);
-      const bite = getPayloadBite(payload) || payload;
-      const biteId = getBiteId(bite);
+    const currentUserId = getCurrentUserId();
+    const channel = supabase.channel(`feed-realtime-${crypto.randomUUID()}`);
+    const unsubscribeFeedChanges = subscribeToFeedChanges((payload) => {
+      const biteId = payload?.biteId;
 
-      if (!biteId) return;
-      if (acceptNewBiteRef.current && !acceptNewBiteRef.current(bite)) return;
-
-      setFeed((prev) => {
-        if (prev.some((item) => getBiteId(item) === biteId)) return prev;
-        return [bite, ...prev];
-      });
-    };
-
-    const handleUpdateBite = (payload) => {
-      logSocketEvent("update_bite", payload);
-      const updated = getPayloadBite(payload) || payload;
-      const biteId = getPayloadBiteId(payload);
-
-      if (!biteId) return;
-
-      setFeed((prev) =>
-        prev.map((bite) =>
-          getBiteId(bite) === biteId ? mergeBite(bite, updated) : bite,
-        ),
-      );
-    };
-
-    const handleDeleteBite = (payload) => {
-      logSocketEvent("delete_bite", payload);
-      const biteId = getPayloadBiteId(payload);
-
-      if (!biteId) return;
-      setFeed((prev) => prev.filter((bite) => getBiteId(bite) !== biteId));
-    };
-
-    const handleBiteLiked = (payload) => {
-      logSocketEvent("bite_liked", payload);
-      const biteId = getPayloadBiteId(payload);
-
-      if (!biteId) return;
-      setFeed((prev) =>
-        prev.map((bite) =>
-          getBiteId(bite) === biteId ? setLikeState(bite, payload, true) : bite,
-        ),
-      );
-    };
-
-    const handleBiteUnliked = (payload) => {
-      logSocketEvent("bite_unliked", payload);
-      const biteId = getPayloadBiteId(payload);
-
-      if (!biteId) return;
-      setFeed((prev) =>
-        prev.map((bite) =>
-          getBiteId(bite) === biteId ? setLikeState(bite, payload, false) : bite,
-        ),
-      );
-    };
-
-    const handleEngagementUpdated = (payload) => {
-      logSocketEvent("bite_engagement_updated", payload);
-      const biteId = getPayloadBiteId(payload);
-
-      if (!biteId) return;
-      setFeed((prev) =>
-        prev.map((bite) =>
-          getBiteId(bite) === biteId ? setEngagementState(bite, payload) : bite,
-        ),
-      );
-    };
-
-    const handleNewComment = (payload) => {
-      logSocketEvent("new_comment", payload);
-      const biteId = getPayloadBiteId(payload);
-      const updated = getPayloadBite(payload);
-
-      if (!biteId) return;
-      setFeed((prev) =>
-        prev.map((bite) =>
-          getBiteId(bite) === biteId
-            ? updated && getBiteId(updated)
-              ? mergeBite(bite, updated)
-              : appendComment(bite, payload)
-            : bite,
-        ),
-      );
-    };
-
-    const handleFollowStatusUpdated = (payload) => {
-      logSocketEvent("follow_status_updated", payload);
-      const targetValues = getFollowTargetValues(payload);
-      const isFollowing = getFollowState(payload);
-
-      if (setFollowingUsers) {
-        setFollowingUsers((prev) => {
-          const next = new Set(prev);
-          targetValues.forEach((value) => {
-            const followKey = toFollowKey(value);
-            if (!followKey) return;
-
-            if (isFollowing) next.add(followKey);
-            else next.delete(followKey);
-          });
-          return next;
-        });
+      if (payload?.type === "create") {
+        insertBite(biteId, setFeed, acceptNewBiteRef.current);
       }
 
-      if (setProfile && profile && targetValues.some((value) => sameIdentity(value, profile))) {
-        setProfile((prev) => {
-          if (!prev) return prev;
-
-          const followersCount = getFollowCount(payload) ?? prev.followersCount;
-
-          return {
-            ...prev,
-            isFollowing,
-            following: isFollowing,
-            followedByMe: isFollowing,
-            followersCount,
-          };
-        });
+      if (payload?.type === "refresh") {
+        refreshBite(biteId, setFeed);
       }
-    };
 
-    socket.on("new_bite", handleNewBite);
-    socket.on("update_bite", handleUpdateBite);
-    socket.on("delete_bite", handleDeleteBite);
-    socket.on("bite_liked", handleBiteLiked);
-    socket.on("bite_unliked", handleBiteUnliked);
-    socket.on("bite_engagement_updated", handleEngagementUpdated);
-    socket.on("new_comment", handleNewComment);
-    socket.on("follow_status_updated", handleFollowStatusUpdated);
+      if (payload?.type === "delete" && biteId) {
+        setFeed((prev) => prev.filter((bite) => getBiteId(bite) !== biteId));
+      }
+    });
+
+    channel
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "bites" },
+        (payload) => {
+          logRealtimeEvent("bites:insert", payload);
+          insertBite(payload.new?.id, setFeed, acceptNewBiteRef.current);
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "bites" },
+        (payload) => {
+          logRealtimeEvent("bites:update", payload);
+          refreshBite(payload.new?.id, setFeed);
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "bites" },
+        (payload) => {
+          logRealtimeEvent("bites:delete", payload);
+          const biteId = payload.old?.id;
+          if (!biteId) return;
+
+          setFeed((prev) => prev.filter((bite) => getBiteId(bite) !== biteId));
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "likes" },
+        (payload) => {
+          logRealtimeEvent("likes", payload);
+          refreshBite(getChangedBiteId(payload), setFeed);
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "comments" },
+        (payload) => {
+          logRealtimeEvent("comments", payload);
+          refreshBite(getChangedBiteId(payload), setFeed);
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "follows" },
+        async (payload) => {
+          logRealtimeEvent("follows", payload);
+          const row = payload.new || payload.old;
+          if (!row) return;
+
+          const isFollowing = payload.eventType === "INSERT";
+          const followerId = row.follower_id;
+          const followingId = row.following_id;
+
+          if (setFollowingUsers && currentUserId && followerId === currentUserId) {
+            const username = await fetchUsername(followingId);
+            const followKey = toFollowKey(username);
+
+            if (followKey) {
+              setFollowingUsers((prev) => {
+                const next = new Set(prev);
+                if (isFollowing) next.add(followKey);
+                else next.delete(followKey);
+                return next;
+              });
+            }
+          }
+
+          const profileId = profile?._id || profile?.id || profile?.userId || "";
+          if (setProfile && profileId && (followingId === profileId || followerId === profileId)) {
+            setProfile((prev) => {
+              if (!prev) return prev;
+
+              const previousFollowersCount = Number(prev.followersCount || 0);
+              const previousFollowingCount = Number(prev.followingCount || 0);
+              const followersCount = Math.max(
+                0,
+                previousFollowersCount +
+                  (followingId === profileId ? (isFollowing ? 1 : -1) : 0),
+              );
+              const followingCount = Math.max(
+                0,
+                previousFollowingCount +
+                  (followerId === profileId ? (isFollowing ? 1 : -1) : 0),
+              );
+              const isOwnFollowChange =
+                Boolean(currentUserId) && followerId === currentUserId;
+
+              return {
+                ...prev,
+                ...(isOwnFollowChange
+                  ? {
+                      isFollowing,
+                      following: isFollowing,
+                      followedByMe: isFollowing,
+                    }
+                  : {}),
+                followersCount,
+                followingCount,
+              };
+            });
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
-      socket.off("new_bite", handleNewBite);
-      socket.off("update_bite", handleUpdateBite);
-      socket.off("delete_bite", handleDeleteBite);
-      socket.off("bite_liked", handleBiteLiked);
-      socket.off("bite_unliked", handleBiteUnliked);
-      socket.off("bite_engagement_updated", handleEngagementUpdated);
-      socket.off("new_comment", handleNewComment);
-      socket.off("follow_status_updated", handleFollowStatusUpdated);
+      unsubscribeFeedChanges();
+      supabase.removeChannel(channel);
     };
   }, [profile, setFeed, setFollowingUsers, setProfile]);
 };

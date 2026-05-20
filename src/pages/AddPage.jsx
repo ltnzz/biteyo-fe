@@ -6,6 +6,9 @@ import {
   API_BASE,
   biteCategories,
 } from "../utils/bites";
+import { broadcastFeedChange } from "../services/feedRealtime";
+import { getBiteId, normalizeUpdatedBite } from "../utils/biteEngagement";
+import { compressImageFile } from "../utils/imageCompression";
 
 export default function AddPage() {
   const navigate = useNavigate();
@@ -65,7 +68,9 @@ export default function AddPage() {
       formData.append("review", review);
       formData.append("rating", rating);
       formData.append("category", selectedCategory);
-      if (photoFile) formData.append("photo", photoFile);
+      if (photoFile) {
+        formData.append("photo", await compressImageFile(photoFile));
+      }
 
       const res = await fetch(`${API_BASE}/api/feed/bites`, {
         method: "POST",
@@ -79,7 +84,14 @@ export default function AddPage() {
         throw new Error(errData.message || "Failed to save bite");
       }
 
-      await res.json().catch(() => null);
+      const data = await res.json().catch(() => null);
+      const createdBite = normalizeUpdatedBite(data);
+      const createdBiteId = getBiteId(createdBite);
+
+      if (createdBiteId) {
+        broadcastFeedChange({ type: "create", biteId: createdBiteId });
+      }
+
       setMessage({
         type: "success",
         text: "Bite posted successfully!",

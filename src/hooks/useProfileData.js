@@ -11,6 +11,7 @@ import { getAuthHeaders, saveAuth } from "../utils/auth";
 import { API_BASE } from "../utils/bites";
 import { parseApiError } from "../utils/api";
 import { cacheFollowState } from "../utils/followState";
+import { compressImageFile } from "../utils/imageCompression";
 import { getProfileUsername, normalizeProfile } from "../utils/profile";
 
 const normalizeUsername = (username) => username?.trim().toLowerCase() || "";
@@ -206,8 +207,8 @@ export const useProfileData = (currentUser, routeUsername = "") => {
         const formData = new FormData();
         formData.append("username", payload.username);
         formData.append("bio", payload.bio);
-        if (avatarFile) formData.append("avatar", avatarFile);
-        if (bannerFile) formData.append("banner", bannerFile);
+        if (avatarFile) formData.append("avatar", await compressImageFile(avatarFile));
+        if (bannerFile) formData.append("banner", await compressImageFile(bannerFile));
 
         body = formData;
         headers = getAuthHeaders();

@@ -9,6 +9,7 @@ import LocationResults from "../components/explore/LocationResults";
 import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
 import { toggleLikeBite } from "../services/feedApi";
+import { broadcastFeedChange } from "../services/feedRealtime";
 import { followUser, unfollowUser } from "../services/profileApi";
 import { getAuthHeaders, getStoredUser } from "../utils/auth";
 import {
@@ -24,6 +25,7 @@ import {
   mergeFollowingUsers,
   toFollowKey,
 } from "../utils/followState";
+import { compressImageFile } from "../utils/imageCompression";
 
 const parseApiError = async (response, fallback) => {
   const data = await response.json().catch(() => null);
@@ -350,7 +352,7 @@ export default function ExplorePage() {
         formData.append("review", payload.review);
         formData.append("rating", payload.rating);
         formData.append("category", payload.category);
-        formData.append("photo", editPhotoFile);
+        formData.append("photo", await compressImageFile(editPhotoFile));
 
         body = formData;
         headers = getAuthHeaders();
@@ -369,6 +371,7 @@ export default function ExplorePage() {
 
       setActionMessage({ type: "success", text: "Bite updated." });
       cancelEdit();
+      broadcastFeedChange({ type: "refresh", biteId });
       fetchFeed();
     } catch (err) {
       setActionMessage({ type: "error", text: err.message });
@@ -396,6 +399,7 @@ export default function ExplorePage() {
       }
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
+      broadcastFeedChange({ type: "delete", biteId });
       setActionMessage({ type: "success", text: "Bite deleted." });
     } catch (err) {
       setActionMessage({ type: "error", text: err.message });
@@ -432,6 +436,7 @@ export default function ExplorePage() {
       if (updatedBite && getBiteId(updatedBite)) {
         updateBiteInState(biteId, (item) => ({ ...item, ...updatedBite }));
       }
+      broadcastFeedChange({ type: "refresh", biteId });
     } catch (err) {
       updateBiteInState(biteId, (item) => ({
         ...item,

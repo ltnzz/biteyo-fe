@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { postBiteComment, toggleLikeBite, toggleSaveBite } from "../services/feedApi";
+import { broadcastFeedChange } from "../services/feedRealtime";
 import { getAuthHeaders } from "../utils/auth";
 import {
   getBiteComments,
@@ -18,6 +19,7 @@ import {
   normalizeCategories,
   normalizeCategoryValue,
 } from "../utils/bites";
+import { compressImageFile } from "../utils/imageCompression";
 
 export const getBiteId = readBiteId;
 
@@ -115,7 +117,7 @@ export const useBiteMutations = ({
         formData.append("review", payload.review);
         formData.append("rating", payload.rating);
         formData.append("category", payload.category);
-        formData.append("photo", editPhotoFile);
+        formData.append("photo", await compressImageFile(editPhotoFile));
 
         body = formData;
         headers = getAuthHeaders();
@@ -134,6 +136,7 @@ export const useBiteMutations = ({
 
       setActionMessage({ type: "success", text: "Bite updated." });
       cancelEdit();
+      broadcastFeedChange({ type: "refresh", biteId });
       refresh();
     } catch (err) {
       setActionMessage({ type: "error", text: err.message });
@@ -161,6 +164,7 @@ export const useBiteMutations = ({
       }
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
+      broadcastFeedChange({ type: "delete", biteId });
       setActionMessage({ type: "success", text: "Bite deleted." });
     } catch (err) {
       setActionMessage({ type: "error", text: err.message });
@@ -197,6 +201,7 @@ export const useBiteMutations = ({
       if (updatedBite && getBiteId(updatedBite)) {
         updateBiteInState(biteId, (item) => ({ ...item, ...updatedBite }));
       }
+      broadcastFeedChange({ type: "refresh", biteId });
 
       onLikeChange?.({
         bite,
@@ -265,6 +270,7 @@ export const useBiteMutations = ({
       if (removeOnUnsave && !nextSaved) {
         setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
       }
+      broadcastFeedChange({ type: "refresh", biteId });
     } catch (err) {
       updateBiteInState(biteId, (item) => ({
         ...item,
@@ -329,6 +335,7 @@ export const useBiteMutations = ({
           commentCount: count,
         };
       });
+      broadcastFeedChange({ type: "refresh", biteId });
 
       return true;
     } catch (err) {

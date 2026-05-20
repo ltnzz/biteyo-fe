@@ -1,6 +1,6 @@
 # Biteyo Frontend
 
-Frontend untuk aplikasi Biteyo, dibangun menggunakan React, Vite, Tailwind CSS, React Router, Axios, Google OAuth, dan Socket.IO client.
+Frontend untuk aplikasi Biteyo, dibangun menggunakan React, Vite, Tailwind CSS, React Router, Axios, Google OAuth, dan Supabase.
 
 ## Fitur Utama
 
@@ -8,7 +8,7 @@ Frontend untuk aplikasi Biteyo, dibangun menggunakan React, Vite, Tailwind CSS, 
 - Halaman home, explore, detail bite, profil, notifikasi, dan tambah post.
 - Proteksi route untuk halaman yang membutuhkan login.
 - Integrasi API backend Biteyo.
-- Koneksi realtime menggunakan Socket.IO.
+- Koneksi realtime menggunakan Supabase Realtime.
 - Konfigurasi deployment SPA untuk Vercel.
 
 ## Teknologi
@@ -18,7 +18,7 @@ Frontend untuk aplikasi Biteyo, dibangun menggunakan React, Vite, Tailwind CSS, 
 - Tailwind CSS
 - React Router DOM
 - Axios
-- Socket.IO Client
+- Supabase
 - Lucide React
 
 ## Persiapan
@@ -42,6 +42,8 @@ Buat file `.env.local` di root project jika ingin memakai konfigurasi lokal.
 VITE_API_BASE_URL=http://localhost:3000
 VITE_API_URL=http://localhost:3000
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ## Menjalankan Project
