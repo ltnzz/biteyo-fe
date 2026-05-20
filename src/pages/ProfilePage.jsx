@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { AlertCircle, Loader2, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ActionMessage from "../components/profile/ActionMessage";
 import LoginRequired from "../components/profile/LoginRequired";
 import ProfileHeader from "../components/profile/ProfileHeader";
@@ -256,143 +257,148 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto border-x border-gray-100 min-h-screen">
-        <div className="sticky top-[65px] z-20 bg-white/95 backdrop-blur border-b border-gray-100 px-4 py-3">
-          <h1 className="text-xl font-extrabold text-gray-900">
-            {loading ? "Profile" : displayName}
-          </h1>
-          <p className="text-sm text-gray-500">{bites.length} bites</p>
-        </div>
-
-        <ActionMessage message={actionMessage} />
-
-        {loading ? (
-          <div className="py-20 flex justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+      <div className="flex w-full items-start justify-start px-4">
+        <main className="w-full max-w-2xl border-x border-gray-100 min-h-screen">
+          <div className="sticky top-[65px] z-20 bg-white/95 backdrop-blur border-b border-gray-100 px-4 py-3">
+            <h1 className="text-xl font-extrabold text-gray-900">
+              {loading ? "Profile" : displayName}
+            </h1>
+            <p className="text-sm text-gray-500">{bites.length} bites</p>
           </div>
-        ) : profileNotFound ? (
-          renderProfileState("not-found")
-        ) : error ? (
-          renderProfileState("error")
-        ) : (
-          <>
-            <ProfileHeader
-              avatar={avatar}
-              banner={banner}
-              bio={bio}
-              bitesCount={bites.length}
-              displayName={displayName}
-              editorOpen={editorOpen}
-              followLoading={followLoading}
-              followersCount={profile?.followersCount}
-              followingCount={profile?.followingCount}
-              handle={handle}
-              isFollowing={isFollowing}
-              isOwnProfile={isOwnProfile}
-              joinedAt={joinedAt}
-              location={location}
-              profileForm={profileForm}
-              savingProfile={savingProfile}
-              onAvatarChange={setAvatarFile}
-              onBannerChange={setBannerFile}
-              onCloseEditor={handleCloseEditor}
-              onEditProfile={() => setEditorOpen(true)}
-              onProfileChange={updateProfileForm}
-              onSaveProfile={handleSaveProfile}
-              onToggleFollow={handleToggleFollow}
-            />
 
-            <ProfileTabs
-              activeTab={resolvedActiveTab}
-              showSaved={isOwnProfile}
-              onChange={setActiveTab}
-            />
+          <ActionMessage message={actionMessage} />
 
-            {resolvedActiveTab === "posts" ? (
-              <ProfileTimeline
+          {loading ? (
+            <div className="py-20 flex justify-center">
+              <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+            </div>
+          ) : profileNotFound ? (
+            renderProfileState("not-found")
+          ) : error ? (
+            renderProfileState("error")
+          ) : (
+            <>
+              <ProfileHeader
                 avatar={avatar}
+                banner={banner}
+                bio={bio}
                 bites={bites}
-                canManage={isOwnProfile}
-                deletingBiteId={biteActions.deletingBiteId}
+                bitesCount={bites.length}
                 displayName={displayName}
-                editForm={biteActions.editForm}
-                editingId={biteActions.editingId}
-                error={bitesError}
+                editorOpen={editorOpen}
+                followLoading={followLoading}
+                followersCount={profile?.followersCount}
+                followingCount={profile?.followingCount}
                 handle={handle}
-                commentErrors={biteActions.commentErrors}
-                commentingBiteIds={biteActions.commentingBiteIds}
-                likingBiteIds={biteActions.likingBiteIds}
-                savingBiteIds={biteActions.savingBiteIds}
-                loading={bitesLoading}
-                currentUser={currentUser}
-                savingBiteId={biteActions.savingBiteId}
-                showCreateAction={isOwnProfile}
-                onCancelEdit={biteActions.cancelEdit}
-                onDeleteBite={biteActions.deleteBite}
-                onEditBite={biteActions.startEdit}
-                onEditChange={biteActions.updateEditForm}
-                onOpenBite={openBiteDetail}
-                onOpenProfile={openUserProfile}
-                onPhotoChange={biteActions.setEditPhotoFile}
-                onRetry={fetchUserBites}
-                onSubmitComment={biteActions.submitComment}
-                onToggleLike={biteActions.toggleLike}
-                onToggleSave={biteActions.toggleSave}
-                onUpdateBite={biteActions.updateBite}
+                isFollowing={isFollowing}
+                isOwnProfile={isOwnProfile}
+                joinedAt={joinedAt}
+                location={location}
+                profileForm={profileForm}
+                savingProfile={savingProfile}
+                onAvatarChange={setAvatarFile}
+                onBannerChange={setBannerFile}
+                onCloseEditor={handleCloseEditor}
+                onEditProfile={() => setEditorOpen(true)}
+                onProfileChange={updateProfileForm}
+                onSaveProfile={handleSaveProfile}
+                onToggleFollow={handleToggleFollow}
               />
-            ) : resolvedActiveTab === "save" ? (
-              <ProfileTimeline
-                avatar={avatar}
-                bites={savedBites}
-                canManage={false}
-                displayName={displayName}
-                emptyDescription="Bite yang kamu simpan akan muncul di sini."
-                emptyTitle="Belum ada saved bite"
-                error={savedError}
-                handle={handle}
-                commentErrors={savedBiteActions.commentErrors}
-                commentingBiteIds={savedBiteActions.commentingBiteIds}
-                likingBiteIds={savedBiteActions.likingBiteIds}
-                savingBiteIds={savedBiteActions.savingBiteIds}
-                loading={savedLoading}
-                currentUser={currentUser}
-                useBiteAuthor
-                onOpenBite={openBiteDetail}
-                onOpenProfile={openUserProfile}
-                onRetry={fetchSavedBites}
-                onSubmitComment={savedBiteActions.submitComment}
-                onToggleLike={savedBiteActions.toggleLike}
-                onToggleSave={savedBiteActions.toggleSave}
+
+              <ProfileTabs
+                activeTab={resolvedActiveTab}
+                showSaved={isOwnProfile}
+                onChange={setActiveTab}
               />
-            ) : resolvedActiveTab === "likes" ? (
-              <ProfileTimeline
-                avatar={avatar}
-                bites={likedBites}
-                canManage={false}
-                displayName={displayName}
-                emptyDescription="Bite yang kamu sukai akan muncul di sini."
-                emptyTitle="Belum ada likes"
-                error={likedError}
-                handle={handle}
-                commentErrors={likedBiteActions.commentErrors}
-                commentingBiteIds={likedBiteActions.commentingBiteIds}
-                likingBiteIds={likedBiteActions.likingBiteIds}
-                savingBiteIds={likedBiteActions.savingBiteIds}
-                loading={likedLoading}
-                currentUser={currentUser}
-                useBiteAuthor
-                onOpenBite={openBiteDetail}
-                onOpenProfile={openUserProfile}
-                onRetry={fetchLikedBites}
-                onSubmitComment={likedBiteActions.submitComment}
-                onToggleLike={likedBiteActions.toggleLike}
-                onToggleSave={likedBiteActions.toggleSave}
-              />
-            ) : (
-              <ProfileTabPlaceholder type={resolvedActiveTab} />
-            )}
-          </>
-        )}
+
+              {resolvedActiveTab === "posts" ? (
+                <ProfileTimeline
+                  avatar={avatar}
+                  bites={bites}
+                  canManage={isOwnProfile}
+                  deletingBiteId={biteActions.deletingBiteId}
+                  displayName={displayName}
+                  editForm={biteActions.editForm}
+                  editingId={biteActions.editingId}
+                  error={bitesError}
+                  handle={handle}
+                  commentErrors={biteActions.commentErrors}
+                  commentingBiteIds={biteActions.commentingBiteIds}
+                  likingBiteIds={biteActions.likingBiteIds}
+                  savingBiteIds={biteActions.savingBiteIds}
+                  loading={bitesLoading}
+                  currentUser={currentUser}
+                  savingBiteId={biteActions.savingBiteId}
+                  showCreateAction={isOwnProfile}
+                  onCancelEdit={biteActions.cancelEdit}
+                  onDeleteBite={biteActions.deleteBite}
+                  onEditBite={biteActions.startEdit}
+                  onEditChange={biteActions.updateEditForm}
+                  onOpenBite={openBiteDetail}
+                  onOpenProfile={openUserProfile}
+                  onPhotoChange={biteActions.setEditPhotoFile}
+                  onRetry={fetchUserBites}
+                  onSubmitComment={biteActions.submitComment}
+                  onToggleLike={biteActions.toggleLike}
+                  onToggleSave={biteActions.toggleSave}
+                  onUpdateBite={biteActions.updateBite}
+                />
+              ) : resolvedActiveTab === "save" ? (
+                <ProfileTimeline
+                  avatar={avatar}
+                  bites={savedBites}
+                  canManage={false}
+                  displayName={displayName}
+                  emptyDescription="Bite yang kamu simpan akan muncul di sini."
+                  emptyTitle="Belum ada saved bite"
+                  error={savedError}
+                  handle={handle}
+                  commentErrors={savedBiteActions.commentErrors}
+                  commentingBiteIds={savedBiteActions.commentingBiteIds}
+                  likingBiteIds={savedBiteActions.likingBiteIds}
+                  savingBiteIds={savedBiteActions.savingBiteIds}
+                  loading={savedLoading}
+                  currentUser={currentUser}
+                  useBiteAuthor
+                  onOpenBite={openBiteDetail}
+                  onOpenProfile={openUserProfile}
+                  onRetry={fetchSavedBites}
+                  onSubmitComment={savedBiteActions.submitComment}
+                  onToggleLike={savedBiteActions.toggleLike}
+                  onToggleSave={savedBiteActions.toggleSave}
+                />
+              ) : resolvedActiveTab === "likes" ? (
+                <ProfileTimeline
+                  avatar={avatar}
+                  bites={likedBites}
+                  canManage={false}
+                  displayName={displayName}
+                  emptyDescription="Bite yang kamu sukai akan muncul di sini."
+                  emptyTitle="Belum ada likes"
+                  error={likedError}
+                  handle={handle}
+                  commentErrors={likedBiteActions.commentErrors}
+                  commentingBiteIds={likedBiteActions.commentingBiteIds}
+                  likingBiteIds={likedBiteActions.likingBiteIds}
+                  savingBiteIds={likedBiteActions.savingBiteIds}
+                  loading={likedLoading}
+                  currentUser={currentUser}
+                  useBiteAuthor
+                  onOpenBite={openBiteDetail}
+                  onOpenProfile={openUserProfile}
+                  onRetry={fetchLikedBites}
+                  onSubmitComment={likedBiteActions.submitComment}
+                  onToggleLike={likedBiteActions.toggleLike}
+                  onToggleSave={likedBiteActions.toggleSave}
+                />
+              ) : (
+                <ProfileTabPlaceholder type={resolvedActiveTab} />
+              )}
+            </>
+          )}
+        </main>
+
+        <AdvertisementSidebar />
       </div>
     </div>
   );

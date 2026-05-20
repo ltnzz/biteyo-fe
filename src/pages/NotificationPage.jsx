@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import LoginRequired from "../components/profile/LoginRequired";
 import NotificationFeedback from "../components/notifications/NotificationFeedback";
 import NotificationHeader from "../components/notifications/NotificationHeader";
 import NotificationList from "../components/notifications/NotificationList";
+import NotificationSidebar from "../components/notifications/NotificationSidebar";
 import {
   NotificationEmptyState,
   NotificationErrorState,
   NotificationLoadingState,
 } from "../components/notifications/NotificationState";
+import {
+  filterNotifications,
+  getNotificationFilterCounts,
+} from "../components/notifications/notificationFilters";
 import socket from "../lib/socket";
 import { isAuthenticated } from "../utils/auth";
 import {
@@ -23,6 +29,7 @@ export default function NotificationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
+  const [activeFilter, setActiveFilter] = useState("all");
   const [readingIds, setReadingIds] = useState(() => new Set());
   const [deletingId, setDeletingId] = useState("");
   const hasSession = useMemo(() => isAuthenticated(), []);
@@ -30,6 +37,14 @@ export default function NotificationPage() {
   const unreadCount = notifications.filter(
     (item) => !isNotificationRead(item),
   ).length;
+  const filterCounts = useMemo(
+    () => getNotificationFilterCounts(notifications),
+    [notifications],
+  );
+  const visibleNotifications = useMemo(
+    () => filterNotifications(notifications, activeFilter),
+    [activeFilter, notifications],
+  );
 
   const loadNotifications = useCallback(async () => {
     setLoading(true);
@@ -196,34 +211,53 @@ export default function NotificationPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <main className="mx-auto min-h-screen max-w-2xl border-x border-gray-100">
-        <div className="sticky top-[65px] z-20 border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
-          <NotificationHeader
-            loading={loading}
-            unreadCount={unreadCount}
-            onMarkAllRead={handleMarkAllRead}
-            onRefresh={loadNotifications}
-          />
-        </div>
+      <div className="flex w-full items-start justify-start px-4">
+        <NotificationSidebar
+          activeFilter={activeFilter}
+          counts={filterCounts}
+          onChange={setActiveFilter}
+        />
 
-        <NotificationFeedback message={actionMessage} />
+        <main className="min-h-screen w-full max-w-2xl border-x border-gray-100">
+          <div className="sticky top-[65px] z-20 border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
+            <NotificationHeader
+              loading={loading}
+              unreadCount={unreadCount}
+              onMarkAllRead={handleMarkAllRead}
+              onRefresh={loadNotifications}
+            />
+          </div>
 
-        {loading ? (
-          <NotificationLoadingState />
-        ) : error ? (
-          <NotificationErrorState error={error} onRetry={loadNotifications} />
-        ) : notifications.length === 0 ? (
-          <NotificationEmptyState />
-        ) : (
-          <NotificationList
-            deletingId={deletingId}
-            notifications={notifications}
-            readingIds={readingIds}
-            onDelete={handleDelete}
-            onMarkRead={handleMarkRead}
-          />
-        )}
-      </main>
+          <NotificationFeedback message={actionMessage} />
+
+          {loading ? (
+            <NotificationLoadingState />
+          ) : error ? (
+            <NotificationErrorState error={error} onRetry={loadNotifications} />
+          ) : notifications.length === 0 ? (
+            <NotificationEmptyState />
+          ) : visibleNotifications.length === 0 ? (
+            <section className="px-6 py-16 text-center">
+              <h2 className="text-lg font-bold text-gray-900">
+                Tidak ada notifikasi di filter ini
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Pilih kategori lain atau refresh untuk melihat update terbaru.
+              </p>
+            </section>
+          ) : (
+            <NotificationList
+              deletingId={deletingId}
+              notifications={visibleNotifications}
+              readingIds={readingIds}
+              onDelete={handleDelete}
+              onMarkRead={handleMarkRead}
+            />
+          )}
+        </main>
+
+        <AdvertisementSidebar />
+      </div>
     </div>
   );
 }

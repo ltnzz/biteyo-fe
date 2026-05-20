@@ -13,6 +13,46 @@ import NotificationPage from './pages/NotificationPage';
 import AddPage from './pages/AddPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import BiteDetailPage from './pages/BiteDetailPage';
+import { Bell, Home, PlusCircle, Search, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+function MobileNav() {
+  const location = useLocation();
+  const navItems = [
+    { to: '/', icon: Home, label: 'Home' },
+    { to: '/explore', icon: Search, label: 'Explore' },
+    { to: '/add', icon: PlusCircle, label: 'Post' },
+    { to: '/notifications', icon: Bell, label: 'Alerts' },
+    { to: '/profile', icon: User, label: 'Profile' },
+  ];
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-100 bg-white/95 px-2 py-2 shadow-[0_-8px_30px_rgba(15,23,42,0.06)] backdrop-blur lg:hidden">
+      <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            item.to === '/'
+              ? location.pathname === item.to
+              : location.pathname.startsWith(item.to);
+
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-semibold transition-colors ${
+                isActive ? 'bg-pink-50 text-pink-500' : 'text-gray-500'
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="truncate">{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
 
 function AppContent() {
   const location = useLocation();
@@ -20,14 +60,13 @@ function AppContent() {
   const showSidebar = !hideSidebarRoutes.includes(location.pathname);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-white">
       {showSidebar && (
-        <div className="fixed inset-0 z-[9999] w-64 shrink-0 sticky top-0 h-screen border-r border-gray-100 bg-white overflow-visible">
-          
+        <div className="hidden h-screen w-64 shrink-0 overflow-visible border-r border-gray-100 bg-white lg:sticky lg:top-0 lg:block">
           <Sidebar />
         </div>
       )}
-      <div className="flex-1 min-h-screen">
+      <div className={`min-h-screen min-w-0 flex-1 ${showSidebar ? 'pb-20 lg:pb-0' : ''}`}>
         {showSidebar && <MainHeader />}
         
         <Routes>
@@ -59,6 +98,7 @@ function AppContent() {
           />
         </Routes>
       </div>
+      {showSidebar && <MobileNav />}
     </div>
   );
 }

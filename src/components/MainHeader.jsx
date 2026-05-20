@@ -52,9 +52,9 @@ export default function MainHeader() {
 
   return (
     <header className="sticky top-0 bg-white z-50 border-b border-gray-100 py-3">
-      <div className="flex items-center gap-4 px-4">
+      <div className="flex items-center gap-2 px-3 sm:gap-4 sm:px-4">
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-3xl relative">
+        <form onSubmit={handleSearch} className="relative min-w-0 flex-1 max-w-3xl">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
@@ -69,7 +69,7 @@ export default function MainHeader() {
         <div ref={trendingRef} className="relative">
           <button
             onClick={() => setShowTrending(!showTrending)}
-            className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+            className="flex items-center gap-2 rounded-full px-2 py-2 text-gray-600 transition-colors hover:bg-gray-100 sm:px-3"
           >
             <TrendingUp className="w-4 h-4 text-pink-500" />
             <span className="text-sm font-medium hidden sm:block">Trending</span>

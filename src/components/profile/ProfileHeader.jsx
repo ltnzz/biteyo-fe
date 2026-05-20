@@ -1,11 +1,13 @@
 import { CalendarDays, Loader2, MapPin, Pencil, UserCheck, UserPlus } from "lucide-react";
 import { formatProfileDate } from "../../utils/profile";
 import ProfileEditor from "./ProfileEditor";
+import ProfileTasteStats from "./ProfileTasteStats";
 
 export default function ProfileHeader({
   avatar,
   banner,
   bio,
+  bites = [],
   bitesCount,
   displayName,
   editorOpen,
@@ -101,6 +103,8 @@ export default function ProfileHeader({
               </span>
             )}
           </div>
+
+          <ProfileTasteStats bites={bites} />
 
           <div className="mt-4 flex gap-5 text-sm">
             <span>

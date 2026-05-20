@@ -73,7 +73,7 @@ export default function ProfileEditor({
       role="presentation"
     >
       <div className="animate-modal-rise flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl transition-all duration-200 sm:h-auto sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -88,20 +88,6 @@ export default function ProfileEditor({
               Edit profile
             </h3>
           </div>
-
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={saving}
-            className="inline-flex min-w-[86px] items-center justify-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-gray-800 disabled:opacity-60"
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Save
-          </button>
         </div>
 
         <div className="overflow-y-auto pb-5">

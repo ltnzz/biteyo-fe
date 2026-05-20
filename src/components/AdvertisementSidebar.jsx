@@ -18,7 +18,7 @@ const ads = [
 
 export default function AdvertisementSidebar() {
   return (
-    <aside className="hidden lg:block w-80 shrink-0">
+    <aside className="hidden lg:block lg:w-80 xl:w-96 2xl:w-[26rem] shrink-0">
       <div className="sticky top-[86px] space-y-4 px-4">
         <div className="rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
@@ -31,7 +31,7 @@ export default function AdvertisementSidebar() {
                 <img
                   src={ad.image}
                   alt={ad.title}
-                  className="h-28 w-full rounded-xl object-cover border border-gray-100"
+                  className="h-28 w-full rounded-xl object-cover border border-gray-100 xl:h-36"
                   loading="lazy"
                 />
                 <h3 className="mt-3 text-sm font-extrabold text-gray-900">
