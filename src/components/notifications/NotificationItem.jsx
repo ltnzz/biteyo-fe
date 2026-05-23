@@ -7,10 +7,12 @@ import {
   TrendingUp,
   UserPlus,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { getNotificationId, isNotificationRead } from "../../utils/notifications";
 import {
   formatNotificationTime,
   getActorAvatar,
+  getActorHandle,
   getActorName,
   getNotificationMessage,
   getNotificationTarget,
@@ -65,13 +67,23 @@ export default function NotificationItem({
   onDelete,
   onMarkRead,
 }) {
+  const navigate = useNavigate();
   const notificationId = getNotificationId(notification);
   const actorName = getActorName(notification);
   const actorAvatar = getActorAvatar(notification);
+  const actorHandle = getActorHandle(notification);
   const message = getNotificationMessage(notification);
   const target = getNotificationTarget(notification);
   const read = isNotificationRead(notification);
   const iconMeta = getIconMeta(notification);
+
+  const handleOpenProfile = (event) => {
+    event.stopPropagation();
+    if (!actorHandle) return;
+
+    onMarkRead(notification);
+    navigate(`/profile/${encodeURIComponent(actorHandle)}`);
+  };
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -86,11 +98,17 @@ export default function NotificationItem({
       tabIndex={0}
       onClick={() => onMarkRead(notification)}
       onKeyDown={handleKeyDown}
-      className={`group flex cursor-pointer items-start gap-3 px-4 py-4 transition-colors ${
+      className={`group flex cursor-pointer items-start gap-3 px-4 py-3 transition-colors ${
         read ? "bg-white hover:bg-gray-50/90" : "bg-pink-50/80 hover:bg-pink-100/60"
       }`}
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-400 to-orange-300 text-sm font-bold text-white">
+      <button
+        type="button"
+        onClick={handleOpenProfile}
+        disabled={!actorHandle}
+        className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-400 to-orange-300 text-sm font-bold text-white transition-opacity hover:opacity-80 disabled:hover:opacity-100"
+        aria-label={`Buka profil ${actorName}`}
+      >
         {actorAvatar ? (
           <img
             src={actorAvatar}
@@ -100,11 +118,18 @@ export default function NotificationItem({
         ) : (
           actorName.charAt(0).toUpperCase()
         )}
-      </div>
+      </button>
 
       <div className="min-w-0 flex-1">
         <p className="text-sm leading-snug text-gray-700">
-          <span className="font-semibold text-gray-900">{actorName}</span>{" "}
+          <button
+            type="button"
+            onClick={handleOpenProfile}
+            disabled={!actorHandle}
+            className="font-semibold text-gray-900 transition-colors hover:text-pink-600 disabled:hover:text-gray-900"
+          >
+            {actorName}
+          </button>{" "}
           {message}{" "}
           {target && (
             <span className="font-semibold text-gray-900">{target}</span>

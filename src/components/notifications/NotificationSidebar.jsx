@@ -17,7 +17,7 @@ export default function NotificationSidebar({
 }) {
   return (
     <aside className="hidden xl:block w-64 shrink-0">
-      <div className="sticky top-[86px] space-y-4 pr-4">
+      <div className="sticky top-[65px] space-y-4 pr-4">
         <section className="rounded-2xl border border-gray-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
           <div className="p-2">
             {notificationFilters.map((filter) => {

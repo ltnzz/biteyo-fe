@@ -211,7 +211,7 @@ export default function NotificationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex w-full items-start justify-start px-4">
+      <div className="flex w-full items-stretch justify-start px-4">
         <NotificationSidebar
           activeFilter={activeFilter}
           counts={filterCounts}
@@ -230,30 +230,32 @@ export default function NotificationPage() {
 
           <NotificationFeedback message={actionMessage} />
 
-          {loading ? (
-            <NotificationLoadingState />
-          ) : error ? (
-            <NotificationErrorState error={error} onRetry={loadNotifications} />
-          ) : notifications.length === 0 ? (
-            <NotificationEmptyState />
-          ) : visibleNotifications.length === 0 ? (
-            <section className="px-6 py-16 text-center">
-              <h2 className="text-lg font-bold text-gray-900">
-                Tidak ada notifikasi di filter ini
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Pilih kategori lain atau refresh untuk melihat update terbaru.
-              </p>
-            </section>
-          ) : (
-            <NotificationList
-              deletingId={deletingId}
-              notifications={visibleNotifications}
-              readingIds={readingIds}
-              onDelete={handleDelete}
-              onMarkRead={handleMarkRead}
-            />
-          )}
+          <section className="min-h-[calc(100vh-154px)] bg-white">
+            {loading ? (
+              <NotificationLoadingState />
+            ) : error ? (
+              <NotificationErrorState error={error} onRetry={loadNotifications} />
+            ) : notifications.length === 0 ? (
+              <NotificationEmptyState />
+            ) : visibleNotifications.length === 0 ? (
+              <div className="flex min-h-[calc(100vh-154px)] flex-col items-center justify-center px-6 py-16 text-center">
+                <h2 className="text-lg font-bold text-gray-900">
+                  Tidak ada notifikasi di filter ini
+                </h2>
+                <p className="mt-1 max-w-sm text-sm text-gray-500">
+                  Pilih kategori lain atau refresh untuk melihat update terbaru.
+                </p>
+              </div>
+            ) : (
+              <NotificationList
+                deletingId={deletingId}
+                notifications={visibleNotifications}
+                readingIds={readingIds}
+                onDelete={handleDelete}
+                onMarkRead={handleMarkRead}
+              />
+            )}
+          </section>
         </main>
 
         <AdvertisementSidebar />

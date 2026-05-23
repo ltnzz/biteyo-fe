@@ -33,6 +33,29 @@ export const getActorAvatar = (notification) => {
   return actor.avatarUrl || actor.avatar || actor.imageUrl || actor.photoUrl || "";
 };
 
+export const getActorHandle = (notification) => {
+  const actor =
+    notification.fromUser ||
+    notification.user ||
+    notification.actor ||
+    notification.sender ||
+    notification.from;
+
+  if (typeof actor === "string") return actor;
+
+  return (
+    actor?.username ||
+    actor?.handle ||
+    actor?.userName ||
+    notification.fromUsername ||
+    notification.actorUsername ||
+    notification.senderUsername ||
+    notification.username ||
+    notification.userName ||
+    ""
+  );
+};
+
 export const getNotificationMessage = (notification) =>
   notification.message ||
   notification.body ||

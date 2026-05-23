@@ -28,8 +28,8 @@ export function NotificationErrorState({ error, onRetry }) {
 
 export function NotificationEmptyState() {
   return (
-    <div className="px-4 py-20 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+    <div className="flex min-h-[calc(100vh-154px)] flex-col items-center justify-center px-4 py-20 text-center">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-400 shadow-sm">
         <Bell className="h-6 w-6" />
       </div>
       <h2 className="mt-4 text-lg font-bold text-gray-900">
