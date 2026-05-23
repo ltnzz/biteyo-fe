@@ -1,11 +1,8 @@
-import { AlertCircle, Bell, Loader2 } from "lucide-react";
+import { AlertCircle, Bell } from "lucide-react";
+import BiteLoader from "../BiteLoader";
 
 export function NotificationLoadingState() {
-  return (
-    <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin text-pink-500" />
-    </div>
-  );
+  return <BiteLoader label="Sedang memuat notifikasi..." />;
 }
 
 export function NotificationErrorState({ error, onRetry }) {

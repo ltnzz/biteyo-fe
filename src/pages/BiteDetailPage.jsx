@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
+import BiteLoader from "../components/BiteLoader";
 import {
   getBiteComments as fetchBiteComments,
   getBiteDetail,
@@ -237,9 +238,7 @@ export default function BiteDetailPage() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="h-6 w-6 animate-spin text-pink-500" />
-          </div>
+          <BiteLoader label="Sedang memuat bite..." />
         ) : error ? (
           <section className="px-6 py-20 text-center">
             <AlertCircle className="mx-auto mb-3 h-10 w-10 text-red-300" />

@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { AlertCircle, Loader2, SearchX } from "lucide-react";
+import { AlertCircle, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
+import BiteLoader from "../components/BiteLoader";
 import ActionMessage from "../components/profile/ActionMessage";
 import LoginRequired from "../components/profile/LoginRequired";
 import ProfileHeader from "../components/profile/ProfileHeader";
@@ -269,9 +270,7 @@ export default function ProfilePage() {
           <ActionMessage message={actionMessage} />
 
           {loading ? (
-            <div className="py-20 flex justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-            </div>
+            <BiteLoader label="Sedang memuat profil..." />
           ) : profileNotFound ? (
             renderProfileState("not-found")
           ) : error ? (

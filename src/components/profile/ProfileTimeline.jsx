@@ -1,6 +1,7 @@
-import { AlertCircle, Camera, Loader2 } from "lucide-react";
+import { AlertCircle, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getBiteId } from "../../hooks/useBiteMutations";
+import BiteLoader from "../BiteLoader";
 import ProfileBiteCard from "./ProfileBiteCard";
 
 export default function ProfileTimeline({
@@ -39,8 +40,8 @@ export default function ProfileTimeline({
 }) {
   if (loading) {
     return (
-      <section className="px-6 py-16 text-center">
-        <Loader2 className="w-8 h-8 text-pink-500 mx-auto animate-spin" />
+      <section>
+        <BiteLoader compact />
       </section>
     );
   }

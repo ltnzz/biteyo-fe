@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Homepage from './pages/Homepage';
-import SignupPage from './pages/SignupPage';
-import ExplorePage from './pages/ExplorePage';
-import LoginPage from './pages/LoginPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import Sidebar from './components/SideBar';
 import MainHeader from './components/MainHeader';
 import ProtectedRoute from './components/ProtectedRoute';
-import ProfilePage from './pages/ProfilePage';
-import NotificationPage from './pages/NotificationPage';
-import AddPage from './pages/AddPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import BiteDetailPage from './pages/BiteDetailPage';
+import BiteLoader from './components/BiteLoader';
 import { Bell, Home, PlusCircle, Search, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const Homepage = lazy(() => import('./pages/Homepage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const ExplorePage = lazy(() => import('./pages/ExplorePage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const NotificationPage = lazy(() => import('./pages/NotificationPage'));
+const AddPage = lazy(() => import('./pages/AddPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const BiteDetailPage = lazy(() => import('./pages/BiteDetailPage'));
 
 function MobileNav() {
   const location = useLocation();
@@ -69,34 +71,36 @@ function AppContent() {
       <div className={`min-h-screen min-w-0 flex-1 ${showSidebar ? 'pb-20 lg:pb-0' : ''}`}>
         {showSidebar && <MainHeader />}
         
-        <Routes>
-          <Route path="/" element={<Homepage />} />        
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/explore" element={<ExplorePage />} />
-          <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/:username" element={<ProfilePage />} />
-          <Route path="/bites/:biteId" element={<BiteDetailPage />} />
-          <Route path="/notifications" element={<NotificationPage />} />
-          <Route
-            path="/add"
-            element={
-              <ProtectedRoute>
-                <AddPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/post"
-            element={
-              <ProtectedRoute>
-                <AddPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <Suspense fallback={<BiteLoader className="min-h-[calc(100vh-65px)]" />}>
+          <Routes>
+            <Route path="/" element={<Homepage />} />        
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:username" element={<ProfilePage />} />
+            <Route path="/bites/:biteId" element={<BiteDetailPage />} />
+            <Route path="/notifications" element={<NotificationPage />} />
+            <Route
+              path="/add"
+              element={
+                <ProtectedRoute>
+                  <AddPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/post"
+              element={
+                <ProtectedRoute>
+                  <AddPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
       </div>
       {showSidebar && <MobileNav />}
     </div>

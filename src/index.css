@@ -60,6 +60,17 @@
   }
 }
 
+@keyframes bite-dot {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.72;
+  }
+  50% {
+    transform: translateY(-7px) scale(1.18);
+    opacity: 1;
+  }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -79,6 +90,10 @@
 
 .animate-modal-rise {
   animation: modal-rise 180ms ease-out both;
+}
+
+.animate-bite-dot {
+  animation: bite-dot 1.05s ease-in-out infinite;
 }
 
 /* Stagger delays */
