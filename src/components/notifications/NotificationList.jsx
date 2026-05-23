@@ -13,7 +13,7 @@ export default function NotificationList({
   onMarkRead,
 }) {
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-gray-200 bg-white">
       {notifications.map((notification) => {
         const notificationId = getNotificationId(notification);
         const actorName = getActorName(notification);

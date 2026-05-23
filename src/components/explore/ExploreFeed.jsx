@@ -46,7 +46,7 @@ export default function ExploreFeed({
   if (feedError) {
     return (
       <section>
-        <div className="p-4 text-sm text-red-600 bg-red-50 border-b border-red-100">
+        <div className="border-b border-red-200 bg-red-50 p-4 text-sm text-red-600">
           {feedError}
         </div>
       </section>

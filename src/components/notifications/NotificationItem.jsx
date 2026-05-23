@@ -87,7 +87,7 @@ export default function NotificationItem({
       onClick={() => onMarkRead(notification)}
       onKeyDown={handleKeyDown}
       className={`group flex cursor-pointer items-start gap-3 px-4 py-4 transition-colors ${
-        read ? "bg-white hover:bg-gray-50" : "bg-pink-50/70 hover:bg-pink-50"
+        read ? "bg-white hover:bg-gray-50/90" : "bg-pink-50/80 hover:bg-pink-100/60"
       }`}
     >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-400 to-orange-300 text-sm font-bold text-white">
@@ -134,7 +134,7 @@ export default function NotificationItem({
           type="button"
           onClick={(event) => onDelete(event, notification)}
           disabled={deletingId === notificationId}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50 group-hover:bg-white/80"
           title="Hapus notifikasi"
           aria-label="Hapus notifikasi"
         >

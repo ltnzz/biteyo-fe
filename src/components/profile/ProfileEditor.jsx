@@ -72,8 +72,8 @@ export default function ProfileEditor({
       onMouseDown={closeFromBackdrop}
       role="presentation"
     >
-      <div className="animate-modal-rise flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl transition-all duration-200 sm:h-auto sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl">
-        <div className="sticky top-0 z-10 flex items-center border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
+      <div className="animate-modal-rise flex h-full w-full flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl transition-all duration-200 sm:h-auto sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl">
+        <div className="sticky top-0 z-10 flex items-center border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -153,7 +153,7 @@ export default function ProfileEditor({
                 <input
                   value={form.username}
                   onChange={(event) => onChange("username", event.target.value)}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                  className="w-full rounded-2xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
                   placeholder="Username"
                 />
               </label>
@@ -166,7 +166,7 @@ export default function ProfileEditor({
                   value={form.bio}
                   onChange={(event) => onChange("bio", event.target.value)}
                   rows={4}
-                  className="w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                  className="w-full resize-none rounded-2xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
                   placeholder="Tell people about your favorite bites"
                 />
               </label>
@@ -177,7 +177,7 @@ export default function ProfileEditor({
                 type="button"
                 onClick={onCancel}
                 disabled={saving}
-                className="rounded-full border border-gray-200 px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
+                className="rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
               >
                 Cancel
               </button>

@@ -51,7 +51,7 @@ export default function ProfileTasteStats({ bites = [] }) {
   ];
 
   return (
-    <div className="mt-4 border-y border-gray-100 py-3">
+    <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50/80 p-3 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
         <span className="h-2 w-2 rounded-full bg-pink-500" />
         <h3 className="text-sm font-extrabold text-gray-900">Taste stats</h3>
@@ -64,7 +64,7 @@ export default function ProfileTasteStats({ bites = [] }) {
           return (
             <div
               key={stat.label}
-              className="flex min-w-0 items-center gap-2 rounded-xl px-1 py-1"
+              className="flex min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-[0_1px_8px_rgba(15,23,42,0.04)] transition-colors hover:bg-gray-50"
             >
               <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-50 text-pink-500">
                 <Icon className="h-4 w-4" />

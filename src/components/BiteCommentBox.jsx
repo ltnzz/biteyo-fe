@@ -33,7 +33,7 @@ export default function BiteCommentBox({
 
   return (
     <div
-      className="mt-4 border-t border-gray-100 pt-4"
+      className="mt-4 border-t border-gray-200 pt-4"
       onClick={(event) => event.stopPropagation()}
     >
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
@@ -43,7 +43,7 @@ export default function BiteCommentBox({
           disabled={submitting}
           rows={2}
           placeholder="Tulis komentar..."
-          className="min-h-[44px] flex-1 resize-none rounded-2xl border border-gray-200 px-3 py-2 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-pink-300 focus:ring-2 focus:ring-pink-100 disabled:bg-gray-50"
+          className="min-h-[44px] flex-1 resize-none rounded-2xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-pink-300 focus:ring-2 focus:ring-pink-100 disabled:bg-gray-50"
         />
         <button
           type="submit"
@@ -73,7 +73,7 @@ export default function BiteCommentBox({
             return (
               <div
                 key={getCommentId(comment) || `${content}-${index}`}
-                className="rounded-2xl bg-gray-50 px-3 py-2"
+                className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2"
               >
                 <button
                   type="button"

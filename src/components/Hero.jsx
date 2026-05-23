@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, Star, TrendingUp, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Floating food images (gunakan emoji atau gambar dari assets)
 const floatingFoods = [
@@ -69,9 +70,9 @@ export default function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-up" style={{ animationDelay: '0.4s' }}>
-          <button className="px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all hover:-translate-y-0.5 text-base">
+          <Link to="/explore" className="px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all hover:-translate-y-0.5 text-base">
             Explore Now
-          </button>
+          </Link>
           <button className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 text-base flex items-center gap-2">
             <MapPin className="w-4 h-4 text-pink-500" />
             Find Near Me

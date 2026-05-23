@@ -4,7 +4,7 @@ export default function LocationResults({ error, loading, query, results }) {
   if (!query) return null;
 
   return (
-    <section className="border-b border-gray-100 p-4">
+    <section className="border-b border-gray-200 bg-gray-50/70 p-4">
       <h2 className="text-sm font-bold text-gray-900 mb-3">
         Hasil lokasi untuk "{query}"
       </h2>
@@ -26,7 +26,7 @@ export default function LocationResults({ error, loading, query, results }) {
           {results.map((place) => (
             <div
               key={place.placeId}
-              className="p-3 bg-white border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+              className="cursor-pointer rounded-xl border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-md"
             >
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 bg-pink-100 rounded-full flex items-center justify-center shrink-0">

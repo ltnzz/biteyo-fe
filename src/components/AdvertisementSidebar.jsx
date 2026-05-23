@@ -20,18 +20,18 @@ export default function AdvertisementSidebar() {
   return (
     <aside className="hidden lg:block lg:w-80 xl:w-96 2xl:w-[26rem] shrink-0">
       <div className="sticky top-[86px] space-y-4 px-4">
-        <div className="rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+          <div className="border-b border-gray-200 bg-gray-50/90 px-4 py-3">
             <h2 className="text-base font-extrabold text-gray-900">Sponsored</h2>
           </div>
 
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-200">
             {ads.map((ad) => (
-              <article key={ad.title} className="p-4 bg-white">
+              <article key={ad.title} className="bg-white p-4 transition-colors hover:bg-gray-50/70">
                 <img
                   src={ad.image}
                   alt={ad.title}
-                  className="h-28 w-full rounded-xl object-cover border border-gray-100 xl:h-36"
+                  className="h-28 w-full rounded-xl border border-gray-200 object-cover xl:h-36"
                   loading="lazy"
                 />
                 <h3 className="mt-3 text-sm font-extrabold text-gray-900">

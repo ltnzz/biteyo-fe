@@ -75,7 +75,7 @@ export default function BiteCard({
   return (
     <article
       onClick={handleOpenBite}
-      className="cursor-pointer border-b border-gray-100 px-4 py-4 transition-colors hover:bg-gray-50/70"
+      className="cursor-pointer border-b border-gray-200 bg-white px-4 py-4 transition-colors hover:bg-gray-50/80"
     >
       <div className="flex gap-3">
         <button
@@ -122,7 +122,7 @@ export default function BiteCard({
                   className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${
                     isFollowing
                       ? "bg-gray-900 text-white border-gray-900 hover:bg-white hover:text-red-500 hover:border-red-200"
-                      : "bg-white text-gray-900 border-gray-200 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+                      : "bg-white text-gray-900 border-gray-300 hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600"
                   }`}
                 >
                   {followLoading ? (
@@ -206,7 +206,7 @@ export default function BiteCard({
                 <img
                   src={bite.photoUrl || bite.image}
                   alt={bite.foodName || bite.title || "Food"}
-                  className="mt-3 w-full max-h-[520px] rounded-2xl object-cover border border-gray-100"
+                  className="mt-3 w-full max-h-[520px] rounded-2xl object-cover border border-gray-200 shadow-sm"
                   loading="lazy"
                 />
               )}
@@ -215,7 +215,7 @@ export default function BiteCard({
                 {normalizeCategories(bite.category || bite.categories).map((cat) => (
                   <span
                     key={cat}
-                    className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full font-medium"
+                    className="rounded-full border border-pink-200 bg-pink-50 px-2 py-1 text-xs font-medium text-pink-600"
                   >
                     {getCategoryLabel(normalizeCategoryValue(cat))}
                   </span>

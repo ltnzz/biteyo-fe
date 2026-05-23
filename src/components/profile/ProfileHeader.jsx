@@ -30,7 +30,7 @@ export default function ProfileHeader({
   onSaveProfile,
 }) {
   return (
-    <section className="border-b border-gray-100">
+    <section className="border-b border-gray-200 bg-white">
       <div className="h-40 bg-gradient-to-r from-pink-500 via-orange-400 to-amber-300">
         {banner && (
           <img
@@ -42,7 +42,7 @@ export default function ProfileHeader({
       </div>
       <div className="px-4 pb-4">
         <div className="flex justify-between items-start">
-          <div className="-mt-16 w-32 h-32 rounded-full border-4 border-white bg-pink-100 overflow-hidden flex items-center justify-center">
+          <div className="-mt-16 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-pink-100 shadow-[0_8px_24px_rgba(15,23,42,0.14)] ring-1 ring-gray-200">
             {avatar ? (
               <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
             ) : (
@@ -56,7 +56,7 @@ export default function ProfileHeader({
             <button
               type="button"
               onClick={onEditProfile}
-              className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-sm font-bold text-gray-900 hover:bg-gray-50"
+              className="mt-3 inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-900 transition-colors hover:bg-gray-50"
             >
               <Pencil className="w-4 h-4" />
               Edit profile
@@ -68,7 +68,7 @@ export default function ProfileHeader({
               disabled={followLoading}
               className={`mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${
                 isFollowing
-                  ? "border-gray-200 text-gray-900 hover:bg-gray-50"
+                  ? "border-gray-300 bg-white text-gray-900 hover:bg-gray-50"
                   : "border-pink-500 bg-pink-500 text-white hover:bg-pink-600"
               }`}
             >
@@ -106,15 +106,17 @@ export default function ProfileHeader({
 
           <ProfileTasteStats bites={bites} />
 
-          <div className="mt-4 flex gap-5 text-sm">
+          <div className="mt-4 flex flex-wrap gap-2 text-sm">
             <span>
               <strong className="text-gray-900">{bitesCount}</strong>{" "}
               <span className="text-gray-500">Bites</span>
             </span>
+            <span className="h-5 w-px bg-gray-200" aria-hidden="true" />
             <span>
               <strong className="text-gray-900">{followersCount || 0}</strong>{" "}
               <span className="text-gray-500">Followers</span>
             </span>
+            <span className="h-5 w-px bg-gray-200" aria-hidden="true" />
             <span>
               <strong className="text-gray-900">{followingCount || 0}</strong>{" "}
               <span className="text-gray-500">Following</span>

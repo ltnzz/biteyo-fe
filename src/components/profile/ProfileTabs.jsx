@@ -8,7 +8,7 @@ export default function ProfileTabs({ activeTab, onChange, showSaved = true }) {
   const visibleTabs = tabs.filter((tab) => tab.value !== "save" || showSaved);
 
   return (
-    <div className="border-b border-gray-100">
+    <div className="border-b border-gray-200 bg-white">
       <div
         className="grid"
         style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
@@ -24,7 +24,7 @@ export default function ProfileTabs({ activeTab, onChange, showSaved = true }) {
               className={`relative py-4 text-sm font-bold transition-colors ${
                 isActive
                   ? "text-gray-900"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+                  : "text-gray-500 hover:bg-gray-50/90 hover:text-gray-800"
               }`}
             >
               {tab.label}

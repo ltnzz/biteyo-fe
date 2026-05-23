@@ -24,7 +24,7 @@ export default function NotificationHeader({
           type="button"
           onClick={onRefresh}
           disabled={loading}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
           title="Refresh notifikasi"
           aria-label="Refresh notifikasi"
         >
@@ -34,7 +34,7 @@ export default function NotificationHeader({
           type="button"
           onClick={onMarkAllRead}
           disabled={loading || unreadCount === 0}
-          className="rounded-full border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-full border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
         >
           Mark all read
         </button>

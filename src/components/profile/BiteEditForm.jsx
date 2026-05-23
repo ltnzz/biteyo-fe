@@ -14,20 +14,20 @@ export default function BiteEditForm({
       <input
         value={form.foodName}
         onChange={(e) => onChange("foodName", e.target.value)}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+        className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
         placeholder="Food name"
       />
       <input
         value={form.locationName}
         onChange={(e) => onChange("locationName", e.target.value)}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+        className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
         placeholder="Location"
       />
       <textarea
         value={form.review}
         onChange={(e) => onChange("review", e.target.value)}
         rows={3}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
+        className="w-full resize-none rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
         placeholder="Review"
       />
 
@@ -52,7 +52,7 @@ export default function BiteEditForm({
             className={`py-2 rounded-xl text-xs font-semibold border transition-colors ${
               form.category === cat.value
                 ? "bg-pink-500 text-white border-pink-500"
-                : "bg-white text-gray-600 border-gray-200 hover:border-pink-300"
+                : "bg-white text-gray-600 border-gray-300 hover:border-pink-300 hover:bg-pink-50"
             }`}
           >
             {cat.label}
@@ -83,7 +83,7 @@ export default function BiteEditForm({
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50"
+          className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50"
         >
           <X className="w-4 h-4" />
           Cancel

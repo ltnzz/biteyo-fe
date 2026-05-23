@@ -210,7 +210,7 @@ export default function NotificationPage() {
   if (!hasSession) return <LoginRequired />;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <div className="flex w-full items-start justify-start px-4">
         <NotificationSidebar
           activeFilter={activeFilter}
@@ -218,8 +218,8 @@ export default function NotificationPage() {
           onChange={setActiveFilter}
         />
 
-        <main className="min-h-screen w-full max-w-2xl border-x border-gray-100">
-          <div className="sticky top-[65px] z-20 border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
+        <main className="min-h-screen w-full max-w-2xl border-x border-gray-200 bg-white shadow-[0_0_24px_rgba(15,23,42,0.04)]">
+          <div className="sticky top-[65px] z-20 border-b border-gray-200 bg-white/95 px-4 py-3 shadow-[0_1px_10px_rgba(15,23,42,0.035)] backdrop-blur">
             <NotificationHeader
               loading={loading}
               unreadCount={unreadCount}
