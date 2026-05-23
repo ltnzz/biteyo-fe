@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
+  Bookmark,
   Heart,
   Loader2,
   MessageCircle,
@@ -16,6 +17,7 @@ import {
   getBiteDetail,
   postBiteComment,
   toggleLikeBite,
+  toggleSaveBite,
 } from "../services/feedApi";
 import { broadcastFeedChange } from "../services/feedRealtime";
 import { getStoredUser } from "../utils/auth";
@@ -33,6 +35,7 @@ import {
   getCommentId,
   getLikeCount,
   isBiteLiked,
+  isBiteSaved,
   normalizeBiteComments,
   normalizeCreatedComment,
   normalizeUpdatedBite,
@@ -54,6 +57,7 @@ export default function BiteDetailPage() {
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentsError, setCommentsError] = useState("");
   const [liking, setLiking] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [commenting, setCommenting] = useState(false);
   const [commentError, setCommentError] = useState("");
@@ -157,6 +161,44 @@ export default function BiteDetailPage() {
     }
   };
 
+  const handleToggleSave = async () => {
+    if (!bite || saving) return;
+
+    const wasSaved = isBiteSaved(bite, currentUser);
+    const nextSaved = !wasSaved;
+
+    setSaving(true);
+    setBite((prev) => ({
+      ...prev,
+      isSaved: nextSaved,
+      saved: nextSaved,
+      savedByMe: nextSaved,
+      savedByCurrentUser: nextSaved,
+      bookmarked: nextSaved,
+      isBookmarked: nextSaved,
+    }));
+
+    try {
+      const data = await toggleSaveBite(getBiteId(bite), nextSaved);
+      const updatedBite = normalizeUpdatedBite(data);
+
+      if (updatedBite) setBite((prev) => ({ ...prev, ...updatedBite }));
+      broadcastFeedChange({ type: "refresh", biteId: getBiteId(bite) });
+    } catch {
+      setBite((prev) => ({
+        ...prev,
+        isSaved: wasSaved,
+        saved: wasSaved,
+        savedByMe: wasSaved,
+        savedByCurrentUser: wasSaved,
+        bookmarked: wasSaved,
+        isBookmarked: wasSaved,
+      }));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSubmitComment = async (event) => {
     event.preventDefault();
 
@@ -214,47 +256,48 @@ export default function BiteDetailPage() {
     displayedComments.length,
   );
   const liked = isBiteLiked(bite, currentUser);
+  const saved = isBiteSaved(bite, currentUser);
   const biteAuthorName = bite ? getBiteAuthorName(bite) : "";
   const biteAuthorHandle = bite ? getBiteAuthorHandle(bite) : "";
   const biteAuthorAvatar = bite ? getBiteAuthorAvatar(bite) : "";
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <div className="flex w-full items-start justify-start px-4">
-        <main className="min-h-screen w-full max-w-2xl border-x border-gray-100">
-        <div className="sticky top-[65px] z-20 flex items-center gap-3 border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
-            aria-label="Kembali"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div>
-            <h1 className="text-xl font-extrabold text-gray-900">Postingan</h1>
-            <p className="text-sm text-gray-500">{displayedCommentCount} komentar</p>
-          </div>
-        </div>
-
-        {loading ? (
-          <BiteLoader label="Sedang memuat bite..." />
-        ) : error ? (
-          <section className="px-6 py-20 text-center">
-            <AlertCircle className="mx-auto mb-3 h-10 w-10 text-red-300" />
-            <h2 className="text-lg font-bold text-gray-900">Postingan gagal dimuat</h2>
-            <p className="mt-1 text-sm text-gray-500">{error}</p>
+        <main className="min-h-screen w-full max-w-2xl border-x border-gray-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <div className="sticky top-[65px] z-20 flex items-center gap-3 border-b border-gray-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
             <button
               type="button"
-              onClick={loadBite}
-              className="mt-5 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-pink-600"
+              onClick={() => navigate(-1)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100"
+              aria-label="Kembali"
             >
-              Coba lagi
+              <ArrowLeft className="h-5 w-5" />
             </button>
-          </section>
-        ) : (
-          <>
-            <article className="border-b border-gray-100 px-4 py-5">
+            <div>
+              <h1 className="text-xl font-extrabold text-gray-900">Postingan</h1>
+              <p className="text-sm text-gray-500">{displayedCommentCount} komentar</p>
+            </div>
+          </div>
+
+          {loading ? (
+            <BiteLoader label="Sedang memuat bite..." />
+          ) : error ? (
+            <section className="px-6 py-20 text-center">
+              <AlertCircle className="mx-auto mb-3 h-10 w-10 text-red-300" />
+              <h2 className="text-lg font-bold text-gray-900">Postingan gagal dimuat</h2>
+              <p className="mt-1 text-sm text-gray-500">{error}</p>
+              <button
+                type="button"
+                onClick={loadBite}
+                className="mt-5 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-pink-600"
+              >
+                Coba lagi
+              </button>
+            </section>
+          ) : (
+            <>
+              <article className="border-b border-gray-200 bg-white px-4 py-5">
               <div className="flex gap-3">
                 <button
                   type="button"
@@ -295,18 +338,20 @@ export default function BiteDetailPage() {
                   </p>
 
                   {(bite.photoUrl || bite.image) && (
-                    <img
-                      src={bite.photoUrl || bite.image}
-                      alt={bite.foodName || bite.title || "Food"}
-                      className="mt-4 max-h-[560px] w-full rounded-2xl border border-gray-100 object-cover"
-                    />
+                    <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
+                      <img
+                        src={bite.photoUrl || bite.image}
+                        alt={bite.foodName || bite.title || "Food"}
+                        className="max-h-[560px] w-full object-cover"
+                      />
+                    </div>
                   )}
 
                   <div className="mt-4 flex flex-wrap gap-2">
                     {normalizeCategories(bite.category || bite.categories).map((cat) => (
                       <span
                         key={cat}
-                        className="rounded-full bg-pink-50 px-2 py-1 text-xs font-medium text-pink-600"
+                        className="rounded-full border border-pink-200 bg-pink-50 px-2 py-1 text-xs font-medium text-pink-600"
                       >
                         {getCategoryLabel(normalizeCategoryValue(cat))}
                       </span>
@@ -327,16 +372,17 @@ export default function BiteDetailPage() {
                   </div>
                 </div>
               </div>
-            </article>
+              </article>
 
-            <div className="flex items-center gap-8 border-b border-gray-100 px-4 py-3 text-gray-500">
+              <div className="flex items-center gap-6 border-b border-gray-200 bg-gray-50/80 px-4 py-3 text-gray-400">
               <button
                 type="button"
                 onClick={handleToggleLike}
                 disabled={liking}
-                className={`inline-flex items-center gap-2 text-sm font-semibold disabled:opacity-60 ${
+                className={`inline-flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                   liked ? "text-pink-500" : "hover:text-pink-500"
                 }`}
+                aria-label={liked ? "Unlike bite" : "Like bite"}
               >
                 {liking ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -345,27 +391,42 @@ export default function BiteDetailPage() {
                 )}
                 {getLikeCount(bite)}
               </button>
-              <span className="inline-flex items-center gap-2 text-sm font-semibold">
+              <button
+                type="button"
+                onClick={handleToggleSave}
+                disabled={saving}
+                className={`inline-flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                  saved ? "text-pink-500" : "hover:text-pink-500"
+                }`}
+                aria-label={saved ? "Unsave bite" : "Save bite"}
+              >
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
+                )}
+              </button>
+              <div className="inline-flex items-center gap-1.5 text-sm">
                 <MessageCircle className="h-4 w-4" />
-                {displayedCommentCount}
-              </span>
-            </div>
+                <span>{displayedCommentCount}</span>
+              </div>
+              </div>
 
-            <form onSubmit={handleSubmitComment} className="border-b border-gray-100 p-4">
+              <form onSubmit={handleSubmitComment} className="border-b border-gray-200 bg-white p-4">
               <textarea
                 value={commentDraft}
                 onChange={(event) => setCommentDraft(event.target.value)}
                 disabled={commenting}
                 placeholder="Tulis komentar..."
                 rows={3}
-                className="w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 disabled:bg-gray-50"
+                className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm outline-none transition-colors focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100 disabled:bg-gray-50"
               />
               <div className="mt-3 flex items-center justify-between gap-3">
                 <p className="text-xs font-medium text-red-500">{commentError}</p>
                 <button
                   type="submit"
                   disabled={commenting}
-                  className="inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-pink-600 disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-pink-600 disabled:opacity-60"
                 >
                   {commenting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -375,9 +436,14 @@ export default function BiteDetailPage() {
                   Kirim
                 </button>
               </div>
-            </form>
+              </form>
 
-            <section className="divide-y divide-gray-100">
+              <section className="divide-y divide-gray-200 bg-white">
+              <div className="bg-gray-50/80 px-4 py-3">
+                <h2 className="text-sm font-extrabold text-gray-900">
+                  Komentar
+                </h2>
+              </div>
               {commentsLoading ? (
                 <div className="flex justify-center px-6 py-12">
                   <Loader2 className="h-5 w-5 animate-spin text-pink-500" />
@@ -410,7 +476,7 @@ export default function BiteDetailPage() {
                   const authorHandle = getCommentAuthorHandle(comment);
 
                   return (
-                    <article key={commentId} className="flex gap-3 px-4 py-4">
+                    <article key={commentId} className="flex gap-3 px-4 py-4 transition-colors hover:bg-gray-50/70">
                       <button
                         type="button"
                         onClick={() => openUserProfile(authorHandle)}
@@ -445,9 +511,9 @@ export default function BiteDetailPage() {
                   );
                 })
               )}
-            </section>
-          </>
-        )}
+              </section>
+            </>
+          )}
         </main>
         <AdvertisementSidebar />
       </div>

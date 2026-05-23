@@ -6,12 +6,13 @@ import ActionMessage from "../components/explore/ActionMessage";
 import ExploreFeed from "../components/explore/ExploreFeed";
 import ExploreHeader from "../components/explore/ExploreHeader";
 import LocationResults from "../components/explore/LocationResults";
+import LoginRequired from "../components/profile/LoginRequired";
 import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
 import { toggleLikeBite } from "../services/feedApi";
 import { broadcastFeedChange } from "../services/feedRealtime";
 import { followUser, unfollowUser } from "../services/profileApi";
-import { getAuthHeaders, getStoredUser } from "../utils/auth";
+import { getAuthHeaders, getStoredUser, isAuthenticated } from "../utils/auth";
 import {
   getLikeCount,
   isBiteLiked,
@@ -140,8 +141,11 @@ export default function ExplorePage() {
   const query = searchParams.get("q") || "";
   const category = normalizeCategoryValue(searchParams.get("category") || "");
   const currentUser = useMemo(() => getStoredUser(), []);
+  const hasSession = useMemo(() => isAuthenticated(), []);
 
   useEffect(() => {
+    if (!hasSession) return;
+
     if (!query) {
       setResults([]);
       return;
@@ -164,9 +168,16 @@ export default function ExplorePage() {
     };
 
     handleSearchLocation();
-  }, [query]);
+  }, [hasSession, query]);
 
   const fetchFeed = useCallback(async () => {
+    if (!hasSession) {
+      setFeedLoading(false);
+      setFeedError("");
+      setBites([]);
+      return;
+    }
+
     setFeedLoading(true);
     setFeedError("");
 
@@ -194,7 +205,7 @@ export default function ExplorePage() {
     } finally {
       setFeedLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, hasSession]);
 
   const biteActions = useBiteMutations({
     currentUser,
@@ -207,7 +218,7 @@ export default function ExplorePage() {
     fetchFeed();
   }, [fetchFeed]);
 
-  useFeedSocket(bites, setBites, { setFollowingUsers });
+  useFeedSocket(bites, hasSession ? setBites : null, { setFollowingUsers });
 
   const filteredBites = useMemo(() => {
     if (!category) return bites;
@@ -218,6 +229,8 @@ export default function ExplorePage() {
       ),
     );
   }, [bites, category]);
+
+  if (!hasSession) return <LoginRequired />;
 
   const canManageBite = (bite) => {
     if (!currentUser) return false;
