@@ -3,6 +3,7 @@ import { AlertCircle, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
+import ConfirmDialog from "../components/ConfirmDialog";
 import ActionMessage from "../components/profile/ActionMessage";
 import LoginRequired from "../components/profile/LoginRequired";
 import ProfileHeader from "../components/profile/ProfileHeader";
@@ -15,6 +16,9 @@ import { useProfileData } from "../hooks/useProfileData";
 import { getStoredUser } from "../utils/auth";
 import { getBiteId } from "../utils/biteEngagement";
 import { getProfileViewModel } from "../utils/profile";
+
+const getBiteTitle = (bite) =>
+  bite?.foodName || bite?.title || bite?.locationName || "postingan ini";
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -399,6 +403,21 @@ export default function ProfilePage() {
 
         <AdvertisementSidebar />
       </div>
+
+      <ConfirmDialog
+        open={Boolean(biteActions.pendingDeleteBite)}
+        loading={
+          biteActions.deletingBiteId === getBiteId(biteActions.pendingDeleteBite)
+        }
+        title="Hapus postingan?"
+        description={`"${getBiteTitle(
+          biteActions.pendingDeleteBite,
+        )}" akan dihapus permanen dari profil kamu.`}
+        confirmLabel="Hapus"
+        cancelLabel="Batal"
+        onCancel={biteActions.cancelDeleteBite}
+        onConfirm={biteActions.confirmDeleteBite}
+      />
     </div>
   );
 }

@@ -43,6 +43,7 @@ export const useBiteMutations = ({
   const [editPhotoFile, setEditPhotoFile] = useState(null);
   const [savingBiteId, setSavingBiteId] = useState(null);
   const [deletingBiteId, setDeletingBiteId] = useState(null);
+  const [pendingDeleteBite, setPendingDeleteBite] = useState(null);
   const [likingBiteIds, setLikingBiteIds] = useState(() => new Set());
   const [savingBiteIds, setSavingBiteIds] = useState(() => new Set());
   const [commentingBiteIds, setCommentingBiteIds] = useState(() => new Set());
@@ -147,7 +148,19 @@ export const useBiteMutations = ({
 
   const deleteBite = async (bite) => {
     const biteId = getBiteId(bite);
-    if (!biteId || !window.confirm("Delete this bite?")) return;
+    if (!biteId) return;
+
+    setPendingDeleteBite(bite);
+  };
+
+  const cancelDeleteBite = () => {
+    if (!deletingBiteId) setPendingDeleteBite(null);
+  };
+
+  const confirmDeleteBite = async () => {
+    const bite = pendingDeleteBite;
+    const biteId = getBiteId(bite);
+    if (!biteId) return;
 
     setDeletingBiteId(biteId);
     setActionMessage({ type: "", text: "" });
@@ -170,6 +183,7 @@ export const useBiteMutations = ({
       setActionMessage({ type: "error", text: err.message });
     } finally {
       setDeletingBiteId(null);
+      setPendingDeleteBite(null);
     }
   };
 
@@ -356,6 +370,7 @@ export const useBiteMutations = ({
   return {
     editingId,
     editForm,
+    pendingDeleteBite,
     savingBiteId,
     deletingBiteId,
     likingBiteIds,
@@ -368,6 +383,8 @@ export const useBiteMutations = ({
     setEditPhotoFile,
     updateBite,
     deleteBite,
+    cancelDeleteBite,
+    confirmDeleteBite,
     toggleLike,
     toggleSave,
     submitComment,

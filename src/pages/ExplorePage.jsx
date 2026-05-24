@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
+import ConfirmDialog from "../components/ConfirmDialog";
 import ActionMessage from "../components/explore/ActionMessage";
 import ExploreFeed from "../components/explore/ExploreFeed";
 import ExploreHeader from "../components/explore/ExploreHeader";
@@ -74,6 +75,9 @@ const getCurrentUserValues = (user) =>
     user?.email,
   ].filter(Boolean).map(String);
 
+const getBiteTitle = (bite) =>
+  bite?.foodName || bite?.title || bite?.locationName || "postingan ini";
+
 const getFollowUsername = (bite) => {
   const owner = bite?.user || bite?.author || bite?.createdBy || bite?.owner;
 
@@ -132,6 +136,7 @@ export default function ExplorePage() {
   const [editPhotoFile, setEditPhotoFile] = useState(null);
   const [savingId, setSavingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [pendingDeleteBite, setPendingDeleteBite] = useState(null);
   const [followingUsers, setFollowingUsers] = useState(() =>
     getCachedFollowingUsers(getStoredUser()),
   );
@@ -395,7 +400,18 @@ export default function ExplorePage() {
 
   const handleDelete = async (bite) => {
     const biteId = getBiteId(bite);
-    if (!biteId || !window.confirm("Delete this bite?")) return;
+    if (!biteId) return;
+
+    setPendingDeleteBite(bite);
+  };
+
+  const cancelDelete = () => {
+    if (!deletingId) setPendingDeleteBite(null);
+  };
+
+  const confirmDelete = async () => {
+    const biteId = getBiteId(pendingDeleteBite);
+    if (!biteId) return;
 
     setDeletingId(biteId);
     setActionMessage({ type: "", text: "" });
@@ -418,6 +434,7 @@ export default function ExplorePage() {
       setActionMessage({ type: "error", text: err.message });
     } finally {
       setDeletingId(null);
+      setPendingDeleteBite(null);
     }
   };
 
@@ -530,6 +547,19 @@ export default function ExplorePage() {
         </main>
         <AdvertisementSidebar />
       </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingDeleteBite)}
+        loading={deletingId === getBiteId(pendingDeleteBite)}
+        title="Hapus postingan?"
+        description={`"${getBiteTitle(
+          pendingDeleteBite,
+        )}" akan dihapus permanen dari feed kamu.`}
+        confirmLabel="Hapus"
+        cancelLabel="Batal"
+        onCancel={cancelDelete}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

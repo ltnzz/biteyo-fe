@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
+import ConfirmDialog from "../components/ConfirmDialog";
 import LoginRequired from "../components/profile/LoginRequired";
 import NotificationFeedback from "../components/notifications/NotificationFeedback";
 import NotificationHeader from "../components/notifications/NotificationHeader";
@@ -32,6 +33,8 @@ export default function NotificationPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [readingIds, setReadingIds] = useState(() => new Set());
   const [deletingId, setDeletingId] = useState("");
+  const [pendingDeleteNotification, setPendingDeleteNotification] =
+    useState(null);
   const hasSession = useMemo(() => isAuthenticated(), []);
 
   const unreadCount = notifications.filter(
@@ -186,7 +189,14 @@ export default function NotificationPage() {
     event.stopPropagation();
 
     const notificationId = getNotificationId(notification);
-    if (!notificationId || !window.confirm("Hapus notifikasi ini?")) return;
+    if (!notificationId) return;
+
+    setPendingDeleteNotification(notification);
+  };
+
+  const confirmDeleteNotification = async () => {
+    const notificationId = getNotificationId(pendingDeleteNotification);
+    if (!notificationId) return;
 
     setDeletingId(notificationId);
     setActionMessage({ type: "", text: "" });
@@ -204,6 +214,7 @@ export default function NotificationPage() {
       });
     } finally {
       setDeletingId("");
+      setPendingDeleteNotification(null);
     }
   };
 
@@ -260,6 +271,17 @@ export default function NotificationPage() {
 
         <AdvertisementSidebar />
       </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingDeleteNotification)}
+        loading={deletingId === getNotificationId(pendingDeleteNotification)}
+        title="Hapus notifikasi?"
+        description="Notifikasi ini akan dihapus dari daftar kamu. Aksi ini tidak bisa dibatalkan."
+        confirmLabel="Hapus"
+        cancelLabel="Batal"
+        onCancel={() => setPendingDeleteNotification(null)}
+        onConfirm={confirmDeleteNotification}
+      />
     </div>
   );
 }
