@@ -248,7 +248,7 @@ export default function ExplorePage() {
     return ownerValues.some((value) => currentValues.includes(value));
   };
 
-  const getBiteId = (bite) => bite._id || bite.id;
+  const getBiteId = (bite) => bite?._id || bite?.id || bite?.biteId || "";
 
   const updateBiteInState = (biteId, updater) => {
     setBites((prev) =>
