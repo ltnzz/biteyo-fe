@@ -42,6 +42,7 @@ import {
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
 import {
+  getDisplayLocation,
   getCategoryLabel,
   normalizeCategories,
   normalizeCategoryValue,
@@ -271,6 +272,7 @@ export default function BiteDetailPage() {
   const biteAuthorName = bite ? getBiteAuthorName(bite) : "";
   const biteAuthorHandle = bite ? getBiteAuthorHandle(bite) : "";
   const biteAuthorAvatar = bite ? getBiteAuthorAvatar(bite) : "";
+  const displayLocation = getDisplayLocation(bite);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -338,7 +340,7 @@ export default function BiteDetailPage() {
                     {biteAuthorName}
                   </button>
                   <p className="text-xs text-gray-500">
-                    {bite.locationName || bite.location || "Unknown location"}
+                    {displayLocation}
                   </p>
 
                   <h3 className="mt-3 text-lg font-bold text-gray-900">

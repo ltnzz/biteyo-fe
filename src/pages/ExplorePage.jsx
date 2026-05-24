@@ -28,7 +28,6 @@ import {
   mergeFollowingUsers,
   toFollowKey,
 } from "../utils/followState";
-import { compressImageFile } from "../utils/imageCompression";
 
 const parseApiError = async (response, fallback) => {
   const data = await response.json().catch(() => null);
@@ -135,7 +134,6 @@ export default function ExplorePage() {
     rating: 0,
     category: "",
   });
-  const [editPhotoFile, setEditPhotoFile] = useState(null);
   const [savingId, setSavingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [pendingDeleteBite, setPendingDeleteBite] = useState(null);
@@ -316,7 +314,6 @@ export default function ExplorePage() {
   const startEdit = (bite) => {
     setActionMessage({ type: "", text: "" });
     setEditingId(getBiteId(bite));
-    setEditPhotoFile(null);
     setEditForm({
       foodName: bite.foodName || bite.title || "",
       locationName: bite.locationName || bite.location || "",
@@ -328,7 +325,6 @@ export default function ExplorePage() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditPhotoFile(null);
   };
 
   const handleEditChange = (field, value) => {
@@ -361,30 +357,14 @@ export default function ExplorePage() {
     setActionMessage({ type: "", text: "" });
 
     try {
-      let body = JSON.stringify(payload);
-      let headers = {
-        ...getAuthHeaders(),
-        "Content-Type": "application/json",
-      };
-
-      if (editPhotoFile) {
-        const formData = new FormData();
-        formData.append("foodName", payload.foodName);
-        formData.append("locationName", payload.locationName);
-        formData.append("review", payload.review);
-        formData.append("rating", payload.rating);
-        formData.append("category", payload.category);
-        formData.append("photo", await compressImageFile(editPhotoFile));
-
-        body = formData;
-        headers = getAuthHeaders();
-      }
-
       const res = await fetch(`${API_BASE}/api/feed/bites/${biteId}`, {
         method: "PATCH",
         credentials: "include",
-        headers,
-        body,
+        headers: {
+          ...getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -540,7 +520,6 @@ export default function ExplorePage() {
             onEditChange={handleEditChange}
             onOpenBite={openBiteDetail}
             onOpenProfile={openUserProfile}
-            onPhotoChange={setEditPhotoFile}
             onStartEdit={startEdit}
             onToggleLike={handleToggleLike}
             onToggleSave={biteActions.toggleSave}

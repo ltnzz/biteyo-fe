@@ -345,7 +345,6 @@ export default function ProfilePage() {
                   onEditChange={biteActions.updateEditForm}
                   onOpenBite={openBiteDetail}
                   onOpenProfile={openUserProfile}
-                  onPhotoChange={biteActions.setEditPhotoFile}
                   onRetry={fetchUserBites}
                   onSubmitComment={biteActions.submitComment}
                   onToggleLike={biteActions.toggleLike}

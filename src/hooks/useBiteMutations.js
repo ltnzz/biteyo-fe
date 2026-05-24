@@ -19,7 +19,6 @@ import {
   normalizeCategories,
   normalizeCategoryValue,
 } from "../utils/bites";
-import { compressImageFile } from "../utils/imageCompression";
 
 export const getBiteId = readBiteId;
 
@@ -41,7 +40,6 @@ export const useBiteMutations = ({
     rating: 0,
     category: "",
   });
-  const [editPhotoFile, setEditPhotoFile] = useState(null);
   const [savingBiteId, setSavingBiteId] = useState(null);
   const [deletingBiteId, setDeletingBiteId] = useState(null);
   const [pendingDeleteBite, setPendingDeleteBite] = useState(null);
@@ -59,7 +57,6 @@ export const useBiteMutations = ({
   const startEdit = (bite) => {
     setActionMessage({ type: "", text: "" });
     setEditingId(getBiteId(bite));
-    setEditPhotoFile(null);
     setEditForm({
       foodName: bite.foodName || bite.title || "",
       locationName: bite.locationName || bite.location || "",
@@ -73,7 +70,6 @@ export const useBiteMutations = ({
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditPhotoFile(null);
   };
 
   const updateEditForm = (field, value) => {
@@ -106,30 +102,14 @@ export const useBiteMutations = ({
     setActionMessage({ type: "", text: "" });
 
     try {
-      let body = JSON.stringify(payload);
-      let headers = {
-        ...getAuthHeaders(),
-        "Content-Type": "application/json",
-      };
-
-      if (editPhotoFile) {
-        const formData = new FormData();
-        formData.append("foodName", payload.foodName);
-        formData.append("locationName", payload.locationName);
-        formData.append("review", payload.review);
-        formData.append("rating", payload.rating);
-        formData.append("category", payload.category);
-        formData.append("photo", await compressImageFile(editPhotoFile));
-
-        body = formData;
-        headers = getAuthHeaders();
-      }
-
       const res = await fetch(`${API_BASE}/api/feed/bites/${biteId}`, {
         method: "PATCH",
         credentials: "include",
-        headers,
-        body,
+        headers: {
+          ...getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -388,7 +368,6 @@ export const useBiteMutations = ({
     startEdit,
     cancelEdit,
     updateEditForm,
-    setEditPhotoFile,
     updateBite,
     deleteBite,
     cancelDeleteBite,

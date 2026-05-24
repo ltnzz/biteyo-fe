@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Camera, Star, Loader2, X } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Camera, Star, Loader2, MapPin, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../utils/auth";
 import {
@@ -10,12 +10,56 @@ import { broadcastFeedChange } from "../services/feedRealtime";
 import { getBiteId, normalizeUpdatedBite } from "../utils/biteEngagement";
 import { compressImageFile } from "../utils/imageCompression";
 
+const LOCATION_SEARCH_DEBOUNCE_MS = 350;
+
+const getTextValue = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+
+  return value.text || value.name || "";
+};
+
+const getLocationName = (place) =>
+  getTextValue(place?.name) ||
+  getTextValue(place?.displayName) ||
+  getTextValue(place?.structuredFormatting?.mainText) ||
+  "";
+
+const getLocationLabel = (place) =>
+  getLocationName(place) ||
+  getTextValue(place?.formattedAddress) ||
+  getTextValue(place?.address) ||
+  getTextValue(place?.description) ||
+  "";
+
+const getLocationAddress = (place) =>
+  getTextValue(place?.formattedAddress) ||
+  getTextValue(place?.address) ||
+  getTextValue(place?.vicinity) ||
+  "";
+
+const normalizeLocationResults = (data) => {
+  const candidates = [
+    data,
+    data?.data,
+    data?.results,
+    data?.items,
+    data?.locations,
+    data?.places,
+  ];
+  const results = candidates.find(Array.isArray) || [];
+
+  return results.filter((place) => getLocationLabel(place));
+};
+
 export default function AddPage() {
   const navigate = useNavigate();
+  const locationInputFocusedRef = useRef(false);
 
   // Form states
   const [foodName, setFoodName] = useState("");
   const [location, setLocation] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [review, setReview] = useState("");
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
@@ -26,6 +70,58 @@ export default function AddPage() {
   // UI states
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [hasSearchedLocation, setHasSearchedLocation] = useState(false);
+
+  useEffect(() => {
+    const query = location.trim();
+
+    if (query.length < 2 || getLocationLabel(selectedLocation) === query) {
+      setLocationSuggestions([]);
+      setLocationLoading(false);
+      setLocationError("");
+      setHasSearchedLocation(false);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(async () => {
+      setLocationLoading(true);
+      setLocationError("");
+      setHasSearchedLocation(true);
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/api/maps/location/search?q=${encodeURIComponent(query)}`,
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          throw new Error("Gagal mencari lokasi.");
+        }
+
+        const data = await response.json().catch(() => []);
+        setLocationSuggestions(normalizeLocationResults(data));
+        if (locationInputFocusedRef.current) {
+          setShowLocationSuggestions(true);
+        }
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        setLocationSuggestions([]);
+        setLocationError("Gagal mencari lokasi. Coba lagi.");
+      } finally {
+        if (!controller.signal.aborted) setLocationLoading(false);
+      }
+    }, LOCATION_SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [location, selectedLocation]);
 
   const handlePhoto = (e) => {
     const file = e.target.files[0];
@@ -43,11 +139,32 @@ export default function AddPage() {
   const resetForm = () => {
     setFoodName("");
     setLocation("");
+    setSelectedLocation(null);
+    setLocationSuggestions([]);
+    setShowLocationSuggestions(false);
     setReview("");
     setRating(0);
     setSelectedCategory("");
     setPhotoFile(null);
     setPhotoPreview(null);
+  };
+
+  const handleLocationChange = (e) => {
+    locationInputFocusedRef.current = true;
+    setLocation(e.target.value);
+    setSelectedLocation(null);
+    setLocationSuggestions([]);
+    setLocationError("");
+    setHasSearchedLocation(false);
+    setShowLocationSuggestions(true);
+  };
+
+  const handleLocationSelect = (place) => {
+    setLocation(getLocationName(place) || getLocationLabel(place));
+    setSelectedLocation(place);
+    setLocationSuggestions([]);
+    setShowLocationSuggestions(false);
+    setLocationError("");
   };
 
   const handleSubmit = async (e) => {
@@ -64,7 +181,33 @@ export default function AddPage() {
     try {
       const formData = new FormData();
       formData.append("foodName", foodName);
-      formData.append("locationName", location);
+      formData.append(
+        "locationName",
+        selectedLocation
+          ? getLocationName(selectedLocation) || location.trim()
+          : location.trim(),
+      );
+      if (selectedLocation) {
+        const placeId =
+          selectedLocation.placeId ||
+          selectedLocation.place_id ||
+          selectedLocation.id ||
+          "";
+        const lat =
+          selectedLocation.lat ??
+          selectedLocation.latitude ??
+          selectedLocation.geometry?.location?.lat;
+        const lng =
+          selectedLocation.lng ??
+          selectedLocation.longitude ??
+          selectedLocation.geometry?.location?.lng;
+        const address = getLocationAddress(selectedLocation);
+
+        if (placeId) formData.append("locationPlaceId", placeId);
+        if (lat !== undefined && lat !== null) formData.append("locationLat", lat);
+        if (lng !== undefined && lng !== null) formData.append("locationLng", lng);
+        if (address) formData.append("locationAddress", address);
+      }
       formData.append("review", review);
       formData.append("rating", rating);
       formData.append("category", selectedCategory);
@@ -190,18 +333,90 @@ export default function AddPage() {
                   required
                 />
               </div>
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Where?
                 </label>
                 <input
                   type="text"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={handleLocationChange}
+                  onFocus={() => {
+                    locationInputFocusedRef.current = true;
+                    setShowLocationSuggestions(true);
+                  }}
+                  onBlur={() => {
+                    locationInputFocusedRef.current = false;
+                    setTimeout(() => setShowLocationSuggestions(false), 120);
+                  }}
                   placeholder="Restaurant or location..."
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                  autoComplete="off"
                   required
                 />
+                {showLocationSuggestions && location.trim().length >= 2 && !selectedLocation && (
+                  <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                    {locationLoading && (
+                      <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500">
+                        <Loader2 className="h-4 w-4 animate-spin text-pink-500" />
+                        Searching location...
+                      </div>
+                    )}
+
+                    {!locationLoading && locationError && (
+                      <p className="px-4 py-3 text-sm text-red-600">
+                        {locationError}
+                      </p>
+                    )}
+
+                    {!locationLoading && !locationError && locationSuggestions.length > 0 && (
+                      <div className="max-h-60 overflow-y-auto py-1">
+                        {locationSuggestions.map((place, index) => {
+                          const label = getLocationLabel(place);
+                          const address = getLocationAddress(place);
+                          const key =
+                            place.placeId ||
+                            place.place_id ||
+                            place.id ||
+                            `${label}-${index}`;
+
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => handleLocationSelect(place)}
+                              className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-pink-50"
+                            >
+                              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-100 text-pink-500">
+                                <MapPin className="h-4 w-4" />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-semibold text-gray-800">
+                                  {label}
+                                </span>
+                                {address && (
+                                  <span className="mt-0.5 block truncate text-xs text-gray-500">
+                                    {address}
+                                  </span>
+                                )}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {!locationLoading &&
+                      !locationError &&
+                      hasSearchedLocation &&
+                      locationSuggestions.length === 0 && (
+                        <p className="px-4 py-3 text-sm text-gray-500">
+                          Lokasi tidak ditemukan.
+                        </p>
+                      )}
+                  </div>
+                )}
               </div>
             </div>
 

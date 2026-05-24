@@ -31,7 +31,6 @@ export default function ProfileTimeline({
   onEditChange,
   onOpenBite,
   onOpenProfile,
-  onPhotoChange,
   onRetry,
   onSubmitComment,
   onToggleLike,
@@ -108,7 +107,6 @@ export default function ProfileTimeline({
               onEditChange={onEditChange}
               onOpenBite={onOpenBite}
               onOpenProfile={onOpenProfile}
-              onPhotoChange={onPhotoChange}
               onSubmitComment={onSubmitComment}
               onToggleLike={onToggleLike}
               onToggleSave={onToggleSave}

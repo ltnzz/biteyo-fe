@@ -8,7 +8,6 @@ export default function BiteEditForm({
   savingId,
   onCancelEdit,
   onEditChange,
-  onPhotoChange,
   onUpdate,
 }) {
   return (
@@ -67,16 +66,6 @@ export default function BiteEditForm({
           </button>
         ))}
       </div>
-
-      <label className="block text-xs text-gray-500">
-        Replace photo
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => onPhotoChange(e.target.files[0] || null)}
-          className="mt-1 block w-full text-sm text-gray-600"
-        />
-      </label>
 
       <div className="flex gap-2">
         <button

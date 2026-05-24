@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import {
+  getDisplayLocation,
   getCategoryLabel,
   normalizeCategories,
   normalizeCategoryValue,
@@ -44,7 +45,6 @@ export default function BiteCard({
   onCancelEdit,
   onDelete,
   onEditChange,
-  onPhotoChange,
   onOpenBite,
   onOpenProfile,
   onStartEdit,
@@ -60,6 +60,7 @@ export default function BiteCard({
   const authorName = getBiteAuthorName(bite);
   const authorHandle = getBiteAuthorHandle(bite);
   const authorAvatar = getBiteAuthorAvatar(bite);
+  const displayLocation = getDisplayLocation(bite);
 
   const handleOpenBite = () => {
     if (!biteId || isEditing) return;
@@ -106,7 +107,7 @@ export default function BiteCard({
                 {authorName}
               </button>
               <p className="text-xs text-gray-500 truncate">
-                {bite.locationName || bite.location || "Unknown location"}
+                {displayLocation}
               </p>
             </div>
 
@@ -190,7 +191,6 @@ export default function BiteCard({
               savingId={savingId}
               onCancelEdit={onCancelEdit}
               onEditChange={onEditChange}
-              onPhotoChange={onPhotoChange}
               onUpdate={onUpdate}
             />
           ) : (

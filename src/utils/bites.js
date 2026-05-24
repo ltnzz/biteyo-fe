@@ -41,3 +41,9 @@ export const normalizeCategories = (value) => {
 
   return [];
 };
+
+export const getDisplayLocation = (bite) => {
+  const location = bite?.locationName || bite?.location || "";
+
+  return location.split(",")[0].trim() || "Unknown location";
+};

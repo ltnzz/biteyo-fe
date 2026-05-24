@@ -5,7 +5,6 @@ import {
   Mail,
   Lock,
   ArrowRight,
-  Facebook,
   Loader2,
   AlertCircle,
 } from "lucide-react";
@@ -234,8 +233,8 @@ export default function LoginPage() {
                 <div className="flex-1 border-t border-gray-100" />
               </div>
 
-              <div className="flex gap-4">
-                <div className="relative flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white">
+              <div className="flex justify-center">
+                <div className="relative inline-flex justify-center overflow-hidden rounded">
                   <div className={loading || googleLoading ? "pointer-events-none opacity-50" : ""}>
                     <GoogleLogin
                       onSuccess={handleGoogleSuccess}
@@ -244,7 +243,6 @@ export default function LoginPage() {
                       size="large"
                       text="signin_with"
                       shape="rectangular"
-                      width="210"
                     />
                   </div>
                   {googleLoading && (
@@ -253,18 +251,6 @@ export default function LoginPage() {
                     </div>
                   )}
                 </div>
-                <button
-                  type="button"
-                  className="flex-1 flex items-center justify-center gap-2 border border-gray-200 py-2.5 rounded-xl text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors"
-                >
-                  <Facebook
-                    className="text-blue-600"
-                    size={20}
-                    fill="currentColor"
-                    stroke="none"
-                  />{" "}
-                  Facebook
-                </button>
               </div>
 
               <p className="text-center text-sm text-gray-600 mt-8">

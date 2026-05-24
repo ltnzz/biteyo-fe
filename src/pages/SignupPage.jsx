@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { AtSign, Mail, Lock, ArrowRight, PenTool, Search, Users, Facebook, Loader2, AlertCircle, } from "lucide-react";
+import { AtSign, Mail, Lock, ArrowRight, PenTool, Search, Users, Loader2, AlertCircle, } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import LegalModal from "../components/LegalModal"; 
@@ -164,12 +164,9 @@ export default function SignupPage() {
                 <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-400">Atau</span></div>
               </div>
 
-              <div className="flex gap-4">
-                <button type="button" className="flex-1 flex items-center justify-center gap-2 border py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50">
+              <div>
+                <button type="button" className="flex w-full items-center justify-center gap-2 border py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50">
                   <GoogleIcon /> Google
-                </button>
-                <button type="button" className="flex-1 flex items-center justify-center gap-2 border py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50">
-                  <Facebook className="text-blue-600" size={20} fill="currentColor" stroke="none" /> Facebook
                 </button>
               </div>
 

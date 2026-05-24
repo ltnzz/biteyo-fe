@@ -1,6 +1,7 @@
 import { Bookmark, Heart, Loader2, MessageCircle, Pencil, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import {
+  getDisplayLocation,
   getCategoryLabel,
   normalizeCategories,
   normalizeCategoryValue,
@@ -38,7 +39,6 @@ export default function ProfileBiteCard({
   onEditChange,
   onOpenBite,
   onOpenProfile,
-  onPhotoChange,
   onSubmitComment,
   onToggleLike,
   onToggleSave,
@@ -50,6 +50,7 @@ export default function ProfileBiteCard({
   const authorName = displayName || getBiteAuthorName(bite);
   const authorHandle = handle || getBiteAuthorHandle(bite);
   const authorAvatar = avatar || getBiteAuthorAvatar(bite);
+  const displayLocation = getDisplayLocation(bite);
 
   const handleOpenBite = () => {
     if (editing) return;
@@ -97,7 +98,7 @@ export default function ProfileBiteCard({
               </button>
               <p className="text-xs text-gray-500 truncate">
                 {authorHandle ? `@${authorHandle} - ` : ""}
-                {bite.locationName || bite.location || "Unknown location"}
+                {displayLocation}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -152,7 +153,6 @@ export default function ProfileBiteCard({
               saving={saving}
               onCancel={onCancelEdit}
               onChange={onEditChange}
-              onPhotoChange={onPhotoChange}
               onSave={onUpdate}
             />
           ) : (

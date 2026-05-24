@@ -27,7 +27,6 @@ export default function ExploreFeed({
   onEditChange,
   onOpenBite,
   onOpenProfile,
-  onPhotoChange,
   onStartEdit,
   onToggleLike,
   onToggleSave,
@@ -105,7 +104,6 @@ export default function ExploreFeed({
               onEditChange={onEditChange}
               onOpenBite={onOpenBite}
               onOpenProfile={onOpenProfile}
-              onPhotoChange={onPhotoChange}
               onStartEdit={onStartEdit}
               onToggleLike={onToggleLike}
               onToggleSave={onToggleSave}
