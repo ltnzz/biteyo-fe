@@ -48,6 +48,41 @@ export const getBiteDetail = async (biteId) => {
   );
 };
 
+export const searchBites = async (query, options = {}) => {
+  const cleanedQuery = query?.trim();
+  if (!cleanedQuery) return [];
+
+  return requestJson(
+    `/api/feed/bites/search?q=${encodeURIComponent(cleanedQuery)}`,
+    { method: "GET", ...options },
+    "Gagal mencari bites.",
+  );
+};
+
+export const getFeedBites = async (options = {}) =>
+  requestJson(
+    "/api/feed/bites",
+    { method: "GET", ...options },
+    "Gagal memuat bites.",
+  );
+
+export const getTrendingBites = async (options = {}) =>
+  requestJson(
+    "/api/feed/bites/trending",
+    { method: "GET", ...options },
+    "Gagal memuat trending bites.",
+  );
+
+export const getBitesByCategory = async (category, options = {}) => {
+  if (!category) return [];
+
+  return requestJson(
+    `/api/feed/bites/category/${encodeURIComponent(category)}`,
+    { method: "GET", ...options },
+    "Gagal memuat bites berdasarkan kategori.",
+  );
+};
+
 export const getBiteComments = async (biteId) => {
   if (!biteId) throw new Error("Bite id is required.");
 

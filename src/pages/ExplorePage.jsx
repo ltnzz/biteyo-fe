@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ToastMessage from "../components/ToastMessage";
 import ActionMessage from "../components/explore/ActionMessage";
 import ExploreFeed from "../components/explore/ExploreFeed";
 import ExploreHeader from "../components/explore/ExploreHeader";
-import LocationResults from "../components/explore/LocationResults";
 import LoginRequired from "../components/profile/LoginRequired";
 import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
-import { toggleLikeBite } from "../services/feedApi";
+import { getBitesByCategory, searchBites, toggleLikeBite } from "../services/feedApi";
 import { broadcastFeedChange } from "../services/feedRealtime";
 import { followUser, unfollowUser } from "../services/profileApi";
 import { getAuthHeaders, getStoredUser, isAuthenticated } from "../utils/auth";
@@ -21,7 +19,7 @@ import {
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
 import { API_BASE, biteCategories, normalizeBites, normalizeCategories, 
-         normalizeCategoryValue, } from "../utils/bites";
+         normalizeCategoryValue, toCategoryParam, } from "../utils/bites";
 import {
   cacheFollowState,
   getCachedFollowingUsers,
@@ -118,10 +116,7 @@ const isOwnBite = (bite, currentUser) => {
 export default function ExplorePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [results, setResults] = useState([]);
-  const [loadingSearch, setLoadingSearch] = useState(false);
   const [feedLoading, setFeedLoading] = useState(false);
-  const [error, setError] = useState("");
   const [feedError, setFeedError] = useState("");
   const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
   const [toastMessage, setToastMessage] = useState(null);
@@ -148,33 +143,6 @@ export default function ExplorePage() {
   const currentUser = useMemo(() => getStoredUser(), []);
   const hasSession = useMemo(() => isAuthenticated(), []);
 
-  useEffect(() => {
-    if (!hasSession) return;
-
-    if (!query) {
-      setResults([]);
-      return;
-    }
-
-    const handleSearchLocation = async () => {
-      setLoadingSearch(true);
-      setError("");
-
-      try {
-        const response = await axios.get(
-          `${API_BASE}/api/maps/location/search?q=${encodeURIComponent(query)}`,
-        );
-        setResults(response.data);
-      } catch {
-        setError("Gagal mencari lokasi. Coba lagi.");
-      } finally {
-        setLoadingSearch(false);
-      }
-    };
-
-    handleSearchLocation();
-  }, [hasSession, query]);
-
   const fetchFeed = useCallback(async () => {
     if (!hasSession) {
       setFeedLoading(false);
@@ -187,14 +155,17 @@ export default function ExplorePage() {
     setFeedError("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/feed/bites`, {
-        credentials: "include",
-        headers: getAuthHeaders(),
-      });
-
-      if (!res.ok) throw new Error("Failed to load bites");
-
-      const data = await res.json();
+      const data = query.trim()
+        ? await searchBites(query)
+        : category
+          ? await getBitesByCategory(toCategoryParam(category))
+          : await fetch(`${API_BASE}/api/feed/bites`, {
+              credentials: "include",
+              headers: getAuthHeaders(),
+            }).then((res) => {
+              if (!res.ok) throw new Error("Failed to load bites");
+              return res.json();
+            });
       const normalizedBites = normalizeBites(data);
       setBites(normalizedBites);
       const followedFromFeed = normalizedBites
@@ -210,7 +181,7 @@ export default function ExplorePage() {
     } finally {
       setFeedLoading(false);
     }
-  }, [currentUser, hasSession]);
+  }, [category, currentUser, hasSession, query]);
 
   const biteActions = useBiteMutations({
     currentUser,
@@ -226,15 +197,6 @@ export default function ExplorePage() {
 
   useFeedSocket(bites, hasSession ? setBites : null, { setFollowingUsers });
 
-  const filteredBites = useMemo(() => {
-    if (!category) return bites;
-
-    return bites.filter((bite) =>
-      normalizeCategories(bite.category || bite.categories).some(
-        (item) => normalizeCategoryValue(item) === category,
-      ),
-    );
-  }, [bites, category]);
   const closeToast = useCallback(() => setToastMessage(null), []);
 
   if (!hasSession) return <LoginRequired />;
@@ -487,16 +449,10 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-gray-50">
       <div className="flex w-full items-start justify-start px-4">
         <main className="min-h-screen w-full max-w-2xl border-x border-gray-200 bg-white shadow-[0_0_24px_rgba(15,23,42,0.04)]">
-          <ExploreHeader category={category} />
+          <ExploreHeader category={category} query={query} />
           <ActionMessage message={actionMessage} />
-          <LocationResults
-            error={error}
-            loading={loadingSearch}
-            query={query}
-            results={results}
-          />
           <ExploreFeed
-            bites={filteredBites}
+            bites={bites}
             canManageBite={canManageBite}
             currentUser={currentUser}
             deletingId={deletingId}

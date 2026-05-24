@@ -15,7 +15,7 @@ export const getCategoryLabel = (value) =>
 export const normalizeCategoryValue = (value) => {
   if (!value) return "";
 
-  const normalized = value.toLowerCase().replaceAll(" ", "_");
+  const normalized = value.toLowerCase().replaceAll(" ", "_").replaceAll("-", "_");
   const match = biteCategories.find(
     (category) =>
       category.value === normalized ||
@@ -25,12 +25,26 @@ export const normalizeCategoryValue = (value) => {
   return match?.value || normalized;
 };
 
+export const toCategoryParam = (value) => normalizeCategoryValue(value);
+
 export const normalizeBites = (data) => {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.bites)) return data.bites;
-  if (Array.isArray(data?.data)) return data.data;
-  if (Array.isArray(data?.items)) return data.items;
-  if (Array.isArray(data?.posts)) return data.posts;
+  const candidates = [
+    data,
+    data?.bites,
+    data?.data,
+    data?.data?.bites,
+    data?.data?.items,
+    data?.data?.posts,
+    data?.data?.results,
+    data?.data?.trendingBites,
+    data?.items,
+    data?.posts,
+    data?.results,
+    data?.trendingBites,
+  ];
+
+  const list = candidates.find(Array.isArray);
+  if (list) return list;
 
   return [];
 };
@@ -46,4 +60,32 @@ export const getDisplayLocation = (bite) => {
   const location = bite?.locationName || bite?.location || "";
 
   return location.split(",")[0].trim() || "Unknown location";
+};
+
+export const getBiteTitle = (bite) =>
+  bite?.foodName || bite?.title || bite?.name || "Untitled Bite";
+
+export const getBiteDescription = (bite) =>
+  bite?.review || bite?.description || bite?.caption || bite?.content || "";
+
+export const getBiteImage = (bite) => {
+  const firstImage = Array.isArray(bite?.images) ? bite.images[0] : null;
+
+  if (typeof firstImage === "string") return firstImage;
+
+  return (
+    bite?.photoUrl ||
+    bite?.image ||
+    bite?.imageUrl ||
+    bite?.thumbnail ||
+    firstImage?.url ||
+    firstImage?.src ||
+    ""
+  );
+};
+
+export const getBiteRating = (bite) => {
+  const rating = Number(bite?.rating ?? bite?.score ?? 0);
+
+  return Number.isFinite(rating) ? Math.max(0, Math.min(5, rating)) : 0;
 };
