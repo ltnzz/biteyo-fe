@@ -4,7 +4,7 @@
   <img src="./src/assets/logo.png" alt="Biteyo Logo" width="120" />
 </p>
 
-<h3 align="center">A social food discovery app for sharing, rating, and exploring your next favorite bite.</h3>
+<h3 align="center">A social food discovery website for sharing, rating, and exploring your next favorite bite.</h3>
 
 <p align="center">
   <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=111" />
