@@ -3,6 +3,13 @@ import { API_BASE, parseApiError } from "./api";
 import { getAuthHeaders } from "./auth";
 
 export const FCM_TOKEN_KEY = "biteyo_fcm_token";
+export const NOTIFICATIONS_UPDATED_EVENT = "biteyo:notifications-updated";
+
+export const notifyNotificationsUpdated = () => {
+  if (typeof window === "undefined") return;
+
+  window.dispatchEvent(new Event(NOTIFICATIONS_UPDATED_EVENT));
+};
 
 const requestJson = async (path, options = {}, fallback = "Request failed") => {
   const response = await fetch(`${API_BASE}${path}`, {

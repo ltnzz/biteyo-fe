@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ToastMessage from "../components/ToastMessage";
 import ActionMessage from "../components/explore/ActionMessage";
 import ExploreFeed from "../components/explore/ExploreFeed";
 import ExploreHeader from "../components/explore/ExploreHeader";
@@ -124,6 +125,7 @@ export default function ExplorePage() {
   const [error, setError] = useState("");
   const [feedError, setFeedError] = useState("");
   const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
+  const [toastMessage, setToastMessage] = useState(null);
   const [bites, setBites] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -217,6 +219,7 @@ export default function ExplorePage() {
     refresh: fetchFeed,
     setActionMessage,
     setBites,
+    setToastMessage,
   });
 
   useEffect(() => {
@@ -234,6 +237,7 @@ export default function ExplorePage() {
       ),
     );
   }, [bites, category]);
+  const closeToast = useCallback(() => setToastMessage(null), []);
 
   if (!hasSession) return <LoginRequired />;
 
@@ -560,6 +564,7 @@ export default function ExplorePage() {
         onCancel={cancelDelete}
         onConfirm={confirmDelete}
       />
+      <ToastMessage message={toastMessage} onClose={closeToast} />
     </div>
   );
 }

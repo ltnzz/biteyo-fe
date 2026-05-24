@@ -31,6 +31,7 @@ export const useBiteMutations = ({
   refresh,
   setBites,
   setActionMessage,
+  setToastMessage,
 }) => {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -279,6 +280,13 @@ export const useBiteMutations = ({
         biteId,
         saved: nextSaved,
         updatedBite,
+      });
+      setToastMessage?.({
+        icon: "bookmark",
+        text: nextSaved
+          ? "Added to your saved posts."
+          : "Removed from your saved posts.",
+        type: "success",
       });
 
       if (removeOnUnsave && !nextSaved) {

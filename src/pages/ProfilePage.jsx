@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ToastMessage from "../components/ToastMessage";
 import ActionMessage from "../components/profile/ActionMessage";
 import LoginRequired from "../components/profile/LoginRequired";
 import ProfileHeader from "../components/profile/ProfileHeader";
@@ -25,6 +26,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const currentUser = useMemo(() => getStoredUser(), []);
   const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
+  const [toastMessage, setToastMessage] = useState(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const {
@@ -134,6 +136,7 @@ export default function ProfilePage() {
     refresh: fetchUserBites,
     setActionMessage,
     setBites,
+    setToastMessage,
   });
   const savedBiteActions = useBiteMutations({
     currentUser,
@@ -143,6 +146,7 @@ export default function ProfilePage() {
     removeOnUnsave: true,
     setActionMessage,
     setBites: setSavedBites,
+    setToastMessage,
   });
   const likedBiteActions = useBiteMutations({
     currentUser,
@@ -151,6 +155,7 @@ export default function ProfilePage() {
     refresh: fetchLikedBites,
     setActionMessage,
     setBites: setLikedBites,
+    setToastMessage,
   });
   const resolvedActiveTab = !isOwnProfile && activeTab === "save" ? "posts" : activeTab;
   const acceptsProfileBite = (bite) => {
@@ -182,6 +187,7 @@ export default function ProfilePage() {
   });
   useFeedSocket(savedBites, setSavedBites, { acceptNewBite: () => false });
   useFeedSocket(likedBites, setLikedBites, { acceptNewBite: () => false });
+  const closeToast = useCallback(() => setToastMessage(null), []);
 
   if (!profileUsername) return <LoginRequired />;
 
@@ -418,6 +424,7 @@ export default function ProfilePage() {
         onCancel={biteActions.cancelDeleteBite}
         onConfirm={biteActions.confirmDeleteBite}
       />
+      <ToastMessage message={toastMessage} onClose={closeToast} />
     </div>
   );
 }

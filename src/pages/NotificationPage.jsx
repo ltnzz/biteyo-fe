@@ -23,6 +23,7 @@ import {
   getNotificationId,
   isNotificationRead,
   markNotificationAsRead,
+  notifyNotificationsUpdated,
 } from "../utils/notifications";
 
 export default function NotificationPage() {
@@ -127,6 +128,7 @@ export default function NotificationPage() {
 
     try {
       await markNotificationAsRead(notificationId);
+      notifyNotificationsUpdated();
     } catch (err) {
       updateReadState(notificationId, false);
       setActionMessage({
@@ -170,7 +172,10 @@ export default function NotificationPage() {
       )
       .filter(Boolean);
 
-    if (failedIds.length === 0) return;
+    if (failedIds.length === 0) {
+      notifyNotificationsUpdated();
+      return;
+    }
 
     setNotifications((prev) =>
       prev.map((item) =>
@@ -183,6 +188,7 @@ export default function NotificationPage() {
       type: "error",
       text: "Sebagian notifikasi gagal ditandai sebagai dibaca.",
     });
+    notifyNotificationsUpdated();
   };
 
   const handleDelete = async (event, notification) => {
@@ -207,6 +213,7 @@ export default function NotificationPage() {
         prev.filter((item) => getNotificationId(item) !== notificationId),
       );
       setActionMessage({ type: "success", text: "Notifikasi dihapus." });
+      notifyNotificationsUpdated();
     } catch (err) {
       setActionMessage({
         type: "error",

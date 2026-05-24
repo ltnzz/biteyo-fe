@@ -12,6 +12,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
+import ToastMessage from "../components/ToastMessage";
 import {
   getBiteComments as fetchBiteComments,
   getBiteDetail,
@@ -58,6 +59,7 @@ export default function BiteDetailPage() {
   const [commentsError, setCommentsError] = useState("");
   const [liking, setLiking] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
   const [commentDraft, setCommentDraft] = useState("");
   const [commenting, setCommenting] = useState(false);
   const [commentError, setCommentError] = useState("");
@@ -183,6 +185,13 @@ export default function BiteDetailPage() {
       const updatedBite = normalizeUpdatedBite(data);
 
       if (updatedBite) setBite((prev) => ({ ...prev, ...updatedBite }));
+      setToastMessage({
+        icon: "bookmark",
+        text: nextSaved
+          ? "Added to your saved posts."
+          : "Removed from your saved posts.",
+        type: "success",
+      });
       broadcastFeedChange({ type: "refresh", biteId: getBiteId(bite) });
     } catch {
       setBite((prev) => ({
@@ -249,6 +258,8 @@ export default function BiteDetailPage() {
   const openUserProfile = (username) => {
     if (username) navigate(`/profile/${encodeURIComponent(username)}`);
   };
+
+  const closeToast = useCallback(() => setToastMessage(null), []);
 
   const displayedComments = comments.length > 0 ? comments : getBiteComments(bite);
   const displayedCommentCount = Math.max(
@@ -517,6 +528,7 @@ export default function BiteDetailPage() {
         </main>
         <AdvertisementSidebar />
       </div>
+      <ToastMessage message={toastMessage} onClose={closeToast} />
     </div>
   );
 }

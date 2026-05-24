@@ -4,6 +4,7 @@ import Sidebar from './components/SideBar';
 import MainHeader from './components/MainHeader';
 import ProtectedRoute from './components/ProtectedRoute';
 import BiteLoader from './components/BiteLoader';
+import useUnreadNotifications from './hooks/useUnreadNotifications';
 import { Bell, Home, PlusCircle, Search, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -18,13 +19,18 @@ const AddPage = lazy(() => import('./pages/AddPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const BiteDetailPage = lazy(() => import('./pages/BiteDetailPage'));
 
-function MobileNav() {
+function MobileNav({ unreadNotifications = 0 }) {
   const location = useLocation();
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/explore', icon: Search, label: 'Explore' },
     { to: '/add', icon: PlusCircle, label: 'Post' },
-    { to: '/notifications', icon: Bell, label: 'Alerts' },
+    {
+      to: '/notifications',
+      icon: Bell,
+      label: 'Alerts',
+      badge: unreadNotifications,
+    },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
 
@@ -46,7 +52,14 @@ function MobileNav() {
                 isActive ? 'bg-pink-50 text-pink-500' : 'text-gray-500'
               }`}
             >
-              <Icon className="h-5 w-5" />
+              <span className="relative inline-flex h-5 w-5 items-center justify-center">
+                <Icon className="h-5 w-5" />
+                {item.badge > 0 && (
+                  <span className="absolute -right-2.5 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-pink-500 px-1 text-[9px] font-extrabold leading-none text-white">
+                    {item.badge > 99 ? '99+' : item.badge}
+                  </span>
+                )}
+              </span>
               <span className="truncate">{item.label}</span>
             </Link>
           );
@@ -60,12 +73,13 @@ function AppContent() {
   const location = useLocation();
   const hideSidebarRoutes = ['/login', '/signup', '/forgotpassword'];
   const showSidebar = !hideSidebarRoutes.includes(location.pathname);
+  const unreadNotifications = useUnreadNotifications();
 
   return (
     <div className="flex min-h-screen bg-white">
       {showSidebar && (
         <div className="hidden h-screen w-64 shrink-0 overflow-visible border-r border-gray-100 bg-white lg:sticky lg:top-0 lg:block">
-          <Sidebar />
+          <Sidebar unreadNotifications={unreadNotifications} />
         </div>
       )}
       <div className={`min-h-screen min-w-0 flex-1 ${showSidebar ? 'pb-20 lg:pb-0' : ''}`}>
@@ -102,7 +116,7 @@ function AppContent() {
           </Routes>
         </Suspense>
       </div>
-      {showSidebar && <MobileNav />}
+      {showSidebar && <MobileNav unreadNotifications={unreadNotifications} />}
     </div>
   );
 }

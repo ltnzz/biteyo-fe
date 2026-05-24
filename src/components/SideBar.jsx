@@ -9,7 +9,7 @@ import { AUTH_CHANGE_EVENT, clearAuth, getAuthHeaders, getStoredUser, saveAuth }
 import { unregisterFcmToken } from "../utils/notifications";
 import { getProfileAvatar, getProfileUsername } from "../utils/profile";
 
-export default function Sidebar() {
+export default function Sidebar({ unreadNotifications = 0 }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
@@ -110,7 +110,12 @@ export default function Sidebar() {
   const navItems = [
     { to: "/", icon: Home, label: "Home" },
     { to: "/explore", icon: Search, label: "Explore" },
-    { to: "/notifications", icon: Bell, label: "Notifications" },
+    {
+      to: "/notifications",
+      icon: Bell,
+      label: "Notifications",
+      badge: unreadNotifications,
+    },
     { to: "/profile", icon: User, label: "Profile" },
   ];
 
@@ -142,11 +147,18 @@ export default function Sidebar() {
                     : "font-normal text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <Icon
-                  className={`w-6 h-6 ${
-                    isActive ? "stroke-[2.5px]" : "stroke-2"
-                  }`}
-                />
+                <span className="relative inline-flex h-6 w-6 items-center justify-center">
+                  <Icon
+                    className={`w-6 h-6 ${
+                      isActive ? "stroke-[2.5px]" : "stroke-2"
+                    }`}
+                  />
+                  {item.badge > 0 && (
+                    <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-pink-500 px-1 text-[10px] font-extrabold leading-none text-white shadow-sm">
+                      {item.badge > 99 ? "99+" : item.badge}
+                    </span>
+                  )}
+                </span>
 
                 <span className="text-base">{item.label}</span>
               </Link>
