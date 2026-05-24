@@ -14,6 +14,7 @@ import {
   getActorAvatar,
   getActorHandle,
   getActorName,
+  getNotificationBiteId,
   getNotificationMessage,
   getNotificationTarget,
   getNotificationTime,
@@ -72,10 +73,19 @@ export default function NotificationItem({
   const actorName = getActorName(notification);
   const actorAvatar = getActorAvatar(notification);
   const actorHandle = getActorHandle(notification);
+  const biteId = getNotificationBiteId(notification);
   const message = getNotificationMessage(notification);
   const target = getNotificationTarget(notification);
   const read = isNotificationRead(notification);
   const iconMeta = getIconMeta(notification);
+
+  const handleOpenNotification = () => {
+    onMarkRead(notification);
+
+    if (biteId) {
+      navigate(`/bites/${encodeURIComponent(biteId)}`);
+    }
+  };
 
   const handleOpenProfile = (event) => {
     event.stopPropagation();
@@ -88,7 +98,7 @@ export default function NotificationItem({
   const handleKeyDown = (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      onMarkRead(notification);
+      handleOpenNotification();
     }
   };
 
@@ -96,7 +106,7 @@ export default function NotificationItem({
     <div
       role="button"
       tabIndex={0}
-      onClick={() => onMarkRead(notification)}
+      onClick={handleOpenNotification}
       onKeyDown={handleKeyDown}
       className={`group flex cursor-pointer items-start gap-3 px-4 py-3 transition-colors ${
         read ? "bg-white hover:bg-gray-50/90" : "bg-pink-50/80 hover:bg-pink-100/60"

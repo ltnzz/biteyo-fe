@@ -80,6 +80,32 @@ export const getNotificationTarget = (notification) => {
   );
 };
 
+export const getNotificationBiteId = (notification) => {
+  const target = notification.target || notification.bite || notification.post;
+
+  if (target && typeof target === "object") {
+    return (
+      target._id ||
+      target.id ||
+      target.biteId ||
+      target.bite_id ||
+      target.postId ||
+      target.post_id ||
+      ""
+    );
+  }
+
+  return (
+    notification.biteId ||
+    notification.bite_id ||
+    notification.postId ||
+    notification.post_id ||
+    notification.targetId ||
+    notification.target_id ||
+    ""
+  );
+};
+
 export const getNotificationTime = (notification) =>
   notification.createdAt ||
   notification.created_at ||
