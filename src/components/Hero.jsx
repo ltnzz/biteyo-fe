@@ -1,5 +1,5 @@
 import React from 'react';
-import { Coffee, Star, TrendingUp, User, Users, Utensils, Wine } from 'lucide-react';
+import { Coffee, PlusCircle, Star, TrendingUp, Users, Utensils, Wine } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const floatingFoods = [
@@ -68,9 +68,9 @@ export default function Hero() {
           <Link to="/explore" className="px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all hover:-translate-y-0.5 text-base">
             Explore Now
           </Link>
-          <Link to="/profile" className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 text-base flex items-center gap-2">
-            <User className="w-4 h-4 text-pink-500" />
-            My Latest Posts
+          <Link to="/add" className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 text-base flex items-center gap-2">
+            <PlusCircle className="w-4 h-4 text-pink-500" />
+            Start Posting
           </Link>
         </div>
 
