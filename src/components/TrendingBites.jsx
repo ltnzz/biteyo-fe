@@ -295,7 +295,7 @@ export default function TrendingBites() {
           </h3>
           <p className="mt-1 text-sm text-gray-500">
             {!hasSession
-              ? "Feed dari backend saat ini membutuhkan sesi login."
+              ? "Feed saat ini membutuhkan sesi login."
               : activeCategory === "all"
               ? "Postingan terbaru akan muncul di sini."
               : `Belum ada bite untuk ${selectedCategory?.label || "kategori ini"}.`}
