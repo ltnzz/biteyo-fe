@@ -85,8 +85,6 @@ export default function LoginPage() {
         { withCredentials: true },
       );
 
-      console.log("Login Berhasil:", response.data);
-
       saveAuth({
         token: response.data.token,
         user: response.data.user,

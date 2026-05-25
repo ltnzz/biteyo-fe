@@ -1,7 +1,10 @@
 import { Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export default function LoginRequired() {
+export default function LoginRequired({
+  from,
+  description = "Masuk dulu untuk mengakses halaman ini.",
+}) {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
@@ -10,10 +13,11 @@ export default function LoginRequired() {
         </div>
         <h1 className="text-xl font-extrabold text-gray-900">Login required</h1>
         <p className="text-sm text-gray-500 mt-2">
-          Masuk dulu untuk melihat profil dan postinganmu.
+          {description}
         </p>
         <Link
           to="/login"
+          state={from ? { from, message: "Please login first" } : undefined}
           className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-600"
         >
           Login

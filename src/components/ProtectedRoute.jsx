@@ -1,4 +1,5 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import LoginRequired from "./profile/LoginRequired";
 import { isAuthenticated } from "../utils/auth";
 
 export default function ProtectedRoute({ children }) {
@@ -6,16 +7,7 @@ export default function ProtectedRoute({ children }) {
   const hasSession = isAuthenticated();
 
   if (!hasSession) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{
-          from: location,
-          message: "Please login first",
-        }}
-      />
-    );
+    return <LoginRequired from={location} />;
   }
 
   return children;

@@ -99,6 +99,8 @@ VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
+Untuk Google OAuth, origin frontend harus ditambahkan di Google Cloud Console pada OAuth Client ID bagian **Authorized JavaScript origins**.
+
 ## Project Structure
 
 ```txt

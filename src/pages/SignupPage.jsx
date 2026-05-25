@@ -94,12 +94,11 @@ export default function SignupPage() {
     }
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_BASE}/api/auth/signup`,
         formData,
         { withCredentials: true },
       );
-      console.log("Signup Berhasil:", response.data);
       navigate("/login");
     } catch (err) {
       const message = err.response?.data?.message || "Gagal mendaftar. Silakan coba lagi.";

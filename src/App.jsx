@@ -18,6 +18,12 @@ const NotificationPage = lazy(() => import('./pages/NotificationPage'));
 const AddPage = lazy(() => import('./pages/AddPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const BiteDetailPage = lazy(() => import('./pages/BiteDetailPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+
+const isRouteActive = (pathname, targetPath) =>
+  targetPath === '/'
+    ? pathname === targetPath
+    : pathname === targetPath || pathname.startsWith(`${targetPath}/`);
 
 function MobileNav({ unreadNotifications = 0 }) {
   const location = useLocation();
@@ -39,10 +45,7 @@ function MobileNav({ unreadNotifications = 0 }) {
       <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive =
-            item.to === '/'
-              ? location.pathname === item.to
-              : location.pathname.startsWith(item.to);
+          const isActive = isRouteActive(location.pathname, item.to);
 
           return (
             <Link
@@ -72,7 +75,9 @@ function MobileNav({ unreadNotifications = 0 }) {
 function AppContent() {
   const location = useLocation();
   const hideSidebarRoutes = ['/login', '/signup', '/forgotpassword'];
-  const showSidebar = !hideSidebarRoutes.includes(location.pathname);
+  const showSidebar =
+    !hideSidebarRoutes.includes(location.pathname) &&
+    !location.pathname.startsWith('/reset-password');
   const unreadNotifications = useUnreadNotifications();
 
   return (
@@ -90,13 +95,48 @@ function AppContent() {
             <Route path="/" element={<Homepage />} />        
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/explore" element={<ExplorePage />} />
+            <Route
+              path="/explore"
+              element={
+                <ProtectedRoute>
+                  <ExplorePage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/:username" element={<ProfilePage />} />
-            <Route path="/bites/:biteId" element={<BiteDetailPage />} />
-            <Route path="/notifications" element={<NotificationPage />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/:username"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bites/:biteId"
+              element={
+                <ProtectedRoute>
+                  <BiteDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/add"
               element={
@@ -113,6 +153,7 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </div>

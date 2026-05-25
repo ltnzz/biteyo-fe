@@ -9,6 +9,11 @@ import { AUTH_CHANGE_EVENT, clearAuth, getAuthHeaders, getStoredUser, saveAuth }
 import { unregisterFcmToken } from "../utils/notifications";
 import { getProfileAvatar, getProfileUsername } from "../utils/profile";
 
+const isRouteActive = (pathname, targetPath) =>
+  targetPath === "/"
+    ? pathname === targetPath
+    : pathname === targetPath || pathname.startsWith(`${targetPath}/`);
+
 export default function Sidebar({ unreadNotifications = 0 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -135,7 +140,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
         <div className="flex flex-col gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.to;
+            const isActive = isRouteActive(location.pathname, item.to);
 
             return (
               <Link

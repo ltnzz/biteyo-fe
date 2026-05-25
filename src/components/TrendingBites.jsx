@@ -3,6 +3,7 @@ import {
   Coffee,
   Flame,
   Gem,
+  LockKeyhole,
   Loader2,
   MapPin,
   Star,
@@ -11,7 +12,7 @@ import {
   Wine,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getBitesByCategory, getFeedBites, getTrendingBites } from "../services/feedApi";
+import { getBitesByCategory, getFeedBites } from "../services/feedApi";
 import {
   getBiteDescription,
   getBiteImage,
@@ -29,6 +30,7 @@ import {
   getBiteAuthorName,
   getBiteId,
 } from "../utils/biteEngagement";
+import { isAuthenticated } from "../utils/auth";
 
 const categoryChips = [
   { label: "All", value: "all", icon: Utensils },
@@ -147,12 +149,21 @@ export default function TrendingBites() {
   const [categoryStats, setCategoryStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const hasSession = useMemo(() => isAuthenticated(), []);
   const navigate = useNavigate();
 
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchTrending = async () => {
+      if (!hasSession) {
+        setBites([]);
+        setCategoryStats([]);
+        setError("");
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError("");
 
@@ -166,11 +177,7 @@ export default function TrendingBites() {
 
         setBites(normalizeBites(data).slice(0, HOME_TRENDING_LIMIT));
         if (activeCategory === "all" && categoryStats.length === 0) {
-          getTrendingBites({ signal: controller.signal })
-            .then((trendingData) => setCategoryStats(getCategoryStats(trendingData)))
-            .catch((err) => {
-              if (err.name !== "AbortError") setCategoryStats([]);
-            });
+          setCategoryStats(getCategoryStats(data));
         }
       } catch (err) {
         if (err.name === "AbortError") return;
@@ -184,7 +191,7 @@ export default function TrendingBites() {
     fetchTrending();
 
     return () => controller.abort();
-  }, [activeCategory, categoryStats.length]);
+  }, [activeCategory, categoryStats.length, hasSession]);
 
   const categoryCounts = useMemo(() => {
     const counts = new Map(categoryStats.map((item) => [item.value, item.count]));
@@ -278,12 +285,18 @@ export default function TrendingBites() {
 
       {!loading && !error && bites.length === 0 && (
         <div className="rounded-lg border border-gray-100 bg-gray-50 px-6 py-12 text-center">
-          <Loader2 className="mx-auto mb-3 h-6 w-6 text-gray-300" />
+          {hasSession ? (
+            <Loader2 className="mx-auto mb-3 h-6 w-6 text-gray-300" />
+          ) : (
+            <LockKeyhole className="mx-auto mb-3 h-6 w-6 text-pink-300" />
+          )}
           <h3 className="text-base font-extrabold text-gray-900">
-            Belum ada trending bite
+            {hasSession ? "Belum ada trending bite" : "Login untuk melihat trending bites"}
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            {activeCategory === "all"
+            {!hasSession
+              ? "Feed dari backend saat ini membutuhkan sesi login."
+              : activeCategory === "all"
               ? "Postingan terbaru akan muncul di sini."
               : `Belum ada bite untuk ${selectedCategory?.label || "kategori ini"}.`}
           </p>
