@@ -24,6 +24,7 @@ import {
   isBiteSaved,
 } from "../../utils/biteEngagement";
 import BiteCommentBox from "../BiteCommentBox";
+import MentionText from "../MentionText";
 import BiteEditForm from "./BiteEditForm";
 
 export default function BiteCard({
@@ -199,7 +200,10 @@ export default function BiteCard({
                 {bite.foodName || bite.title || "Untitled Bite"}
               </h3>
               <p className="mt-1 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                {bite.review || bite.description}
+                <MentionText
+                  text={bite.review || bite.description}
+                  onOpenProfile={onOpenProfile}
+                />
               </p>
 
               {(bite.photoUrl || bite.image) && (

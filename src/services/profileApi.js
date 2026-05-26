@@ -35,6 +35,86 @@ const requestJson = async (
   return response.json().catch(() => null);
 };
 
+const getStringValue = (...values) => {
+  const value = values.find(
+    (item) => typeof item === "string" && item.trim().length > 0,
+  );
+
+  return value ? value.trim() : "";
+};
+
+const getMentionCandidates = (data) => {
+  const candidates = [
+    data,
+    data?.data,
+    data?.users,
+    data?.profiles,
+    data?.mentions,
+    data?.data?.users,
+    data?.data?.profiles,
+    data?.data?.mentions,
+    data?.data?.items,
+    data?.items,
+  ];
+
+  return candidates.find(Array.isArray) || [];
+};
+
+const normalizeMentionUser = (item) => {
+  const user = item?.user || item?.profile || item?.account || item || {};
+  const username = getStringValue(
+    user.username,
+    user.handle,
+    user.userName,
+    user.slug,
+    item?.username,
+    item?.handle,
+  ).replace(/^@+/, "");
+
+  if (!username) return null;
+
+  return {
+    id: user.id || user._id || user.userId || item?.id || item?._id || username,
+    username,
+    displayName:
+      getStringValue(
+        user.displayName,
+        user.name,
+        user.fullName,
+        user.full_name,
+        item?.displayName,
+        item?.name,
+      ) || username,
+    avatar:
+      getStringValue(
+        user.avatar,
+        user.avatarUrl,
+        user.avatar_url,
+        user.photoUrl,
+        user.photo_url,
+        user.image,
+        user.profilePicture,
+        user.profile_picture,
+        item?.avatar,
+        item?.avatarUrl,
+      ) || "",
+  };
+};
+
+const normalizeMentionUsers = (data) => {
+  const seen = new Set();
+
+  return getMentionCandidates(data)
+    .map(normalizeMentionUser)
+    .filter(Boolean)
+    .filter((user) => {
+      const key = String(user.username || user.id).toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
 export const getUserProfile = async (username) => {
   if (!username) throw new Error("Username is required.");
 
@@ -46,6 +126,14 @@ export const getUserProfile = async (username) => {
   const profile = data ? normalizeProfile(data) : null;
 
   return isEmptyProfile(data, profile) ? null : profile;
+};
+
+export const getMentionUsers = async () => {
+  const data = await requestJson("/api/profile/mentions", {
+    fallback: "Failed to load mention users",
+  });
+
+  return normalizeMentionUsers(data);
 };
 
 export const getUserBites = async (username) => {

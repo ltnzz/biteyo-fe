@@ -1,5 +1,7 @@
 import { Loader2, Send } from "lucide-react";
 import { useState } from "react";
+import MentionText from "./MentionText";
+import MentionTextarea from "./MentionTextarea";
 import {
   getBiteComments,
   getCommentAuthorHandle,
@@ -37,13 +39,14 @@ export default function BiteCommentBox({
       onClick={(event) => event.stopPropagation()}
     >
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
-        <textarea
+        <MentionTextarea
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
+          onValueChange={setDraft}
           disabled={submitting}
           rows={2}
           placeholder="Tulis komentar..."
-          className="min-h-[44px] flex-1 resize-none rounded-2xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-pink-300 focus:ring-2 focus:ring-pink-100 disabled:bg-gray-50"
+          wrapperClassName="min-w-0 flex-1"
+          className="min-h-[44px] w-full resize-none rounded-2xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-pink-300 focus:ring-2 focus:ring-pink-100 disabled:bg-gray-50"
         />
         <button
           type="submit"
@@ -85,7 +88,9 @@ export default function BiteCommentBox({
                 >
                   {authorName}
                 </button>
-                <p className="mt-0.5 text-sm text-gray-700">{content}</p>
+                <p className="mt-0.5 whitespace-pre-line text-sm text-gray-700">
+                  <MentionText text={content} onOpenProfile={onOpenProfile} />
+                </p>
               </div>
             );
           })}

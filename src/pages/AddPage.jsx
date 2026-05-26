@@ -9,6 +9,7 @@ import {
 import { broadcastFeedChange } from "../services/feedRealtime";
 import { getBiteId, normalizeUpdatedBite } from "../utils/biteEngagement";
 import { compressImageFile } from "../utils/imageCompression";
+import MentionTextarea from "../components/MentionTextarea";
 
 const LOCATION_SEARCH_DEBOUNCE_MS = 350;
 
@@ -451,9 +452,9 @@ export default function AddPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Your Review
               </label>
-              <textarea
+              <MentionTextarea
                 value={review}
-                onChange={(e) => setReview(e.target.value)}
+                onValueChange={setReview}
                 placeholder="Tell us about it! Was it fire? Would you eat it again?"
                 rows={4}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-200 resize-none"

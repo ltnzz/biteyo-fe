@@ -12,6 +12,8 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
+import MentionText from "../components/MentionText";
+import MentionTextarea from "../components/MentionTextarea";
 import ToastMessage from "../components/ToastMessage";
 import {
   getBiteComments as fetchBiteComments,
@@ -347,7 +349,10 @@ export default function BiteDetailPage() {
                     {bite.foodName || bite.title || "Untitled Bite"}
                   </h3>
                   <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-700">
-                    {bite.review || bite.description}
+                    <MentionText
+                      text={bite.review || bite.description}
+                      onOpenProfile={openUserProfile}
+                    />
                   </p>
 
                   {(bite.photoUrl || bite.image) && (
@@ -426,9 +431,9 @@ export default function BiteDetailPage() {
               </div>
 
               <form onSubmit={handleSubmitComment} className="border-b border-gray-200 bg-white p-4">
-              <textarea
+              <MentionTextarea
                 value={commentDraft}
-                onChange={(event) => setCommentDraft(event.target.value)}
+                onValueChange={setCommentDraft}
                 disabled={commenting}
                 placeholder="Tulis komentar..."
                 rows={3}
@@ -517,7 +522,10 @@ export default function BiteDetailPage() {
                           {authorName}
                         </button>
                         <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-gray-700">
-                          {getCommentContent(comment)}
+                          <MentionText
+                            text={getCommentContent(comment)}
+                            onOpenProfile={openUserProfile}
+                          />
                         </p>
                       </div>
                     </article>

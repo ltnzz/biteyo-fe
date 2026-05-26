@@ -27,6 +27,20 @@ const getIconMeta = (notification) => {
   const message = getNotificationMessage(notification).toLowerCase();
   const value = `${type} ${message}`;
 
+  if (
+    value.includes("mention") ||
+    value.includes("tag") ||
+    value.includes("mentioned") ||
+    value.includes("tagged") ||
+    value.includes("ditag") ||
+    value.includes("menandai")
+  ) {
+    return {
+      bg: "bg-pink-50",
+      icon: <span className="text-sm font-extrabold leading-none text-pink-500">@</span>,
+    };
+  }
+
   if (value.includes("like")) {
     return {
       bg: "bg-pink-50",
