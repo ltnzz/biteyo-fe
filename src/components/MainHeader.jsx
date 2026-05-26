@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, Loader2, MapPin, Search, TrendingUp } from "lucide-react";
+import { ChevronDown, Loader2, Search, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { searchBites } from "../services/feedApi";
 import {
@@ -233,13 +233,6 @@ export default function MainHeader() {
           )}
         </div>
 
-        {/* Maps Icon */}
-        <button 
-          onClick={() => navigate('/explore?maps=true')}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-pink-500"
-        >
-          <MapPin className="w-5 h-5" />
-        </button>
       </div>
     </header>
   );

@@ -63,6 +63,9 @@ Pengalaman utamanya diarahkan ke tiga alur:
 | Profile | Identitas user, edit profile, timeline, saved bites, liked bites, dan follow state. |
 | Notifications | Filter notifikasi, unread counter, mark as read, delete, refresh, dan realtime listener. |
 | Bite Detail | Review detail, foto besar, kategori, rating, like/save, dan thread komentar. |
+| Auth | Login, Google OAuth, signup, forgot password, dan reset password dengan layout khusus tanpa sidebar. |
+| Login Required | Guard page untuk halaman private dengan CTA login tanpa redirect otomatis. |
+| Not Found | Custom 404 page dengan aksi kembali ke homepage atau halaman sebelumnya. |
 
 ## Tech Stack
 

@@ -35,9 +35,50 @@ const getLocationLabel = (place) =>
 
 const getLocationAddress = (place) =>
   getTextValue(place?.formattedAddress) ||
+  getTextValue(place?.formatted_address) ||
   getTextValue(place?.address) ||
   getTextValue(place?.vicinity) ||
+  getTextValue(place?.description) ||
   "";
+
+const getLocationInputValue = (place) => {
+  const name = getLocationName(place);
+  const address = getLocationAddress(place);
+
+  if (name && address && !address.toLowerCase().startsWith(name.toLowerCase())) {
+    return `${name}, ${address}`;
+  }
+
+  return address || name || getLocationLabel(place);
+};
+
+const getCoordinateValue = (value) => {
+  const resolvedValue = typeof value === "function" ? value() : value;
+  const numericValue = Number(resolvedValue);
+
+  return Number.isFinite(numericValue) ? String(numericValue) : "";
+};
+
+const getLocationCoordinates = (place) => {
+  const geometryLocation = place?.geometry?.location;
+
+  return {
+    lat: getCoordinateValue(
+      place?.lat ??
+        place?.latitude ??
+        place?.location?.lat ??
+        place?.location?.latitude ??
+        geometryLocation?.lat,
+    ),
+    lng: getCoordinateValue(
+      place?.lng ??
+        place?.longitude ??
+        place?.location?.lng ??
+        place?.location?.longitude ??
+        geometryLocation?.lng,
+    ),
+  };
+};
 
 const normalizeLocationResults = (data) => {
   const candidates = [
@@ -80,7 +121,7 @@ export default function AddPage() {
   useEffect(() => {
     const query = location.trim();
 
-    if (query.length < 2 || getLocationLabel(selectedLocation) === query) {
+    if (query.length < 2 || getLocationInputValue(selectedLocation) === query) {
       setLocationSuggestions([]);
       setLocationLoading(false);
       setLocationError("");
@@ -161,7 +202,7 @@ export default function AddPage() {
   };
 
   const handleLocationSelect = (place) => {
-    setLocation(getLocationName(place) || getLocationLabel(place));
+    setLocation(getLocationInputValue(place));
     setSelectedLocation(place);
     setLocationSuggestions([]);
     setShowLocationSuggestions(false);
@@ -194,19 +235,21 @@ export default function AddPage() {
           selectedLocation.place_id ||
           selectedLocation.id ||
           "";
-        const lat =
-          selectedLocation.lat ??
-          selectedLocation.latitude ??
-          selectedLocation.geometry?.location?.lat;
-        const lng =
-          selectedLocation.lng ??
-          selectedLocation.longitude ??
-          selectedLocation.geometry?.location?.lng;
+        const { lat, lng } = getLocationCoordinates(selectedLocation);
         const address = getLocationAddress(selectedLocation);
 
-        if (placeId) formData.append("locationPlaceId", placeId);
-        if (lat !== undefined && lat !== null) formData.append("locationLat", lat);
-        if (lng !== undefined && lng !== null) formData.append("locationLng", lng);
+        if (placeId) {
+          formData.append("placeId", placeId);
+          formData.append("locationPlaceId", placeId);
+        }
+        if (lat) {
+          formData.append("latitude", lat);
+          formData.append("locationLat", lat);
+        }
+        if (lng) {
+          formData.append("longitude", lng);
+          formData.append("locationLng", lng);
+        }
         if (address) formData.append("locationAddress", address);
       }
       formData.append("review", review);
