@@ -1,7 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, Loader2, Search, TrendingUp } from "lucide-react";
+import { createPortal } from "react-dom";
+import {
+  AlertCircle,
+  ChevronDown,
+  Loader2,
+  LogIn,
+  LogOut,
+  Search,
+  Settings,
+  TrendingUp,
+  User,
+  UserPlus,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { searchBites } from "../services/feedApi";
+import { AUTH_CHANGE_EVENT, clearAuth, getStoredUser, isAuthenticated } from "../utils/auth";
 import {
   biteCategories,
   getBiteDescription,
@@ -14,6 +27,7 @@ import {
   getCategoryLabel,
 } from "../utils/bites";
 import { getBiteId } from "../utils/biteEngagement";
+import { logoutUser } from "../utils/logout";
 
 export default function MainHeader() {
   const [query, setQuery] = useState("");
@@ -22,9 +36,15 @@ export default function MainHeader() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => getStoredUser());
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  const [settingsError, setSettingsError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
   const searchRef = useRef(null);
   const trendingRef = useRef(null);
+  const settingsRef = useRef(null);
   const navigate = useNavigate();
   const trimmedQuery = query.trim();
 
@@ -37,6 +57,10 @@ export default function MainHeader() {
       if (!searchRef.current?.contains(event.target)) {
         setSearchOpen(false);
       }
+
+      if (!settingsRef.current?.contains(event.target)) {
+        setSettingsOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -45,6 +69,22 @@ export default function MainHeader() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const readUser = () => {
+      setCurrentUser(getStoredUser());
+    };
+
+    readUser();
+
+    window.addEventListener("storage", readUser);
+    window.addEventListener(AUTH_CHANGE_EVENT, readUser);
+
+    return () => {
+      window.removeEventListener("storage", readUser);
+      window.removeEventListener(AUTH_CHANGE_EVENT, readUser);
     };
   }, []);
 
@@ -106,7 +146,35 @@ export default function MainHeader() {
     }
   };
 
+  const goToGuestPage = (path) => {
+    if (isAuthenticated()) {
+      clearAuth();
+      setCurrentUser(null);
+    }
+
+    setSettingsOpen(false);
+    navigate(path);
+  };
+
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    setSettingsError("");
+
+    try {
+      await logoutUser();
+      setCurrentUser(null);
+      setShowLogoutModal(false);
+      setSettingsOpen(false);
+      navigate("/login", { replace: true });
+    } catch (err) {
+      setSettingsError(err.message || "Gagal logout. Silakan coba lagi.");
+    } finally {
+      setLogoutLoading(false);
+    }
+  };
+
   return (
+    <>
     <header className="sticky top-0 bg-white z-50 border-b border-gray-100 py-3">
       <div className="flex items-center gap-2 px-3 sm:gap-4 sm:px-4">
         {/* Search Bar */}
@@ -233,7 +301,140 @@ export default function MainHeader() {
           )}
         </div>
 
+        <div ref={settingsRef} className="relative lg:hidden">
+          <button
+            type="button"
+            onClick={() => {
+              setSettingsError("");
+              setSettingsOpen((open) => !open);
+            }}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100"
+            aria-label="Open account settings"
+            aria-expanded={settingsOpen}
+          >
+            <Settings className="h-5 w-5" />
+          </button>
+
+          {settingsOpen && (
+            <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl">
+              {currentUser ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSettingsOpen(false);
+                      navigate("/profile");
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-pink-50 hover:text-pink-600"
+                  >
+                    <User className="h-4 w-4" />
+                    Profile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSettingsError("");
+                      setSettingsOpen(false);
+                      setShowLogoutModal(true);
+                    }}
+                    disabled={logoutLoading}
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50 disabled:opacity-70"
+                  >
+                    {logoutLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <LogOut className="h-4 w-4" />
+                    )}
+                    {logoutLoading ? "Logging out..." : "Logout"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => goToGuestPage("/login")}
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-pink-50 hover:text-pink-600"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Login
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToGuestPage("/signup")}
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-pink-50 hover:text-pink-600"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    Register
+                  </button>
+                </>
+              )}
+
+              {settingsError && (
+                <div className="flex items-start gap-2 border-t border-red-100 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                  <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>{settingsError}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </header>
+    {showLogoutModal &&
+      createPortal(
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm lg:hidden">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <LogOut className="text-red-500" size={22} />
+            </div>
+
+            <h2 className="mb-1 text-center text-lg font-extrabold text-gray-900">
+              Keluar dari BiteYo?
+            </h2>
+
+            <p className="mb-6 text-center text-sm text-gray-500">
+              Kamu harus login lagi untuk mengakses akun dan fitur personalmu.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!logoutLoading) setShowLogoutModal(false);
+                }}
+                disabled={logoutLoading}
+                className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={logoutLoading}
+                className="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-70"
+              >
+                {logoutLoading ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Keluar...
+                  </span>
+                ) : (
+                  "Ya, Keluar"
+                )}
+              </button>
+            </div>
+
+            {settingsError && (
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{settingsError}</span>
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body,
+      )}
+    </>
   );
 }

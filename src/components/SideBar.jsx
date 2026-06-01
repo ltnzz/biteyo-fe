@@ -4,9 +4,8 @@ import { AlertCircle, Home, Search, Bell, User, LogOut, Loader2 } from "lucide-r
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { getUserProfile } from "../services/profileApi";
-import { postJson } from "../utils/api";
-import { AUTH_CHANGE_EVENT, clearAuth, getAuthHeaders, getStoredUser, saveAuth } from "../utils/auth";
-import { unregisterFcmToken } from "../utils/notifications";
+import { AUTH_CHANGE_EVENT, getStoredUser, saveAuth } from "../utils/auth";
+import { logoutUser } from "../utils/logout";
 import { getProfileAvatar, getProfileUsername } from "../utils/profile";
 
 const isRouteActive = (pathname, targetPath) =>
@@ -91,16 +90,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
     setLogoutError("");
 
     try {
-      unregisterFcmToken().catch((err) => {
-        console.warn("Failed to unregister FCM token during logout:", err);
-      });
-
-      await postJson("/api/auth/logout", null, {
-        fallback: "Gagal logout. Silakan coba lagi.",
-        headers: getAuthHeaders(),
-      });
-
-      clearAuth();
+      await logoutUser();
       setCurrentUser(null);
       setShowLogoutModal(false);
       setShowDropdown(false);
