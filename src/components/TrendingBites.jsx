@@ -210,7 +210,7 @@ export default function TrendingBites() {
   const selectedCategory = categoryChips.find((item) => item.value === activeCategory);
 
   return (
-    <section className="mt-12">
+    <section className="mt-5 sm:mt-12">
       <div className="mb-6 flex items-center justify-between gap-3">
         <h2 className="flex min-w-0 items-center gap-2 text-2xl font-bold text-gray-900">
           <TrendingUp className="h-6 w-6 shrink-0 text-pink-500" />
