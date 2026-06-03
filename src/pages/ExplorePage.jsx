@@ -12,6 +12,7 @@ import { useFeedSocket } from "../hooks/useFeedSocket";
 import { getBitesByCategory, searchBites, toggleLikeBite } from "../services/feedApi";
 import { broadcastFeedChange } from "../services/feedRealtime";
 import { followUser, unfollowUser } from "../services/profileApi";
+import { ensureOkResponse } from "../utils/api";
 import { getAuthHeaders, getStoredUser, isAuthenticated } from "../utils/auth";
 import {
   getLikeCount,
@@ -26,20 +27,6 @@ import {
   mergeFollowingUsers,
   toFollowKey,
 } from "../utils/followState";
-
-const parseApiError = async (response, fallback) => {
-  const data = await response.json().catch(() => null);
-
-  if (data?.message) return data.message;
-  if (Array.isArray(data?.errors)) {
-    return data.errors.map((error) => error.message).filter(Boolean).join(", ");
-  }
-  if (Array.isArray(data?.issues)) {
-    return data.issues.map((issue) => issue.message).filter(Boolean).join(", ");
-  }
-
-  return fallback;
-};
 
 const getIdValue = (value) => {
   if (!value) return "";
@@ -162,8 +149,8 @@ export default function ExplorePage() {
           : await fetch(`${API_BASE}/api/feed/bites`, {
               credentials: "include",
               headers: getAuthHeaders(),
-            }).then((res) => {
-              if (!res.ok) throw new Error("Failed to load bites");
+            }).then(async (res) => {
+              await ensureOkResponse(res, "Failed to load bites");
               return res.json();
             });
       const normalizedBites = normalizeBites(data);
@@ -329,9 +316,7 @@ export default function ExplorePage() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error(await parseApiError(res, "Failed to update bite"));
-      }
+      await ensureOkResponse(res, "Failed to update bite");
 
       setActionMessage({ type: "success", text: "Bite updated." });
       cancelEdit();
@@ -369,9 +354,7 @@ export default function ExplorePage() {
         headers: getAuthHeaders(),
       });
 
-      if (!res.ok) {
-        throw new Error(await parseApiError(res, "Failed to delete bite"));
-      }
+      await ensureOkResponse(res, "Failed to delete bite");
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
       broadcastFeedChange({ type: "delete", biteId });
@@ -447,7 +430,7 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex w-full items-start justify-start px-4">
+      <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
         <main className="min-h-screen w-full max-w-2xl border-x border-gray-200 bg-white shadow-[0_0_24px_rgba(15,23,42,0.04)]">
           <ExploreHeader category={category} query={query} />
           <ActionMessage message={actionMessage} />

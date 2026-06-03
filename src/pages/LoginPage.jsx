@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import {
@@ -52,9 +52,28 @@ const InputField = ({
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectTo = location.state?.from?.pathname || "/";
-  const redirectSearch = location.state?.from?.search || "";
-  const loginNotice = location.state?.message;
+  const redirectTarget = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const redirectParam = params.get("redirect") || "";
+    const stateRedirect = `${location.state?.from?.pathname || "/"}${
+      location.state?.from?.search || ""
+    }`;
+
+    if (redirectParam.startsWith("/") && !redirectParam.startsWith("//")) {
+      return redirectParam;
+    }
+
+    return stateRedirect;
+  }, [location.search, location.state]);
+  const [loginNotice] = useState(() => {
+    if (location.state?.message) return location.state.message;
+
+    try {
+      return window.sessionStorage.getItem("biteyo_login_notice") || "";
+    } catch {
+      return "";
+    }
+  });
 
   // State untuk form login
   const [formData, setFormData] = useState({
@@ -65,6 +84,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.removeItem("biteyo_login_notice");
+    } catch {
+      // No-op when sessionStorage is unavailable.
+    }
+  }, []);
 
   // Menangani perubahan input
   const handleChange = (e) => {
@@ -90,7 +117,7 @@ export default function LoginPage() {
         user: response.data.user,
       });
 
-      navigate(`${redirectTo}${redirectSearch}`, { replace: true });
+      navigate(redirectTarget, { replace: true });
     } catch (err) {
       // Tangkap pesan error dari backend
       const message =
@@ -126,7 +153,7 @@ export default function LoginPage() {
       }
 
       saveAuth({ token, user });
-      navigate(`${redirectTo}${redirectSearch}`, { replace: true });
+      navigate(redirectTarget, { replace: true });
     } catch (err) {
       setError(
         err.message || "Gagal masuk dengan Google. Silakan coba lagi.",

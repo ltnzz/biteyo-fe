@@ -12,7 +12,7 @@ import {
   normalizeCreatedComment,
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
-import { parseApiError } from "../utils/api";
+import { ensureOkResponse } from "../utils/api";
 import {
   API_BASE,
   biteCategories,
@@ -112,9 +112,7 @@ export const useBiteMutations = ({
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error(await parseApiError(res, "Failed to update bite"));
-      }
+      await ensureOkResponse(res, "Failed to update bite");
 
       setActionMessage({ type: "success", text: "Bite updated." });
       cancelEdit();
@@ -153,9 +151,7 @@ export const useBiteMutations = ({
         headers: getAuthHeaders(),
       });
 
-      if (!res.ok) {
-        throw new Error(await parseApiError(res, "Failed to delete bite"));
-      }
+      await ensureOkResponse(res, "Failed to delete bite");
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
       broadcastFeedChange({ type: "delete", biteId });

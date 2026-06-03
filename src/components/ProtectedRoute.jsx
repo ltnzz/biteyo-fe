@@ -1,13 +1,26 @@
-import { useLocation } from "react-router-dom";
-import LoginRequired from "./profile/LoginRequired";
-import { isAuthenticated } from "../utils/auth";
+import { Navigate, useLocation } from "react-router-dom";
+import {
+  SESSION_EXPIRED_MESSAGE,
+  clearExpiredAuth,
+  isAuthenticated,
+} from "../utils/auth";
 
 export default function ProtectedRoute({ children }) {
   const location = useLocation();
-  const hasSession = isAuthenticated();
+  const sessionExpired = clearExpiredAuth();
+  const hasSession = !sessionExpired && isAuthenticated();
 
   if (!hasSession) {
-    return <LoginRequired from={location} />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location,
+          message: sessionExpired ? SESSION_EXPIRED_MESSAGE : "Please login first",
+        }}
+      />
+    );
   }
 
   return children;

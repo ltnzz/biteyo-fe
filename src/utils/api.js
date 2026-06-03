@@ -1,3 +1,5 @@
+import { handleUnauthorizedResponse, SESSION_EXPIRED_MESSAGE } from "./auth";
+
 const normalizeBaseUrl = (value) => String(value || "").replace(/\/+$/, "");
 
 export const API_BASE = normalizeBaseUrl(
@@ -18,6 +20,20 @@ export const parseApiError = async (response, fallback) => {
   return fallback;
 };
 
+export const ensureOkResponse = async (
+  response,
+  fallback = "Request failed",
+  { handleAuth = true } = {},
+) => {
+  if (response.ok) return response;
+
+  if (handleAuth && handleUnauthorizedResponse(response)) {
+    throw new Error(SESSION_EXPIRED_MESSAGE);
+  }
+
+  throw new Error(await parseApiError(response, fallback));
+};
+
 export const postJson = async (
   path,
   payload,
@@ -33,9 +49,7 @@ export const postJson = async (
     body: payload ? JSON.stringify(payload) : undefined,
   });
 
-  if (!response.ok) {
-    throw new Error(await parseApiError(response, fallback));
-  }
+  await ensureOkResponse(response, fallback, { handleAuth: false });
 
   return response.json().catch(() => null);
 };

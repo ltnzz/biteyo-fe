@@ -1,4 +1,4 @@
-import { API_BASE, parseApiError } from "../utils/api";
+import { API_BASE, ensureOkResponse } from "../utils/api";
 import { getAuthHeaders } from "../utils/auth";
 
 const requestJson = async (path, options = {}, fallback = "Request failed") => {
@@ -11,9 +11,7 @@ const requestJson = async (path, options = {}, fallback = "Request failed") => {
     },
   });
 
-  if (!response.ok) {
-    throw new Error(await parseApiError(response, fallback));
-  }
+  await ensureOkResponse(response, fallback);
 
   return response.json().catch(() => null);
 };

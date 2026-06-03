@@ -81,81 +81,83 @@ function AppContent() {
   const unreadNotifications = useUnreadNotifications();
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {showSidebar && (
-        <div className="hidden h-screen w-64 shrink-0 overflow-visible border-r border-gray-100 bg-white lg:sticky lg:top-0 lg:block">
-          <Sidebar unreadNotifications={unreadNotifications} />
+    <div className="min-h-screen bg-white">
+      <div className={`flex min-h-screen w-full ${showSidebar ? 'mx-auto max-w-[96rem]' : ''}`}>
+        {showSidebar && (
+          <div className="hidden h-screen w-64 shrink-0 overflow-visible border-r border-gray-100 bg-white lg:sticky lg:top-0 lg:block">
+            <Sidebar unreadNotifications={unreadNotifications} />
+          </div>
+        )}
+        <div className={`min-h-screen min-w-0 flex-1 ${showSidebar ? 'pb-20 lg:pb-0' : ''}`}>
+          {showSidebar && <MainHeader />}
+          
+          <Suspense fallback={<BiteLoader className="min-h-[calc(100vh-65px)]" />}>
+            <Routes>
+              <Route path="/" element={<Homepage />} />        
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/explore"
+                element={
+                  <ProtectedRoute>
+                    <ExplorePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile/:username"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bites/:biteId"
+                element={
+                  <ProtectedRoute>
+                    <BiteDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <NotificationPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/add"
+                element={
+                  <ProtectedRoute>
+                    <AddPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/post"
+                element={
+                  <ProtectedRoute>
+                    <AddPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
         </div>
-      )}
-      <div className={`min-h-screen min-w-0 flex-1 ${showSidebar ? 'pb-20 lg:pb-0' : ''}`}>
-        {showSidebar && <MainHeader />}
-        
-        <Suspense fallback={<BiteLoader className="min-h-[calc(100vh-65px)]" />}>
-          <Routes>
-            <Route path="/" element={<Homepage />} />        
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/explore"
-              element={
-                <ProtectedRoute>
-                  <ExplorePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile/:username"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/bites/:biteId"
-              element={
-                <ProtectedRoute>
-                  <BiteDetailPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/notifications"
-              element={
-                <ProtectedRoute>
-                  <NotificationPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/add"
-              element={
-                <ProtectedRoute>
-                  <AddPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/post"
-              element={
-                <ProtectedRoute>
-                  <AddPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
       </div>
       {showSidebar && <MobileNav unreadNotifications={unreadNotifications} />}
     </div>

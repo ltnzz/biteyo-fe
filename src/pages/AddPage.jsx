@@ -10,6 +10,7 @@ import { broadcastFeedChange } from "../services/feedRealtime";
 import { getBiteId, normalizeUpdatedBite } from "../utils/biteEngagement";
 import { compressImageFile } from "../utils/imageCompression";
 import MentionTextarea from "../components/MentionTextarea";
+import { ensureOkResponse } from "../utils/api";
 
 const LOCATION_SEARCH_DEBOUNCE_MS = 350;
 
@@ -266,10 +267,7 @@ export default function AddPage() {
         body: formData,
       });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Failed to save bite");
-      }
+      await ensureOkResponse(res, "Failed to save bite");
 
       const data = await res.json().catch(() => null);
       const createdBite = normalizeUpdatedBite(data);

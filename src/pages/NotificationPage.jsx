@@ -229,7 +229,7 @@ export default function NotificationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex w-full items-stretch justify-start px-4">
+      <div className="mx-auto flex w-full max-w-7xl items-stretch justify-center px-4">
         <NotificationSidebar
           activeFilter={activeFilter}
           counts={filterCounts}

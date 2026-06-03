@@ -1,4 +1,4 @@
-import { API_BASE, parseApiError } from "../utils/api";
+import { API_BASE, ensureOkResponse } from "../utils/api";
 import { getAuthHeaders } from "../utils/auth";
 import { normalizeBites } from "../utils/bites";
 import { normalizeProfile } from "../utils/profile";
@@ -28,9 +28,7 @@ const requestJson = async (
     return null;
   }
 
-  if (!response.ok) {
-    throw new Error(await parseApiError(response, fallback));
-  }
+  await ensureOkResponse(response, fallback);
 
   return response.json().catch(() => null);
 };

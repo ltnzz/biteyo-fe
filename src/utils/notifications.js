@@ -1,5 +1,5 @@
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
-import { API_BASE, parseApiError } from "./api";
+import { API_BASE, ensureOkResponse } from "./api";
 import { getAuthHeaders } from "./auth";
 
 export const FCM_TOKEN_KEY = "biteyo_fcm_token";
@@ -21,9 +21,7 @@ const requestJson = async (path, options = {}, fallback = "Request failed") => {
     },
   });
 
-  if (!response.ok) {
-    throw new Error(await parseApiError(response, fallback));
-  }
+  await ensureOkResponse(response, fallback);
 
   return response.json().catch(() => null);
 };
@@ -94,11 +92,7 @@ export const deleteNotification = async (notificationId) => {
     return { deleted: true, alreadyGone: true };
   }
 
-  if (!response.ok) {
-    throw new Error(
-      await parseApiError(response, "Gagal menghapus notifikasi."),
-    );
-  }
+  await ensureOkResponse(response, "Gagal menghapus notifikasi.");
 
   return response.json().catch(() => ({ deleted: true }));
 };

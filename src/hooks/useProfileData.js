@@ -9,7 +9,7 @@ import {
 } from "../services/profileApi";
 import { getAuthHeaders, saveAuth } from "../utils/auth";
 import { API_BASE } from "../utils/bites";
-import { parseApiError } from "../utils/api";
+import { ensureOkResponse } from "../utils/api";
 import { cacheFollowState } from "../utils/followState";
 import { compressImageFile } from "../utils/imageCompression";
 import { getProfileUsername, normalizeProfile } from "../utils/profile";
@@ -221,9 +221,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
         body,
       });
 
-      if (!res.ok) {
-        throw new Error(await parseApiError(res, "Failed to update profile"));
-      }
+      await ensureOkResponse(res, "Failed to update profile");
 
       const data = await res.json().catch(() => null);
       const updatedProfile = normalizeProfile(data) || { ...profile, ...payload };
