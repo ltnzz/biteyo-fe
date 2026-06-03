@@ -1,5 +1,8 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import LoginRequired from "./profile/LoginRequired";
 import {
+  AUTH_CHANGE_EVENT,
   SESSION_EXPIRED_MESSAGE,
   clearExpiredAuth,
   isAuthenticated,
@@ -7,18 +10,47 @@ import {
 
 export default function ProtectedRoute({ children }) {
   const location = useLocation();
-  const sessionExpired = clearExpiredAuth();
-  const hasSession = !sessionExpired && isAuthenticated();
+  const [authState, setAuthState] = useState(() => {
+    const sessionExpired = clearExpiredAuth();
 
-  if (!hasSession) {
+    return {
+      hasSession: !sessionExpired && isAuthenticated(),
+      sessionExpired,
+    };
+  });
+
+  useEffect(() => {
+    const syncAuthState = () => {
+      const sessionExpired = clearExpiredAuth();
+
+      setAuthState({
+        hasSession: !sessionExpired && isAuthenticated(),
+        sessionExpired,
+      });
+    };
+
+    syncAuthState();
+    window.addEventListener("storage", syncAuthState);
+    window.addEventListener(AUTH_CHANGE_EVENT, syncAuthState);
+
+    return () => {
+      window.removeEventListener("storage", syncAuthState);
+      window.removeEventListener(AUTH_CHANGE_EVENT, syncAuthState);
+    };
+  }, [location.pathname, location.search]);
+
+  if (!authState.hasSession) {
     return (
-      <Navigate
-        to="/login"
-        replace
-        state={{
-          from: location,
-          message: sessionExpired ? SESSION_EXPIRED_MESSAGE : "Please login first",
-        }}
+      <LoginRequired
+        from={location}
+        description={
+          authState.sessionExpired
+            ? SESSION_EXPIRED_MESSAGE
+            : "Masuk dulu untuk mengakses halaman ini."
+        }
+        loginMessage={
+          authState.sessionExpired ? SESSION_EXPIRED_MESSAGE : "Please login first"
+        }
       />
     );
   }

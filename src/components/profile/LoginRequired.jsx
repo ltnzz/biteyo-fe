@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 export default function LoginRequired({
   from,
   description = "Masuk dulu untuk mengakses halaman ini.",
+  loginMessage = "Please login first",
 }) {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -17,7 +18,7 @@ export default function LoginRequired({
         </p>
         <Link
           to="/login"
-          state={from ? { from, message: "Please login first" } : undefined}
+          state={from ? { from, message: loginMessage } : undefined}
           className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-600"
         >
           Login

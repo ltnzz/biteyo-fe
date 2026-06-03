@@ -1,6 +1,7 @@
-import React from 'react';
-import { Coffee, PlusCircle, Star, TrendingUp, Users, Utensils, Wine } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Coffee, LogIn, PlusCircle, Star, TrendingUp, UserPlus, Users, Utensils, Wine } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AUTH_CHANGE_EVENT, isAuthenticated } from '../utils/auth';
 
 const floatingFoods = [
   { icon: Utensils, delay: '0s', duration: '6s', top: '10%', left: '5%', size: 'w-16 h-16', color: 'text-pink-500', bg: 'bg-pink-100/80' },
@@ -24,6 +25,21 @@ const stats = [
 ];
 
 export default function Hero() {
+  const [hasSession, setHasSession] = useState(() => isAuthenticated());
+
+  useEffect(() => {
+    const syncAuthState = () => setHasSession(isAuthenticated());
+
+    syncAuthState();
+    window.addEventListener('storage', syncAuthState);
+    window.addEventListener(AUTH_CHANGE_EVENT, syncAuthState);
+
+    return () => {
+      window.removeEventListener('storage', syncAuthState);
+      window.removeEventListener(AUTH_CHANGE_EVENT, syncAuthState);
+    };
+  }, []);
+
   return (
     <section className="relative mx-0 mt-2 overflow-hidden rounded-2xl bg-gradient-to-br from-pink-50/80 via-orange-50/60 to-white px-4 py-8 sm:mx-4 sm:mt-4 sm:rounded-3xl sm:px-6 sm:py-16 lg:px-8">
       <div className="absolute top-10 left-1/4 hidden w-72 h-72 bg-pink-200/30 rounded-full blur-3xl animate-pulse-slow sm:block" />
@@ -81,6 +97,31 @@ export default function Hero() {
         <p className="mx-auto mb-0 max-w-sm text-sm leading-relaxed text-gray-600 animate-fade-up sm:mb-10 sm:max-w-2xl sm:text-xl" style={{ animationDelay: '0.2s' }}>
           Discover trending foods, hidden gems, viral cafés, and honest restaurant reviews from real foodies around you.
         </p>
+
+        <div className="mt-6 flex flex-col items-center justify-center gap-3 animate-fade-up sm:hidden" style={{ animationDelay: '0.4s' }}>
+          {hasSession ? (
+            <>
+              <Link to="/explore" className="inline-flex w-full max-w-xs items-center justify-center rounded-full bg-pink-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-200 transition-colors hover:bg-pink-600">
+                Explore Now
+              </Link>
+              <Link to="/add" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+                <PlusCircle className="h-4 w-4 text-pink-500" />
+                Start Posting
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-pink-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-200 transition-colors hover:bg-pink-600">
+                <LogIn className="h-4 w-4" />
+                Login
+              </Link>
+              <Link to="/signup" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+                <UserPlus className="h-4 w-4 text-pink-500" />
+                Daftar
+              </Link>
+            </>
+          )}
+        </div>
 
         <div className="hidden flex-col items-center justify-center gap-4 mb-12 animate-fade-up sm:flex sm:flex-row" style={{ animationDelay: '0.4s' }}>
           <Link to="/explore" className="px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all hover:-translate-y-0.5 text-base">

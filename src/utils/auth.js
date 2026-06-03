@@ -118,12 +118,6 @@ export const clearExpiredAuth = () => {
   return true;
 };
 
-const getCurrentPath = () => {
-  if (typeof window === "undefined") return "/";
-
-  return `${window.location.pathname}${window.location.search}${window.location.hash}`;
-};
-
 export const handleUnauthorizedResponse = (
   response,
   { message = SESSION_EXPIRED_MESSAGE } = {},
@@ -141,13 +135,5 @@ export const handleUnauthorizedResponse = (
   }
 
   if (window.location.pathname.startsWith("/login")) return true;
-
-  const currentPath = getCurrentPath();
-  const loginPath =
-    currentPath && currentPath !== "/"
-      ? `/login?redirect=${encodeURIComponent(currentPath)}`
-      : "/login";
-
-  window.location.replace(loginPath);
   return true;
 };

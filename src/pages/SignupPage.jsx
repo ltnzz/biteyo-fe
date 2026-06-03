@@ -1,20 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { GoogleLogin } from "@react-oauth/google";
 import { AtSign, Mail, Lock, ArrowRight, PenTool, Search, Users, Loader2, AlertCircle, } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import LegalModal from "../components/LegalModal"; 
-import { API_BASE } from "../utils/api";
-
-// --- KOMPONEN IKON GOOGLE ---
-const GoogleIcon = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24">
-    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-  </svg>
-);
+import { API_BASE, normalizeAuthResponse, postJson } from "../utils/api";
+import { saveAuth } from "../utils/auth";
 
 // --- KOMPONEN INPUT ---
 const InputField = ({ label, icon, type = "text", placeholder, note, name, value, onChange, required }) => {
@@ -69,6 +61,7 @@ export default function SignupPage() {
     confirm_password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
@@ -106,6 +99,45 @@ export default function SignupPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    if (!credentialResponse.credential) {
+      setError("Token Google tidak ditemukan. Silakan coba lagi.");
+      return;
+    }
+
+    setGoogleLoading(true);
+    setError("");
+
+    try {
+      const data = await postJson(
+        "/api/auth/google",
+        {
+          id_token: credentialResponse.credential,
+        },
+        { fallback: "Gagal mendaftar dengan Google. Silakan coba lagi." },
+      );
+      const { token, user } = normalizeAuthResponse(data);
+
+      if (!token && !user) {
+        throw new Error("Respons Google register tidak valid dari server.");
+      }
+
+      saveAuth({ token, user });
+      navigate("/", { replace: true });
+    } catch (err) {
+      setError(
+        err.message || "Gagal mendaftar dengan Google. Silakan coba lagi.",
+      );
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setGoogleLoading(false);
+    setError("Register Google gagal.");
   };
 
   return (
@@ -154,7 +186,7 @@ export default function SignupPage() {
                 </span>
               </div>
 
-              <button type="submit" disabled={loading} className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-pink-300 text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
+              <button type="submit" disabled={loading || googleLoading} className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-pink-300 text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
                 {loading ? <Loader2 className="animate-spin" /> : <>Buat Akun <ArrowRight size={18} /></>}
               </button>
 
@@ -163,10 +195,24 @@ export default function SignupPage() {
                 <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-400">Atau</span></div>
               </div>
 
-              <div>
-                <button type="button" className="flex w-full items-center justify-center gap-2 border py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50">
-                  <GoogleIcon /> Google
-                </button>
+              <div className="flex justify-center">
+                <div className="relative inline-flex justify-center overflow-hidden rounded">
+                  <div className={loading || googleLoading ? "pointer-events-none opacity-50" : ""}>
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={handleGoogleError}
+                      theme="outline"
+                      size="large"
+                      text="signup_with"
+                      shape="rectangular"
+                    />
+                  </div>
+                  {googleLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/85">
+                      <Loader2 className="w-5 h-5 animate-spin text-pink-500" />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <p className="text-center text-sm text-gray-600 mt-8">
