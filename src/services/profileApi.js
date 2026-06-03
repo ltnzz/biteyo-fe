@@ -126,12 +126,28 @@ export const getUserProfile = async (username) => {
   return isEmptyProfile(data, profile) ? null : profile;
 };
 
-export const getMentionUsers = async () => {
-  const data = await requestJson("/api/profile/mentions", {
+const buildMentionPath = (query = "") => {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) return "/api/profile/mentions";
+
+  return `/api/profile/mentions?search=${encodeURIComponent(trimmedQuery)}`;
+};
+
+export const getMentionUsers = async (query = "") => {
+  const data = await requestJson(buildMentionPath(query), {
     fallback: "Failed to load mention users",
   });
 
   return normalizeMentionUsers(data);
+};
+
+export const getMentionUserByUsername = async (username) => {
+  const cleanUsername = username.trim().replace(/^@+/, "");
+  if (!cleanUsername) return null;
+
+  const profile = await getUserProfile(cleanUsername);
+
+  return profile ? normalizeMentionUser(profile) : null;
 };
 
 export const getUserBites = async (username) => {

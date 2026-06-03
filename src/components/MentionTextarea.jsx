@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { getMentionUsers } from "../services/profileApi";
+import { getMentionUserByUsername, getMentionUsers } from "../services/profileApi";
 
 const MENTION_DEBOUNCE_MS = 180;
 const MAX_SUGGESTIONS = 8;
@@ -8,6 +8,8 @@ const USERNAME_PATTERN = /^[a-zA-Z0-9_.-]*$/;
 
 let cachedMentionUsers = null;
 let mentionUsersRequest = null;
+const mentionUsersByQuery = new Map();
+const mentionUsersRequestByQuery = new Map();
 
 const findActiveMention = (value, caretPosition) => {
   const textBeforeCaret = value.slice(0, caretPosition);
@@ -28,6 +30,20 @@ const findActiveMention = (value, caretPosition) => {
   };
 };
 
+const mergeMentionUsers = (...userGroups) => {
+  const seen = new Set();
+
+  return userGroups
+    .flat()
+    .filter(Boolean)
+    .filter((user) => {
+      const key = String(user.username || user.id).toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
 const loadMentionUsers = async () => {
   if (cachedMentionUsers) return cachedMentionUsers;
 
@@ -43,6 +59,35 @@ const loadMentionUsers = async () => {
   }
 
   return mentionUsersRequest;
+};
+
+const loadMentionUsersByQuery = async (query) => {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) return loadMentionUsers();
+  if (mentionUsersByQuery.has(normalizedQuery)) {
+    return mentionUsersByQuery.get(normalizedQuery);
+  }
+
+  if (!mentionUsersRequestByQuery.has(normalizedQuery)) {
+    mentionUsersRequestByQuery.set(
+      normalizedQuery,
+      Promise.all([
+        getMentionUsers(normalizedQuery).catch(() => []),
+        getMentionUserByUsername(normalizedQuery).catch(() => null),
+      ])
+        .then(([users, exactUser]) => {
+          const nextUsers = mergeMentionUsers(users, [exactUser]);
+          mentionUsersByQuery.set(normalizedQuery, nextUsers);
+          return nextUsers;
+        })
+        .finally(() => {
+          mentionUsersRequestByQuery.delete(normalizedQuery);
+        }),
+    );
+  }
+
+  return mentionUsersRequestByQuery.get(normalizedQuery);
 };
 
 export default function MentionTextarea({
@@ -98,9 +143,14 @@ export default function MentionTextarea({
 
     let cancelled = false;
     const timeoutId = window.setTimeout(() => {
-      if (!cachedMentionUsers) setLoading(true);
+      const query = debouncedQuery.trim();
+      const hasCachedQuery = query
+        ? mentionUsersByQuery.has(query.toLowerCase())
+        : Boolean(cachedMentionUsers);
 
-      loadMentionUsers()
+      if (!hasCachedQuery) setLoading(true);
+
+      loadMentionUsersByQuery(query)
         .then((nextUsers) => {
           if (!cancelled) setUsers(nextUsers);
         })
@@ -116,7 +166,7 @@ export default function MentionTextarea({
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [activeMention, open]);
+  }, [activeMention, debouncedQuery, open]);
 
   useEffect(() => {
     if (!open) return undefined;
