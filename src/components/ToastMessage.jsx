@@ -14,10 +14,14 @@ export default function ToastMessage({ duration = 2400, message, onClose }) {
 
   if (!message?.text) return null;
 
-  const Icon = message.icon === "bookmark" ? BookmarkCheck : CheckCircle2;
+  const isBookmarkToast = message.icon === "bookmark";
+  const Icon = isBookmarkToast ? BookmarkCheck : CheckCircle2;
+  const positionClass = isBookmarkToast
+    ? "bottom-24 lg:bottom-8"
+    : "bottom-6 sm:bottom-8";
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4 sm:bottom-8">
+    <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${positionClass}`}>
       <div className="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 shadow-2xl shadow-gray-900/15">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-50 text-pink-500">
           <Icon className="h-4 w-4" />
