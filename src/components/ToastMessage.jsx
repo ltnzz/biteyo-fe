@@ -1,4 +1,6 @@
-import { BookmarkCheck, CheckCircle2, X } from "lucide-react";
+import BookmarkAdded from "@mui/icons-material/BookmarkAdded";
+import CheckCircle from "@mui/icons-material/CheckCircle";
+import Close from "@mui/icons-material/Close";
 import { useEffect } from "react";
 
 export default function ToastMessage({ duration = 2400, message, onClose }) {
@@ -15,7 +17,7 @@ export default function ToastMessage({ duration = 2400, message, onClose }) {
   if (!message?.text) return null;
 
   const isBookmarkToast = message.icon === "bookmark";
-  const Icon = isBookmarkToast ? BookmarkCheck : CheckCircle2;
+  const Icon = isBookmarkToast ? BookmarkAdded : CheckCircle;
   const positionClass = isBookmarkToast
     ? "bottom-24 lg:bottom-8"
     : "bottom-6 sm:bottom-8";
@@ -33,7 +35,7 @@ export default function ToastMessage({ duration = 2400, message, onClose }) {
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
           aria-label="Tutup notifikasi"
         >
-          <X className="h-4 w-4" />
+          <Close className="h-4 w-4" />
         </button>
       </div>
     </div>

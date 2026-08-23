@@ -1,13 +1,17 @@
-import { Bell, CheckCheck, MessageCircle, UserPlus, Heart } from "lucide-react";
+﻿import NotificationsNone from "@mui/icons-material/NotificationsNone";
+import DoneAll from "@mui/icons-material/DoneAll";
+import ChatBubbleOutlined from "@mui/icons-material/ChatBubbleOutlined";
+import PersonAddAlt from "@mui/icons-material/PersonAddAlt";
+import Favorite from "@mui/icons-material/Favorite";
 import { Link } from "react-router-dom";
 import { notificationFilters } from "./notificationFilters";
 
 const filterIcons = {
-  all: Bell,
-  unread: CheckCheck,
-  likes: Heart,
-  comments: MessageCircle,
-  follows: UserPlus,
+  all: NotificationsNone,
+  unread: DoneAll,
+  likes: Favorite,
+  comments: ChatBubbleOutlined,
+  follows: PersonAddAlt,
 };
 
 export default function NotificationSidebar({
@@ -21,7 +25,7 @@ export default function NotificationSidebar({
         <section className="rounded-2xl border border-gray-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
           <div className="p-2">
             {notificationFilters.map((filter) => {
-              const Icon = filterIcons[filter.value] || Bell;
+              const Icon = filterIcons[filter.value] || NotificationsNone;
               const isActive = activeFilter === filter.value;
 
               return (

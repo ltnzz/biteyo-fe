@@ -1,4 +1,6 @@
-import { ArrowLeft, Home, SearchX } from "lucide-react";
+import SearchOff from "@mui/icons-material/SearchOff";
+import Home from "@mui/icons-material/Home";
+import ArrowBack from "@mui/icons-material/ArrowBack";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function NotFoundPage() {
@@ -34,7 +36,7 @@ export default function NotFoundPage() {
             onClick={() => navigate(-1)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowBack className="h-4 w-4" />
             Kembali
           </button>
         </div>

@@ -1,4 +1,4 @@
-import { RefreshCw } from "lucide-react";
+import Refresh from "@mui/icons-material/Refresh";
 
 export default function NotificationHeader({
   loading,
@@ -28,7 +28,7 @@ export default function NotificationHeader({
           title="Refresh notifikasi"
           aria-label="Refresh notifikasi"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <Refresh className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </button>
         <button
           type="button"

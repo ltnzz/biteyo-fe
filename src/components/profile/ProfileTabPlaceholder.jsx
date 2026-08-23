@@ -1,13 +1,14 @@
-import { Bookmark, Heart } from "lucide-react";
+import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
+import BookmarkBorder from "@mui/icons-material/BookmarkBorder";
 
 const tabCopy = {
   likes: {
-    icon: Heart,
+    icon: FavoriteBorder,
     title: "Belum ada likes",
     description: "Bite yang kamu sukai akan muncul di sini.",
   },
   save: {
-    icon: Bookmark,
+    icon: BookmarkBorder,
     title: "Belum ada saved bite",
     description: "Bite yang kamu simpan akan muncul di sini.",
   },

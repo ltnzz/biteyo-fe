@@ -1,4 +1,9 @@
-import { CalendarDays, Loader2, MapPin, Pencil, UserCheck, UserPlus } from "lucide-react";
+import CalendarMonth from "@mui/icons-material/CalendarMonth";
+import Place from "@mui/icons-material/Place";
+import EditOutlined from "@mui/icons-material/EditOutlined";
+import HowToReg from "@mui/icons-material/HowToReg";
+import PersonAddAlt from "@mui/icons-material/PersonAddAlt";
+import CircularProgress from "@mui/material/CircularProgress";
 import { formatProfileDate } from "../../utils/profile";
 import ProfileEditor from "./ProfileEditor";
 import ProfileTasteStats from "./ProfileTasteStats";
@@ -58,7 +63,7 @@ export default function ProfileHeader({
               onClick={onEditProfile}
               className="mt-3 inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-900 transition-colors hover:bg-gray-50"
             >
-              <Pencil className="w-4 h-4" />
+              <EditOutlined className="w-4 h-4" />
               Edit profile
             </button>
           ) : (
@@ -73,11 +78,11 @@ export default function ProfileHeader({
               }`}
             >
               {followLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <CircularProgress size={16} />
               ) : isFollowing ? (
-                <UserCheck className="w-4 h-4" />
+                <HowToReg className="w-4 h-4" />
               ) : (
-                <UserPlus className="w-4 h-4" />
+                <PersonAddAlt className="w-4 h-4" />
               )}
               {isFollowing ? "Following" : "Follow"}
             </button>
@@ -92,13 +97,13 @@ export default function ProfileHeader({
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500">
             {location && (
               <span className="inline-flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
+                <Place className="w-4 h-4" />
                 {location}
               </span>
             )}
             {joinedAt && (
               <span className="inline-flex items-center gap-1">
-                <CalendarDays className="w-4 h-4" />
+                <CalendarMonth className="w-4 h-4" />
                 Bergabung {formatProfileDate(joinedAt)}
               </span>
             )}

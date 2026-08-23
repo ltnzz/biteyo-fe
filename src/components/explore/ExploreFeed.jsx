@@ -1,4 +1,4 @@
-import { Camera } from "lucide-react";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import BiteLoader from "../BiteLoader";
 import BiteCard from "./BiteCard";
 
@@ -56,7 +56,7 @@ export default function ExploreFeed({
     return (
       <section>
         <div className="px-6 py-16 text-center">
-          <Camera className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <PhotoCamera className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <h2 className="text-lg font-bold text-gray-900">Belum ada bite di feed</h2>
           <p className="text-sm text-gray-500 mt-1">
             Jadilah yang pertama share makanan di sini.

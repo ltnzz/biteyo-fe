@@ -1,26 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { Coffee, LogIn, PlusCircle, Star, TrendingUp, UserPlus, Users, Utensils, Wine } from 'lucide-react';
+import AddCircleOutlined from '@mui/icons-material/AddCircleOutlined';
+import GroupOutlined from '@mui/icons-material/GroupOutlined';
+import LocalCafe from '@mui/icons-material/LocalCafe';
+import PersonAddAlt from '@mui/icons-material/PersonAddAlt';
+import Restaurant from '@mui/icons-material/Restaurant';
+import StarBorder from '@mui/icons-material/StarBorder';
+import TrendingUp from '@mui/icons-material/TrendingUp';
+import WineBar from '@mui/icons-material/WineBar';
+import Login from '@mui/icons-material/Login';
 import { Link } from 'react-router-dom';
 import { AUTH_CHANGE_EVENT, isAuthenticated } from '../utils/auth';
 
 const floatingFoods = [
-  { icon: Utensils, delay: '0s', duration: '6s', top: '10%', left: '5%', size: 'w-16 h-16', color: 'text-pink-500', bg: 'bg-pink-100/80' },
-  { icon: Star, delay: '1s', duration: '7s', top: '20%', right: '10%', size: 'w-20 h-20', color: 'text-amber-500', bg: 'bg-amber-100/80' },
-  { icon: Coffee, delay: '2s', duration: '5s', bottom: '20%', left: '8%', size: 'w-14 h-14', color: 'text-orange-500', bg: 'bg-orange-100/80' },
-  { icon: Wine, delay: '0.5s', duration: '8s', top: '60%', right: '5%', size: 'w-16 h-16', color: 'text-rose-500', bg: 'bg-rose-100/80' },
+  { icon: Restaurant, delay: '0s', duration: '6s', top: '10%', left: '5%', size: 'w-16 h-16', color: 'text-pink-500', bg: 'bg-pink-100/80' },
+  { icon: StarBorder, delay: '1s', duration: '7s', top: '20%', right: '10%', size: 'w-20 h-20', color: 'text-amber-500', bg: 'bg-amber-100/80' },
+  { icon: LocalCafe, delay: '2s', duration: '5s', bottom: '20%', left: '8%', size: 'w-14 h-14', color: 'text-orange-500', bg: 'bg-orange-100/80' },
+  { icon: WineBar, delay: '0.5s', duration: '8s', top: '60%', right: '5%', size: 'w-16 h-16', color: 'text-rose-500', bg: 'bg-rose-100/80' },
   { icon: TrendingUp, delay: '1.5s', duration: '6s', bottom: '30%', right: '15%', size: 'w-14 h-14', color: 'text-fuchsia-500', bg: 'bg-fuchsia-100/80' },
-  { icon: Users, delay: '2.5s', duration: '7s', top: '40%', left: '3%', size: 'w-12 h-12', color: 'text-sky-500', bg: 'bg-sky-100/80' },
-  { icon: Star, delay: '3s', duration: '5s', bottom: '10%', left: '20%', size: 'w-14 h-14', color: 'text-yellow-500', bg: 'bg-yellow-100/80' },
+  { icon: GroupOutlined, delay: '2.5s', duration: '7s', top: '40%', left: '3%', size: 'w-12 h-12', color: 'text-sky-500', bg: 'bg-sky-100/80' },
+  { icon: StarBorder, delay: '3s', duration: '5s', bottom: '10%', left: '20%', size: 'w-14 h-14', color: 'text-yellow-500', bg: 'bg-yellow-100/80' },
 ];
 
 const mobileFloatingFoods = [
-  { icon: Utensils, className: 'left-2 top-5 h-10 w-10 bg-pink-100/70 text-pink-500' },
-  { icon: Star, className: 'right-2 top-20 h-11 w-11 bg-amber-100/70 text-amber-500' },
+  { icon: Restaurant, className: 'left-2 top-5 h-10 w-10 bg-pink-100/70 text-pink-500' },
+  { icon: StarBorder, className: 'right-2 top-20 h-11 w-11 bg-amber-100/70 text-amber-500' },
 ];
 
 const stats = [
-  { icon: Users, value: '12.4K+', label: 'foodies already here' },
-  { icon: Star, value: '5K+', label: 'Restaurants' },
+  { icon: GroupOutlined, value: '12.4K+', label: 'foodies already here' },
+  { icon: StarBorder, value: '5K+', label: 'Restaurants' },
   { icon: TrendingUp, value: '2.1K', label: 'Reviews today' },
 ];
 
@@ -82,9 +90,9 @@ export default function Hero() {
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-pink-100 bg-white/80 px-4 py-2 shadow-sm backdrop-blur-sm animate-fade-up sm:mb-8">
           <span className="flex gap-1">
-            <Utensils className="h-4 w-4 text-pink-500" />
-            <Coffee className="h-4 w-4 text-orange-500" />
-            <Star className="h-4 w-4 text-yellow-500" />
+            <Restaurant className="h-4 w-4 text-pink-500" />
+            <LocalCafe className="h-4 w-4 text-orange-500" />
+            <StarBorder className="h-4 w-4 text-yellow-500" />
           </span>
           <span className="text-sm font-medium text-gray-600">Discover your next bite</span>
         </div>
@@ -105,18 +113,18 @@ export default function Hero() {
                 Explore Now
               </Link>
               <Link to="/add" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
-                <PlusCircle className="h-4 w-4 text-pink-500" />
-                Start Posting
+                <AddCircleOutlined className="h-4 w-4 text-pink-500" />
+                StarBordert Posting
               </Link>
             </>
           ) : (
             <>
               <Link to="/login" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-pink-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-200 transition-colors hover:bg-pink-600">
-                <LogIn className="h-4 w-4" />
+                <Login className="h-4 w-4" />
                 Login
               </Link>
               <Link to="/signup" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
-                <UserPlus className="h-4 w-4 text-pink-500" />
+                <PersonAddAlt className="h-4 w-4 text-pink-500" />
                 Daftar
               </Link>
             </>
@@ -128,8 +136,8 @@ export default function Hero() {
             Explore Now
           </Link>
           <Link to="/add" className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 text-base flex items-center gap-2">
-            <PlusCircle className="w-4 h-4 text-pink-500" />
-            Start Posting
+            <AddCircleOutlined className="w-4 h-4 text-pink-500" />
+            StarBordert Posting
           </Link>
         </div>
 

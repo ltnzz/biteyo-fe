@@ -1,4 +1,6 @@
-import { MapPin, Star, Utensils } from "lucide-react";
+import Star from "@mui/icons-material/Star";
+import Restaurant from "@mui/icons-material/Restaurant";
+import Place from "@mui/icons-material/Place";
 import {
   getCategoryLabel,
   normalizeCategories,
@@ -46,8 +48,8 @@ const getTopLocation = (bites) => {
 export default function ProfileTasteStats({ bites = [] }) {
   const stats = [
     { label: "Avg rating", value: getAverageRating(bites), icon: Star },
-    { label: "Favorite", value: getFavoriteCategory(bites), icon: Utensils },
-    { label: "Top area", value: getTopLocation(bites), icon: MapPin },
+    { label: "Favorite", value: getFavoriteCategory(bites), icon: Restaurant },
+    { label: "Top area", value: getTopLocation(bites), icon: Place },
   ];
 
   return (

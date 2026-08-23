@@ -1,5 +1,7 @@
 import React from 'react';
-import { X, FileText, ShieldCheck } from 'lucide-react';
+import Description from '@mui/icons-material/Description';
+import VerifiedUser from '@mui/icons-material/VerifiedUser';
+import Close from '@mui/icons-material/Close';
 import { termsContent, privacyContent } from '../constants/legalContent';
 
 const iconMap = {
@@ -10,7 +12,7 @@ const iconMap = {
 export default function LegalModal({ isOpen, onClose, type }) {
   const isTerms = type === 'terms';
   const content = isTerms ? termsContent : privacyContent;
-  const ModalIcon = isTerms ? FileText : ShieldCheck;
+  const ModalIcon = isTerms ? Description : VerifiedUser;
   
   if (!isOpen) return null;
 
@@ -26,7 +28,7 @@ export default function LegalModal({ isOpen, onClose, type }) {
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-xl ${iconMap[content.iconColor]}`}>
-              <ModalIcon size={24} />
+              <ModalIcon sx={{ fontSize: 24 }} />
             </div>
             <h2 className="text-xl font-bold text-gray-900">{content.title}</h2>
           </div>
@@ -34,7 +36,7 @@ export default function LegalModal({ isOpen, onClose, type }) {
             onClick={onClose} 
             className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <X size={20} />
+            <Close sx={{ fontSize: 20 }} />
           </button>
         </div>
 

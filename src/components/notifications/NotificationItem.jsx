@@ -1,12 +1,10 @@
-import {
-  Bell,
-  Heart,
-  Loader2,
-  MessageCircle,
-  Trash2,
-  TrendingUp,
-  UserPlus,
-} from "lucide-react";
+﻿import NotificationsNone from "@mui/icons-material/NotificationsNone";
+import Favorite from "@mui/icons-material/Favorite";
+import ChatBubbleOutlined from "@mui/icons-material/ChatBubbleOutlined";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
+import TrendingUp from "@mui/icons-material/TrendingUp";
+import PersonAddAlt from "@mui/icons-material/PersonAddAlt";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom";
 import { getNotificationId, isNotificationRead } from "../../utils/notifications";
 import {
@@ -44,21 +42,21 @@ const getIconMeta = (notification) => {
   if (value.includes("like")) {
     return {
       bg: "bg-pink-50",
-      icon: <Heart className="h-4 w-4 text-pink-500" />,
+      icon: <Favorite className="h-4 w-4 text-pink-500" />,
     };
   }
 
   if (value.includes("comment") || value.includes("komentar")) {
     return {
       bg: "bg-sky-50",
-      icon: <MessageCircle className="h-4 w-4 text-sky-500" />,
+      icon: <ChatBubbleOutlined className="h-4 w-4 text-sky-500" />,
     };
   }
 
   if (value.includes("follow")) {
     return {
       bg: "bg-emerald-50",
-      icon: <UserPlus className="h-4 w-4 text-emerald-500" />,
+      icon: <PersonAddAlt className="h-4 w-4 text-emerald-500" />,
     };
   }
 
@@ -71,7 +69,7 @@ const getIconMeta = (notification) => {
 
   return {
     bg: "bg-gray-100",
-    icon: <Bell className="h-4 w-4 text-gray-500" />,
+    icon: <NotificationsNone className="h-4 w-4 text-gray-500" />,
   };
 };
 
@@ -167,7 +165,7 @@ export default function NotificationItem({
             {formatNotificationTime(getNotificationTime(notification))}
           </span>
           {readingIds.has(notificationId) && (
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-pink-500" />
+            <CircularProgress size={14} className="text-pink-500" />
           )}
         </div>
       </div>
@@ -188,9 +186,9 @@ export default function NotificationItem({
           aria-label="Hapus notifikasi"
         >
           {deletingId === notificationId ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <CircularProgress size={16} />
           ) : (
-            <Trash2 className="h-4 w-4" />
+            <DeleteOutlined className="h-4 w-4" />
           )}
         </button>
       </div>

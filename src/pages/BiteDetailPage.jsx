@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AlertCircle,
-  ArrowLeft,
+  ErrorOutlined,
+  ArrowBack,
   Bookmark,
-  Heart,
-  Loader2,
-  MessageCircle,
+  BookmarkBorder,
+  Favorite,
+  FavoriteBorder,
+  ChatBubbleOutlined,
   Send,
   Star,
-} from "lucide-react";
+  StarBorder,
+} from "@mui/icons-material";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
@@ -287,7 +290,7 @@ export default function BiteDetailPage() {
               className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100"
               aria-label="Kembali"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowBack className="h-5 w-5" />
             </button>
             <div>
               <h1 className="text-xl font-extrabold text-gray-900">Postingan</h1>
@@ -299,7 +302,7 @@ export default function BiteDetailPage() {
             <BiteLoader label="Sedang memuat bite..." />
           ) : error ? (
             <section className="px-6 py-20 text-center">
-              <AlertCircle className="mx-auto mb-3 h-10 w-10 text-red-300" />
+              <ErrorOutlined className="mx-auto mb-3 h-10 w-10 text-red-300" />
               <h2 className="text-lg font-bold text-gray-900">Postingan gagal dimuat</h2>
               <p className="mt-1 text-sm text-gray-500">{error}</p>
               <button
@@ -377,16 +380,16 @@ export default function BiteDetailPage() {
                   </div>
 
                   <div className="mt-4 flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Number(bite.rating || 0)
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
+                      {[...Array(5)].map((_, i) =>
+                        i < Number(bite.rating || 0) ? (
+                          <Star key={i} className="h-4 w-4 text-yellow-400" />
+                        ) : (
+                          <StarBorder
+                            key={i}
+                            className="h-4 w-4 text-gray-300"
+                          />
+                        ),
+                      )}
                   </div>
                 </div>
               </div>
@@ -401,7 +404,11 @@ export default function BiteDetailPage() {
                 }`}
                 aria-label={liked ? "Unlike bite" : "Like bite"}
               >
-                <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
+                {liked ? (
+                  <Favorite className="h-4 w-4" />
+                ) : (
+                  <FavoriteBorder className="h-4 w-4" />
+                )}
                 {getLikeCount(bite)}
               </button>
               <button
@@ -414,13 +421,15 @@ export default function BiteDetailPage() {
                 aria-label={saved ? "Unsave bite" : "Save bite"}
               >
                 {saving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <CircularProgress size={16} />
+                ) : saved ? (
+                  <Bookmark className="h-4 w-4" />
                 ) : (
-                  <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
+                  <BookmarkBorder className="h-4 w-4" />
                 )}
               </button>
               <div className="inline-flex items-center gap-1.5 text-sm">
-                <MessageCircle className="h-4 w-4" />
+                <ChatBubbleOutlined className="h-4 w-4" />
                 <span>{displayedCommentCount}</span>
               </div>
               </div>
@@ -442,7 +451,7 @@ export default function BiteDetailPage() {
                   className="inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-pink-600 disabled:opacity-60"
                 >
                   {commenting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <CircularProgress size={16} />
                   ) : (
                     <Send className="h-4 w-4" />
                   )}
@@ -459,7 +468,7 @@ export default function BiteDetailPage() {
               </div>
               {commentsLoading ? (
                 <div className="flex justify-center px-6 py-12">
-                  <Loader2 className="h-5 w-5 animate-spin text-pink-500" />
+                  <CircularProgress size={20} className="text-pink-500" />
                 </div>
               ) : commentsError ? (
                 <div className="px-6 py-8 text-center">
@@ -474,7 +483,7 @@ export default function BiteDetailPage() {
                 </div>
               ) : displayedComments.length === 0 ? (
                 <div className="px-6 py-14 text-center">
-                  <MessageCircle className="mx-auto mb-3 h-10 w-10 text-gray-300" />
+                  <ChatBubbleOutlined className="mx-auto mb-3 h-10 w-10 text-gray-300" />
                   <h2 className="text-lg font-bold text-gray-900">Belum ada komentar</h2>
                   <p className="mt-1 text-sm text-gray-500">
                     Jadilah yang pertama membuka obrolan di postingan ini.

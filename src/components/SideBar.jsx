@@ -1,6 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { AlertCircle, Home, Search, Bell, User, LogOut, Loader2 } from "lucide-react";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutlined";
+import Home from "@mui/icons-material/Home";
+import Search from "@mui/icons-material/Search";
+import NotificationsNone from "@mui/icons-material/NotificationsNone";
+import PersonOutlined from "@mui/icons-material/PersonOutlined";
+import Logout from "@mui/icons-material/Logout";
+import CircularProgress from "@mui/material/CircularProgress";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { getUserProfile } from "../services/profileApi";
@@ -107,11 +113,11 @@ export default function Sidebar({ unreadNotifications = 0 }) {
     { to: "/explore", icon: Search, label: "Explore" },
     {
       to: "/notifications",
-      icon: Bell,
+      icon: NotificationsNone,
       label: "Notifications",
       badge: unreadNotifications,
     },
-    { to: "/profile", icon: User, label: "Profile" },
+    { to: "/profile", icon: PersonOutlined, label: "Profile" },
   ];
 
   return (
@@ -212,7 +218,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
                       }}
                       className="w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 text-sm font-bold flex items-center gap-2 transition-colors"
                     >
-                      <LogOut size={16} />
+                      <Logout sx={{ fontSize: 16 }} />
                       Keluar
                     </button>
                   </div>
@@ -225,7 +231,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
               className="flex items-center gap-3 p-3 rounded-full hover:bg-gray-50 transition-colors w-full"
             >
               <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-500" />
+                <PersonOutlined className="w-5 h-5 text-gray-500" />
               </div>
 
               <div className="text-left">
@@ -243,7 +249,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
           <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in duration-200">
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <LogOut className="text-red-500" size={22} />
+              <Logout sx={{ fontSize: 22 }} className="text-red-500" />
             </div>
 
             <h2 className="text-lg font-extrabold text-gray-900 text-center mb-1">
@@ -272,7 +278,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
               >
                 {logoutLoading ? (
                   <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <CircularProgress size={16} />
                     Keluar...
                   </span>
                 ) : (
@@ -283,7 +289,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
 
             {logoutError && (
               <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                <AlertCircle className="mt-0.5 w-4 h-4 shrink-0" />
+                <ErrorOutlineIcon className="mt-0.5 w-4 h-4 shrink-0" />
                 <span>{logoutError}</span>
               </div>
             )}

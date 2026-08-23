@@ -1,4 +1,5 @@
-import { AlertCircle, Camera } from "lucide-react";
+﻿import ErrorOutlined from "@mui/icons-material/ErrorOutlined";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import { Link } from "react-router-dom";
 import { getBiteId } from "../../hooks/useBiteMutations";
 import BiteLoader from "../BiteLoader";
@@ -48,7 +49,7 @@ export default function ProfileTimeline({
   if (error) {
     return (
       <section className="px-6 py-16 text-center">
-        <AlertCircle className="w-10 h-10 text-red-300 mx-auto mb-3" />
+        <ErrorOutlined className="w-10 h-10 text-red-300 mx-auto mb-3" />
         <h2 className="text-lg font-bold text-gray-900">Bite gagal dimuat</h2>
         <p className="text-sm text-gray-500 mt-1">{error}</p>
         {onRetry && (
@@ -68,7 +69,7 @@ export default function ProfileTimeline({
     <section>
       {bites.length === 0 ? (
         <div className="px-6 py-16 text-center">
-          <Camera className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <PhotoCamera className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <h2 className="text-lg font-bold text-gray-900">{emptyTitle}</h2>
           <p className="text-sm text-gray-500 mt-1">{emptyDescription}</p>
           {showCreateAction && (

@@ -1,4 +1,6 @@
-import { AlertTriangle, Loader2, X } from "lucide-react";
+import WarningOutlined from "@mui/icons-material/WarningOutlined";
+import Close from "@mui/icons-material/Close";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useEffect } from "react";
 
 export default function ConfirmDialog({
@@ -44,7 +46,7 @@ export default function ConfirmDialog({
       >
         <div className="flex items-start gap-3 px-5 pb-4 pt-5">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500">
-            <AlertTriangle className="h-5 w-5" />
+            <WarningOutlined className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
             <h2
@@ -67,7 +69,7 @@ export default function ConfirmDialog({
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Tutup dialog"
           >
-            <X className="h-4 w-4" />
+            <Close className="h-4 w-4" />
           </button>
         </div>
 
@@ -86,7 +88,7 @@ export default function ConfirmDialog({
             disabled={loading}
             className="inline-flex h-10 min-w-24 items-center justify-center rounded-full bg-red-500 px-4 text-sm font-bold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : confirmLabel}
+            {loading ? <CircularProgress size={16} className="text-white" /> : confirmLabel}
           </button>
         </div>
       </div>

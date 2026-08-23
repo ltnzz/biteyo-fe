@@ -1,4 +1,5 @@
-import { AlertCircle, Bell } from "lucide-react";
+﻿import ErrorOutlined from "@mui/icons-material/ErrorOutlined";
+import NotificationsNone from "@mui/icons-material/NotificationsNone";
 import BiteLoader from "../BiteLoader";
 
 export function NotificationLoadingState() {
@@ -9,7 +10,7 @@ export function NotificationErrorState({ error, onRetry }) {
   return (
     <div className="mx-4 mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-red-700 shadow-sm">
       <div className="flex items-start gap-3">
-        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+        <ErrorOutlined className="mt-0.5 h-5 w-5 shrink-0" />
         <div className="min-w-0">
           <p className="font-semibold">Notifikasi belum bisa dimuat.</p>
           <p className="mt-1 text-sm">{error}</p>
@@ -30,7 +31,7 @@ export function NotificationEmptyState() {
   return (
     <div className="flex min-h-[calc(100vh-154px)] flex-col items-center justify-center px-4 py-20 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-400 shadow-sm">
-        <Bell className="h-6 w-6" />
+        <NotificationsNone className="h-6 w-6" />
       </div>
       <h2 className="mt-4 text-lg font-bold text-gray-900">
         Belum ada notifikasi

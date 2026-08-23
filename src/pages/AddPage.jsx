@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Camera, Star, Loader2, MapPin, X } from "lucide-react";
+import {
+  PhotoCamera,
+  Star,
+  StarBorder,
+  Place,
+  Close,
+} from "@mui/icons-material";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../utils/auth";
 import {
@@ -337,12 +344,12 @@ export default function AddPage() {
                       }}
                       className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"
                     >
-                      <X className="w-4 h-4" />
+                      <Close className="w-4 h-4" />
                     </button>
                   </>
                 ) : (
                   <>
-                    <Camera className="w-10 h-10 text-orange-400 mb-2" />
+                    <PhotoCamera className="w-10 h-10 text-orange-400 mb-2" />
                     <span className="text-sm font-medium text-gray-600">
                       Tap to add photo
                     </span>
@@ -400,7 +407,7 @@ export default function AddPage() {
                   <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
                     {locationLoading && (
                       <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500">
-                        <Loader2 className="h-4 w-4 animate-spin text-pink-500" />
+                        <CircularProgress size={16} className="text-pink-500" />
                         Searching location...
                       </div>
                     )}
@@ -431,7 +438,7 @@ export default function AddPage() {
                               className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-pink-50"
                             >
                               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-100 text-pink-500">
-                                <MapPin className="h-4 w-4" />
+                                <Place className="h-4 w-4" />
                               </span>
                               <span className="min-w-0">
                                 <span className="block truncate text-sm font-semibold text-gray-800">
@@ -476,13 +483,13 @@ export default function AddPage() {
                     onMouseLeave={() => setHovered(0)}
                     onClick={() => setRating(star)}
                   >
-                    <Star
-                      className={`w-7 h-7 transition-colors ${
-                        star <= (hovered || rating)
-                          ? "text-yellow-400 fill-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
+                    {star <= (hovered || rating) ? (
+                      <Star
+                        className={`w-7 h-7 transition-colors text-yellow-400`}
+                      />
+                    ) : (
+                      <StarBorder className="w-7 h-7 transition-colors text-gray-300" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -532,7 +539,7 @@ export default function AddPage() {
               disabled={loading}
               className="w-full py-3 rounded-full bg-gradient-to-r from-pink-500 to-orange-400 text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading && <CircularProgress size={16} />}
               Post Your Bite Now!
             </button>
           </form>
