@@ -2,6 +2,13 @@ import { API_BASE, ensureOkResponse } from "../utils/api";
 import { getAuthHeaders } from "../utils/auth";
 import { normalizeBites } from "../utils/bites";
 import { normalizeProfile } from "../utils/profile";
+import {
+  fetchWithCache,
+  clearApiCache,
+  readCache,
+  writeCache,
+  TTL_PROFILE_MS,
+} from "../utils/apiCache";
 
 const isEmptyProfile = (data, profile) =>
   !profile ||
@@ -113,13 +120,18 @@ const normalizeMentionUsers = (data) => {
     });
 };
 
-export const getUserProfile = async (username) => {
+export const getUserProfile = async (username, { force = false } = {}) => {
   if (!username) throw new Error("Username is required.");
 
-  const data = await requestJson(`/api/profile/${encodeURIComponent(username)}`, {
-    fallback: "Failed to load profile",
-    allowNotFound: true,
-  });
+  const { data } = await fetchWithCache(
+    `profile:${username}`,
+    () =>
+      requestJson(`/api/profile/${encodeURIComponent(username)}`, {
+        fallback: "Failed to load profile",
+        allowNotFound: true,
+      }),
+    { ttlMs: TTL_PROFILE_MS, force },
+  );
 
   const profile = data ? normalizeProfile(data) : null;
 
@@ -150,25 +162,35 @@ export const getMentionUserByUsername = async (username) => {
   return profile ? normalizeMentionUser(profile) : null;
 };
 
-export const getUserBites = async (username) => {
+export const getUserBites = async (username, { force = false } = {}) => {
   if (!username) throw new Error("Username is required.");
 
-  const data = await requestJson(`/api/profile/${encodeURIComponent(username)}/bites`, {
-    fallback: "Failed to load profile bites",
-  });
+  const { data } = await fetchWithCache(
+    `bites:${username}`,
+    () =>
+      requestJson(`/api/profile/${encodeURIComponent(username)}/bites`, {
+        fallback: "Failed to load profile bites",
+      }),
+    { ttlMs: TTL_PROFILE_MS, force },
+  );
 
   return normalizeBites(data);
 };
 
-export const getSavedBites = async () => {
-  const data = await requestJson("/api/profile/saved", {
-    fallback: "Failed to load saved bites",
-  });
+export const getSavedBites = async ({ force = false } = {}) => {
+  const { data } = await fetchWithCache(
+    "saved",
+    () =>
+      requestJson("/api/profile/saved", {
+        fallback: "Failed to load saved bites",
+      }),
+    { ttlMs: TTL_PROFILE_MS, force },
+  );
 
   return normalizeBites(data);
 };
 
-export const getLikedBites = async (username = "") => {
+export const getLikedBites = async (username = "", { force = false } = {}) => {
   const paths = username
     ? [
         `/api/profile/${encodeURIComponent(username)}/likes`,
@@ -180,12 +202,20 @@ export const getLikedBites = async (username = "") => {
 
   for (const path of paths) {
     try {
+      const cached = readCache(`liked:${path}`, {
+        maxAgeMs: TTL_PROFILE_MS,
+      });
+      if (!force && cached !== null) return normalizeBites(cached);
+
       const data = await requestJson(path, {
         fallback: "Failed to load liked bites",
         allowNotFound: true,
       });
 
-      if (data !== null) return normalizeBites(data);
+      if (data !== null) {
+        writeCache(`liked:${path}`, data);
+        return normalizeBites(data);
+      }
     } catch (err) {
       lastError = err;
     }
@@ -199,17 +229,23 @@ export const getLikedBites = async (username = "") => {
 export const followUser = async (username) => {
   if (!username) throw new Error("Username is required.");
 
-  return requestJson(`/api/profile/${encodeURIComponent(username)}/follow`, {
+  const data = await requestJson(`/api/profile/${encodeURIComponent(username)}/follow`, {
     method: "POST",
     fallback: "Failed to follow user",
   });
+
+  clearApiCache();
+  return data;
 };
 
 export const unfollowUser = async (username) => {
   if (!username) throw new Error("Username is required.");
 
-  return requestJson(`/api/profile/${encodeURIComponent(username)}/follow`, {
+  const data = await requestJson(`/api/profile/${encodeURIComponent(username)}/follow`, {
     method: "DELETE",
     fallback: "Failed to unfollow user",
   });
+
+  clearApiCache();
+  return data;
 };

@@ -1,5 +1,12 @@
 import { API_BASE, ensureOkResponse } from "../utils/api";
 import { getAuthHeaders } from "../utils/auth";
+import {
+  fetchWithCache,
+  clearApiCache,
+  TTL_FEED_MS,
+  TTL_BITE_MS,
+  TTL_COMMENTS_MS,
+} from "../utils/apiCache";
 
 const requestJson = async (path, options = {}, fallback = "Request failed") => {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -19,31 +26,44 @@ const requestJson = async (path, options = {}, fallback = "Request failed") => {
 export const toggleLikeBite = async (biteId) => {
   if (!biteId) throw new Error("Bite id is required.");
 
-  return requestJson(
+  const data = await requestJson(
     `/api/feed/bites/${encodeURIComponent(biteId)}/like`,
     { method: "POST" },
     "Gagal memperbarui like.",
   );
+
+  clearApiCache();
+  return data;
 };
 
 export const toggleSaveBite = async (biteId) => {
   if (!biteId) throw new Error("Bite id is required.");
 
-  return requestJson(
+  const data = await requestJson(
     `/api/feed/bites/${encodeURIComponent(biteId)}/save`,
     { method: "POST" },
     "Gagal memperbarui saved bite.",
   );
+
+  clearApiCache();
+  return data;
 };
 
-export const getBiteDetail = async (biteId) => {
+export const getBiteDetail = async (biteId, { force = false } = {}) => {
   if (!biteId) throw new Error("Bite id is required.");
 
-  return requestJson(
-    `/api/feed/bites/${encodeURIComponent(biteId)}`,
-    { method: "GET" },
-    "Gagal memuat postingan.",
+  const { data } = await fetchWithCache(
+    `bite:${biteId}`,
+    () =>
+      requestJson(
+        `/api/feed/bites/${encodeURIComponent(biteId)}`,
+        { method: "GET" },
+        "Gagal memuat postingan.",
+      ),
+    { ttlMs: TTL_BITE_MS, force },
   );
+
+  return data;
 };
 
 export const searchBites = async (query, options = {}) => {
@@ -57,38 +77,72 @@ export const searchBites = async (query, options = {}) => {
   );
 };
 
-export const getFeedBites = async (options = {}) =>
-  requestJson(
-    "/api/feed/bites",
-    { method: "GET", ...options },
-    "Gagal memuat bites.",
+export const getFeedBites = async (options = {}) => {
+  const { force = false, signal } = options;
+
+  const { data } = await fetchWithCache(
+    "feed:all",
+    () =>
+      requestJson(
+        "/api/feed/bites",
+        { method: "GET", signal },
+        "Gagal memuat bites.",
+      ),
+    { ttlMs: TTL_FEED_MS, force },
   );
 
-export const getTrendingBites = async (options = {}) =>
-  requestJson(
-    "/api/feed/bites/trending",
-    { method: "GET", ...options },
-    "Gagal memuat trending bites.",
+  return data;
+};
+
+export const getTrendingBites = async ({ force = false, signal } = {}) => {
+  const { data } = await fetchWithCache(
+    "feed:trending",
+    () =>
+      requestJson(
+        "/api/feed/bites/trending",
+        { method: "GET", signal },
+        "Gagal memuat trending bites.",
+      ),
+    { ttlMs: TTL_FEED_MS, force },
   );
+
+  return data;
+};
 
 export const getBitesByCategory = async (category, options = {}) => {
   if (!category) return [];
 
-  return requestJson(
-    `/api/feed/bites/category/${encodeURIComponent(category)}`,
-    { method: "GET", ...options },
-    "Gagal memuat bites berdasarkan kategori.",
+  const { force = false, signal } = options;
+
+  const { data } = await fetchWithCache(
+    `feed:cat:${category}`,
+    () =>
+      requestJson(
+        `/api/feed/bites/category/${encodeURIComponent(category)}`,
+        { method: "GET", signal },
+        "Gagal memuat bites berdasarkan kategori.",
+      ),
+    { ttlMs: TTL_FEED_MS, force },
   );
+
+  return data;
 };
 
-export const getBiteComments = async (biteId) => {
+export const getBiteComments = async (biteId, { force = false } = {}) => {
   if (!biteId) throw new Error("Bite id is required.");
 
-  return requestJson(
-    `/api/feed/bites/${encodeURIComponent(biteId)}/comments`,
-    { method: "GET" },
-    "Gagal memuat komentar.",
+  const { data } = await fetchWithCache(
+    `comments:${biteId}`,
+    () =>
+      requestJson(
+        `/api/feed/bites/${encodeURIComponent(biteId)}/comments`,
+        { method: "GET" },
+        "Gagal memuat komentar.",
+      ),
+    { ttlMs: TTL_COMMENTS_MS, force },
   );
+
+  return data;
 };
 
 export const postBiteComment = async (biteId, content) => {
@@ -97,7 +151,7 @@ export const postBiteComment = async (biteId, content) => {
   const cleanedContent = content?.trim();
   if (!cleanedContent) throw new Error("Komentar tidak boleh kosong.");
 
-  return requestJson(
+  const data = await requestJson(
     `/api/feed/bites/${encodeURIComponent(biteId)}/comments`,
     {
       method: "POST",
@@ -106,4 +160,7 @@ export const postBiteComment = async (biteId, content) => {
     },
     "Gagal mengirim komentar.",
   );
+
+  clearApiCache();
+  return data;
 };

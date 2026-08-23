@@ -1,5 +1,7 @@
 export const AUTH_CHANGE_EVENT = "biteyo-auth-change";
 
+import { clearApiCache } from "./apiCache";
+
 const TOKEN_KEY = "biteyo_token";
 const USER_KEY = "biteyo_user";
 const AUTH_EXPIRES_AT_KEY = "biteyo_auth_expires_at";
@@ -94,6 +96,7 @@ export const clearAuth = () => {
   deleteCookie("token");
   deleteCookie("user");
   deleteCookie(AUTH_EXPIRES_AT_COOKIE);
+  clearApiCache();
   notifyAuthChange();
 };
 

@@ -28,7 +28,7 @@ const refreshBite = async (biteId, setFeed) => {
   if (!biteId) return;
 
   try {
-    const updatedBite = await getBiteDetail(biteId);
+    const updatedBite = await getBiteDetail(biteId, { force: true });
 
     if (!updatedBite || !getBiteId(updatedBite)) return;
 
@@ -46,7 +46,7 @@ const insertBite = async (biteId, setFeed, acceptNewBite) => {
   if (!biteId) return;
 
   try {
-    const bite = await getBiteDetail(biteId);
+    const bite = await getBiteDetail(biteId, { force: true });
     if (!bite || !getBiteId(bite)) return;
     if (acceptNewBite && !acceptNewBite(bite)) return;
 

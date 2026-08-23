@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { RefreshCw } from "lucide-react";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ToastMessage from "../components/ToastMessage";
@@ -9,7 +10,7 @@ import ExploreHeader from "../components/explore/ExploreHeader";
 import LoginRequired from "../components/profile/LoginRequired";
 import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
-import { getBitesByCategory, searchBites, toggleLikeBite } from "../services/feedApi";
+import { getBitesByCategory, getFeedBites, searchBites, toggleLikeBite } from "../services/feedApi";
 import { broadcastFeedChange } from "../services/feedRealtime";
 import { followUser, unfollowUser } from "../services/profileApi";
 import { ensureOkResponse } from "../utils/api";
@@ -130,7 +131,7 @@ export default function ExplorePage() {
   const currentUser = useMemo(() => getStoredUser(), []);
   const hasSession = useMemo(() => isAuthenticated(), []);
 
-  const fetchFeed = useCallback(async () => {
+  const fetchFeed = useCallback(async ({ force = false } = {}) => {
     if (!hasSession) {
       setFeedLoading(false);
       setFeedError("");
@@ -145,14 +146,8 @@ export default function ExplorePage() {
       const data = query.trim()
         ? await searchBites(query)
         : category
-          ? await getBitesByCategory(toCategoryParam(category))
-          : await fetch(`${API_BASE}/api/feed/bites`, {
-              credentials: "include",
-              headers: getAuthHeaders(),
-            }).then(async (res) => {
-              await ensureOkResponse(res, "Failed to load bites");
-              return res.json();
-            });
+          ? await getBitesByCategory(toCategoryParam(category), { force })
+          : await getFeedBites({ force });
       const normalizedBites = normalizeBites(data);
       setBites(normalizedBites);
       const followedFromFeed = normalizedBites
@@ -181,6 +176,11 @@ export default function ExplorePage() {
   useEffect(() => {
     fetchFeed();
   }, [fetchFeed]);
+
+  const refreshFeed = useCallback(
+    () => fetchFeed({ force: true }),
+    [fetchFeed],
+  );
 
   useFeedSocket(bites, hasSession ? setBites : null, { setFollowingUsers });
 
@@ -433,6 +433,17 @@ export default function ExplorePage() {
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
         <main className="min-h-screen w-full max-w-2xl border-x border-gray-200 bg-white shadow-[0_0_24px_rgba(15,23,42,0.04)]">
           <ExploreHeader category={category} query={query} />
+          <div className="flex items-center justify-end px-4 pt-2">
+            <button
+              type="button"
+              onClick={refreshFeed}
+              className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-pink-500"
+              aria-label="Refresh feed"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Refresh
+            </button>
+          </div>
           <ActionMessage message={actionMessage} />
           <ExploreFeed
             bites={bites}

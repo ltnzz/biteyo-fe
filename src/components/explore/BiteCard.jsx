@@ -7,7 +7,6 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
 import {
   getDisplayLocation,
   getCategoryLabel,
@@ -23,7 +22,6 @@ import {
   isBiteLiked,
   isBiteSaved,
 } from "../../utils/biteEngagement";
-import BiteCommentBox from "../BiteCommentBox";
 import MentionText from "../MentionText";
 import BiteEditForm from "./BiteEditForm";
 
@@ -33,8 +31,6 @@ export default function BiteCard({
   currentUser,
   deletingId,
   editForm,
-  commentError = "",
-  commenting = false,
   followLoading = false,
   isEditing,
   isFollowing,
@@ -50,12 +46,10 @@ export default function BiteCard({
   onStartEdit,
   onToggleLike,
   onToggleSave,
-  onSubmitComment,
   onToggleFollow,
   onUpdate,
 }) {
-  const [commentsOpen, setCommentsOpen] = useState(false);
-  const liked = isBiteLiked(bite, currentUser);
+    const liked = isBiteLiked(bite, currentUser);
   const saved = isBiteSaved(bite, currentUser);
   const authorName = getBiteAuthorName(bite);
   const authorHandle = getBiteAuthorHandle(bite);
@@ -262,28 +256,15 @@ export default function BiteCard({
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    setCommentsOpen((open) => !open);
+                    onOpenBite?.(bite);
                   }}
-                  className={`flex items-center gap-1.5 text-sm transition-colors ${
-                    commentsOpen ? "text-pink-500" : "hover:text-pink-500"
-                  }`}
-                  aria-expanded={commentsOpen}
-                  aria-label="Toggle comment box"
+                  className="flex items-center gap-1.5 text-sm transition-colors hover:text-pink-500"
+                  aria-label="Lihat komentar di halaman detail"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>{getCommentCount(bite)}</span>
                 </button>
               </div>
-
-              {commentsOpen && (
-                <BiteCommentBox
-                  bite={bite}
-                  error={commentError}
-                  onOpenProfile={onOpenProfile}
-                  submitting={commenting}
-                  onSubmitComment={onSubmitComment}
-                />
-              )}
             </>
           )}
         </div>

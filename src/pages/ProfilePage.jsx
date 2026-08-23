@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { AlertCircle, SearchX } from "lucide-react";
+import { AlertCircle, RefreshCw, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
@@ -49,6 +49,7 @@ export default function ProfilePage() {
     profileForm,
     profileNotFound,
     profileUsername,
+    refreshAll,
     savedBites,
     savedError,
     savedLoading,
@@ -287,6 +288,17 @@ export default function ProfilePage() {
             renderProfileState("error")
           ) : (
             <>
+              <div className="flex justify-end px-4 pt-2">
+                <button
+                  type="button"
+                  onClick={refreshAll}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-pink-500"
+                  aria-label="Refresh profil"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Refresh
+                </button>
+              </div>
               <ProfileHeader
                 avatar={avatar}
                 banner={banner}

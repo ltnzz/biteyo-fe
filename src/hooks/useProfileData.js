@@ -81,7 +81,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     normalizeUsername(profileUsername) === normalizeUsername(ownUsername);
   const isFollowing = getFollowingState(profile);
 
-  const fetchProfile = useCallback(async () => {
+  const fetchProfile = useCallback(async ({ force = false } = {}) => {
     if (!profileUsername) return;
 
     setProfileLoading(true);
@@ -89,7 +89,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     setProfileNotFound(false);
 
     try {
-      const nextProfile = await getUserProfile(profileUsername);
+      const nextProfile = await getUserProfile(profileUsername, { force });
 
       if (!nextProfile) {
         setProfile(null);
@@ -114,14 +114,14 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     }
   }, [currentUser, isOwnProfile, profileUsername]);
 
-  const fetchUserBites = useCallback(async () => {
+  const fetchUserBites = useCallback(async ({ force = false } = {}) => {
     if (!profileUsername) return;
 
     setBitesLoading(true);
     setBitesError("");
 
     try {
-      setBites(await getUserBites(profileUsername));
+      setBites(await getUserBites(profileUsername, { force }));
     } catch (err) {
       console.error("Profile bites error:", err);
       setBitesError(err.message || "Bite profil belum bisa dimuat.");
@@ -130,7 +130,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     }
   }, [profileUsername]);
 
-  const fetchSavedBites = useCallback(async () => {
+  const fetchSavedBites = useCallback(async ({ force = false } = {}) => {
     if (!isOwnProfile) {
       setSavedBites([]);
       setSavedError("");
@@ -142,7 +142,9 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     setSavedError("");
 
     try {
-      setSavedBites((await getSavedBites()).map(markBiteSaved));
+      setSavedBites(
+        (await getSavedBites({ force })).map(markBiteSaved),
+      );
     } catch (err) {
       console.error("Saved bites error:", err);
       setSavedError(err.message || "Saved bites belum bisa dimuat.");
@@ -151,14 +153,16 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     }
   }, [isOwnProfile]);
 
-  const fetchLikedBites = useCallback(async () => {
+  const fetchLikedBites = useCallback(async ({ force = false } = {}) => {
     if (!profileUsername) return;
 
     setLikedLoading(true);
     setLikedError("");
 
     try {
-      setLikedBites((await getLikedBites(profileUsername)).map(markBiteLiked));
+      setLikedBites(
+        (await getLikedBites(profileUsername, { force })).map(markBiteLiked),
+      );
     } catch (err) {
       console.error("Liked bites error:", err);
       setLikedError(err.message || "Liked bites belum bisa dimuat.");
@@ -179,6 +183,15 @@ export const useProfileData = (currentUser, routeUsername = "") => {
   useEffect(() => {
     fetchLikedBites();
   }, [fetchLikedBites]);
+
+  const refreshAll = useCallback(async () => {
+    await Promise.allSettled([
+      fetchProfile({ force: true }),
+      fetchUserBites({ force: true }),
+      fetchSavedBites({ force: true }),
+      fetchLikedBites({ force: true }),
+    ]);
+  }, [fetchProfile, fetchUserBites, fetchSavedBites, fetchLikedBites]);
 
   const updateProfileForm = (field, value) => {
     setProfileForm((prev) => ({ ...prev, [field]: value }));
@@ -319,6 +332,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     fetchUserBites,
     fetchLikedBites,
     fetchSavedBites,
+    refreshAll,
     toggleFollow,
     updateProfileForm,
     setAvatarFile,
