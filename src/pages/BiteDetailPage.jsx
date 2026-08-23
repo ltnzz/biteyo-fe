@@ -396,17 +396,12 @@ export default function BiteDetailPage() {
               <button
                 type="button"
                 onClick={handleToggleLike}
-                disabled={liking}
-                className={`inline-flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                className={`inline-flex items-center gap-1.5 text-sm transition-colors ${
                   liked ? "text-pink-500" : "hover:text-pink-500"
                 }`}
                 aria-label={liked ? "Unlike bite" : "Like bite"}
               >
-                {liking ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
-                )}
+                <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
                 {getLikeCount(bite)}
               </button>
               <button

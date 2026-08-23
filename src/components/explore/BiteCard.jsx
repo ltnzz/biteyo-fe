@@ -38,7 +38,6 @@ export default function BiteCard({
   followLoading = false,
   isEditing,
   isFollowing,
-  liking = false,
   manageable,
   saveLoading = false,
   savingId,
@@ -233,17 +232,12 @@ export default function BiteCard({
                     event.stopPropagation();
                     onToggleLike?.(bite);
                   }}
-                  disabled={liking}
-                  className={`flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                  className={`flex items-center gap-1.5 text-sm transition-colors ${
                     liked ? "text-pink-500" : "hover:text-pink-500"
                   }`}
                   aria-label={liked ? "Unlike bite" : "Like bite"}
                 >
-                  {liking ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
-                  )}
+                  <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
                   <span>{getLikeCount(bite)}</span>
                 </button>
                 <button
