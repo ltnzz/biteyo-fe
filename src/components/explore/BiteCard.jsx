@@ -35,7 +35,6 @@ export default function BiteCard({
   isEditing,
   isFollowing,
   manageable,
-  saveLoading = false,
   savingId,
   showFollow = true,
   onCancelEdit,

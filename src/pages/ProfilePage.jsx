@@ -343,10 +343,6 @@ export default function ProfilePage() {
                   editingId={biteActions.editingId}
                   error={bitesError}
                   handle={handle}
-                  commentErrors={biteActions.commentErrors}
-                  commentingBiteIds={biteActions.commentingBiteIds}
-                  likingBiteIds={biteActions.likingBiteIds}
-                  savingBiteIds={biteActions.savingBiteIds}
                   loading={bitesLoading}
                   currentUser={currentUser}
                   savingBiteId={biteActions.savingBiteId}
@@ -358,7 +354,6 @@ export default function ProfilePage() {
                   onOpenBite={openBiteDetail}
                   onOpenProfile={openUserProfile}
                   onRetry={fetchUserBites}
-                  onSubmitComment={biteActions.submitComment}
                   onToggleLike={biteActions.toggleLike}
                   onToggleSave={biteActions.toggleSave}
                   onUpdateBite={biteActions.updateBite}
@@ -373,17 +368,12 @@ export default function ProfilePage() {
                   emptyTitle="Belum ada saved bite"
                   error={savedError}
                   handle={handle}
-                  commentErrors={savedBiteActions.commentErrors}
-                  commentingBiteIds={savedBiteActions.commentingBiteIds}
-                  likingBiteIds={savedBiteActions.likingBiteIds}
-                  savingBiteIds={savedBiteActions.savingBiteIds}
                   loading={savedLoading}
                   currentUser={currentUser}
                   useBiteAuthor
                   onOpenBite={openBiteDetail}
                   onOpenProfile={openUserProfile}
                   onRetry={fetchSavedBites}
-                  onSubmitComment={savedBiteActions.submitComment}
                   onToggleLike={savedBiteActions.toggleLike}
                   onToggleSave={savedBiteActions.toggleSave}
                 />
@@ -397,17 +387,12 @@ export default function ProfilePage() {
                   emptyTitle="Belum ada likes"
                   error={likedError}
                   handle={handle}
-                  commentErrors={likedBiteActions.commentErrors}
-                  commentingBiteIds={likedBiteActions.commentingBiteIds}
-                  likingBiteIds={likedBiteActions.likingBiteIds}
-                  savingBiteIds={likedBiteActions.savingBiteIds}
                   loading={likedLoading}
                   currentUser={currentUser}
                   useBiteAuthor
                   onOpenBite={openBiteDetail}
                   onOpenProfile={openUserProfile}
                   onRetry={fetchLikedBites}
-                  onSubmitComment={likedBiteActions.submitComment}
                   onToggleLike={likedBiteActions.toggleLike}
                   onToggleSave={likedBiteActions.toggleSave}
                 />

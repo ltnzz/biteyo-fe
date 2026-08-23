@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { postBiteComment, toggleLikeBite, toggleSaveBite } from "../services/feedApi";
+import { toggleLikeBite, toggleSaveBite } from "../services/feedApi";
 import { broadcastFeedChange } from "../services/feedRealtime";
 import { getAuthHeaders } from "../utils/auth";
 import {
@@ -9,7 +9,6 @@ import {
   getLikeCount,
   isBiteLiked,
   isBiteSaved,
-  normalizeCreatedComment,
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
 import { ensureOkResponse } from "../utils/api";
@@ -45,8 +44,6 @@ export const useBiteMutations = ({
   const [pendingDeleteBite, setPendingDeleteBite] = useState(null);
   const [likingBiteIds, setLikingBiteIds] = useState(() => new Set());
   const [savingBiteIds, setSavingBiteIds] = useState(() => new Set());
-  const [commentingBiteIds, setCommentingBiteIds] = useState(() => new Set());
-  const [commentErrors, setCommentErrors] = useState({});
 
   const updateBiteInState = (biteId, updater) => {
     setBites((prev) =>
@@ -243,6 +240,16 @@ export const useBiteMutations = ({
       isBookmarked: nextSaved,
     }));
 
+    // toast muncul instan serentak dengan icon (optimistic);
+    // diganti pesan error jika request gagal
+    setToastMessage?.({
+      icon: "bookmark",
+      text: nextSaved
+        ? "Added to your saved posts."
+        : "Removed from your saved posts.",
+      type: "success",
+    });
+
     try {
       const data = await toggleSaveBite(biteId, nextSaved);
       const updatedBite = normalizeUpdatedBite(data);
@@ -256,13 +263,6 @@ export const useBiteMutations = ({
         biteId,
         saved: nextSaved,
         updatedBite,
-      });
-      setToastMessage?.({
-        icon: "bookmark",
-        text: nextSaved
-          ? "Added to your saved posts."
-          : "Removed from your saved posts.",
-        type: "success",
       });
 
       if (removeOnUnsave && !nextSaved) {
@@ -279,71 +279,13 @@ export const useBiteMutations = ({
         bookmarked: wasSaved,
         isBookmarked: wasSaved,
       }));
-      setActionMessage({
-        type: "error",
+      setToastMessage?.({
+        icon: "bookmark",
         text: err.message || "Gagal memperbarui saved bite.",
+        type: "error",
       });
     } finally {
       setSavingBiteIds((prev) => {
-        const next = new Set(prev);
-        next.delete(biteId);
-        return next;
-      });
-    }
-  };
-
-  const submitComment = async (bite, content) => {
-    const biteId = getBiteId(bite);
-    const cleanedContent = content?.trim();
-
-    if (!biteId) return false;
-
-    if (!cleanedContent) {
-      setCommentErrors((prev) => ({
-        ...prev,
-        [biteId]: "Komentar tidak boleh kosong.",
-      }));
-      return false;
-    }
-
-    if (commentingBiteIds.has(biteId)) return false;
-
-    setActionMessage({ type: "", text: "" });
-    setCommentErrors((prev) => ({ ...prev, [biteId]: "" }));
-    setCommentingBiteIds((prev) => new Set(prev).add(biteId));
-
-    try {
-      const data = await postBiteComment(biteId, cleanedContent);
-      const updatedBite = normalizeUpdatedBite(data);
-      const nextComment = normalizeCreatedComment(data, cleanedContent, currentUser);
-
-      updateBiteInState(biteId, (item) => {
-        if (updatedBite && getBiteId(updatedBite)) {
-          return { ...item, ...updatedBite };
-        }
-
-        const previousCount = getCommentCount(item);
-        const comments = [...getBiteComments(item), nextComment];
-        const count = Math.max(previousCount + 1, comments.length);
-
-        return {
-          ...item,
-          comments,
-          commentsCount: count,
-          commentCount: count,
-        };
-      });
-      broadcastFeedChange({ type: "refresh", biteId });
-
-      return true;
-    } catch (err) {
-      setCommentErrors((prev) => ({
-        ...prev,
-        [biteId]: err.message || "Gagal mengirim komentar.",
-      }));
-      return false;
-    } finally {
-      setCommentingBiteIds((prev) => {
         const next = new Set(prev);
         next.delete(biteId);
         return next;
@@ -359,8 +301,6 @@ export const useBiteMutations = ({
     deletingBiteId,
     likingBiteIds,
     savingBiteIds,
-    commentingBiteIds,
-    commentErrors,
     startEdit,
     cancelEdit,
     updateEditForm,
@@ -370,6 +310,5 @@ export const useBiteMutations = ({
     confirmDeleteBite,
     toggleLike,
     toggleSave,
-    submitComment,
   };
 };

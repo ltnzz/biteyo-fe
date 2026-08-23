@@ -28,7 +28,6 @@ export default function ProfileBiteCard({
   editForm,
   editing,
   handle,
-  saveLoading = false,
   saving,
   onCancelEdit,
   onDelete,

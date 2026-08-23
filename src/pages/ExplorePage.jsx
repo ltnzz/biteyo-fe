@@ -459,10 +459,6 @@ export default function ExplorePage() {
             getBiteId={getBiteId}
             getFollowKey={getFollowKey}
             canFollowBite={canFollowBite}
-            commentErrors={biteActions.commentErrors}
-            commentingBiteIds={biteActions.commentingBiteIds}
-            likingBiteIds={likingBiteIds}
-            savingBiteIds={biteActions.savingBiteIds}
             savingId={savingId}
             onAddBite={() => navigate("/add")}
             onCancelEdit={cancelEdit}
@@ -473,7 +469,6 @@ export default function ExplorePage() {
             onStartEdit={startEdit}
             onToggleLike={handleToggleLike}
             onToggleSave={biteActions.toggleSave}
-            onSubmitComment={biteActions.submitComment}
             onToggleFollow={toggleFollow}
             onUpdate={handleUpdate}
           />
