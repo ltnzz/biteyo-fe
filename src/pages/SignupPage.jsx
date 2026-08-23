@@ -1,15 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
-import AlternateEmail from "@mui/icons-material/AlternateEmail";
-import EmailOutlined from "@mui/icons-material/EmailOutlined";
-import LockOutlined from "@mui/icons-material/LockOutlined";
-import ArrowForward from "@mui/icons-material/ArrowForward";
-import EditNote from "@mui/icons-material/EditNote";
-import Search from "@mui/icons-material/Search";
-import GroupOutlined from "@mui/icons-material/GroupOutlined";
-import CircularProgress from "@mui/material/CircularProgress";
-import ErrorOutlined from "@mui/icons-material/ErrorOutlined";
+import { AtSign, Mail, Lock, ArrowRight, PenTool, Search, Users, Loader2, AlertCircle, } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import LegalModal from "../components/LegalModal"; 
@@ -25,7 +17,7 @@ const InputField = ({ label, icon, type = "text", placeholder, note, name, value
       <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-          <Icon sx={{ fontSize: 18 }} />
+          <Icon size={18} />
         </div>
         <input
           name={name}
@@ -49,7 +41,7 @@ const FeatureCard = ({ icon, title, description, iconBg, iconColor }) => {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex-1 min-w-[240px]">
       <div className={`w-12 h-12 ${iconBg} rounded-full flex items-center justify-center mb-4`}>
-        <Icon sx={{ fontSize: 24 }} className={iconColor} />
+        <Icon size={24} className={iconColor} />
       </div>
       <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
       <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
@@ -172,16 +164,16 @@ export default function SignupPage() {
 
             {error && (
               <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 flex items-center gap-3 rounded-r-xl animate-in fade-in duration-300">
-                <ErrorOutlined sx={{ fontSize: 18 }} />
+                <AlertCircle size={18} />
                 <p className="text-sm font-medium">{error}</p>
               </div>
             )}
 
             <form onSubmit={handleSubmit}>
-              <InputField label="Nama Pengguna" icon={AlternateEmail} name="username" value={formData.username} onChange={handleChange} placeholder="username123" required />
-              <InputField label="Alamat Email" icon={EmailOutlined} type="email" name="email" value={formData.email} onChange={handleChange} placeholder="nama@gmail.com" required />
-              <InputField label="Kata Sandi" icon={LockOutlined} type="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" note="Min. 8 karakter (Huruf besar, kecil, & angka)" required />
-              <InputField label="Konfirmasi Kata Sandi" icon={LockOutlined} type="password" name="confirm_password" value={formData.confirm_password} onChange={handleChange} placeholder="••••••••" required />
+              <InputField label="Nama Pengguna" icon={AtSign} name="username" value={formData.username} onChange={handleChange} placeholder="username123" required />
+              <InputField label="Alamat Email" icon={Mail} type="email" name="email" value={formData.email} onChange={handleChange} placeholder="nama@gmail.com" required />
+              <InputField label="Kata Sandi" icon={Lock} type="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" note="Min. 8 karakter (Huruf besar, kecil, & angka)" required />
+              <InputField label="Konfirmasi Kata Sandi" icon={Lock} type="password" name="confirm_password" value={formData.confirm_password} onChange={handleChange} placeholder="••••••••" required />
 
               <div className="mt-6 mb-6 text-sm text-gray-600">
                 Saya setuju dengan{" "}
@@ -195,7 +187,7 @@ export default function SignupPage() {
               </div>
 
               <button type="submit" disabled={loading || googleLoading} className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-pink-300 text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                {loading ? <CircularProgress size={20} className="text-white" /> : <>Buat Akun <ArrowForward sx={{ fontSize: 18 }} /></>}
+                {loading ? <Loader2 className="animate-spin" /> : <>Buat Akun <ArrowRight size={18} /></>}
               </button>
 
               <div className="relative my-8">
@@ -217,7 +209,7 @@ export default function SignupPage() {
                   </div>
                   {googleLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white/85">
-                      <CircularProgress size={20} className="text-pink-500" />
+                      <Loader2 className="w-5 h-5 animate-spin text-pink-500" />
                     </div>
                   )}
                 </div>
@@ -233,9 +225,9 @@ export default function SignupPage() {
         <div className="hidden lg:flex flex-col flex-1">
           <h2 className="text-5xl font-extrabold text-pink-500 mb-8 leading-tight">Bergabung dengan Komunitas BiteYo</h2>
           <div className="space-y-6">
-            <FeatureCard icon={EditNote} title="Tulis Ulasan" description="Bagikan rasa makanan favorit Anda." iconBg="bg-pink-100" iconColor="text-pink-500" />
+            <FeatureCard icon={PenTool} title="Tulis Ulasan" description="Bagikan rasa makanan favorit Anda." iconBg="bg-pink-100" iconColor="text-pink-500" />
             <FeatureCard icon={Search} title="Eksplorasi" description="Temukan permata kuliner tersembunyi." iconBg="bg-orange-100" iconColor="text-orange-500" />
-            <FeatureCard icon={GroupOutlined} title="Interaksi" description="Ikuti foodies lain yang sefrekuensi." iconBg="bg-purple-100" iconColor="text-purple-500" />
+            <FeatureCard icon={Users} title="Interaksi" description="Ikuti foodies lain yang sefrekuensi." iconBg="bg-purple-100" iconColor="text-purple-500" />
           </div>
         </div>
       </div>

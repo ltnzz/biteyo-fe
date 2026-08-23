@@ -1,10 +1,5 @@
-﻿import { useEffect, useState } from "react";
-import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import Image from "@mui/icons-material/Image";
-import SaveAlt from "@mui/icons-material/SaveAlt";
-import PersonOutlined from "@mui/icons-material/PersonOutlined";
-import Close from "@mui/icons-material/Close";
-import CircularProgress from "@mui/material/CircularProgress";
+import { useEffect, useState } from "react";
+import { Camera, Image, Loader2, Save, User, X } from "lucide-react";
 
 export default function ProfileEditor({
   avatar,
@@ -87,7 +82,7 @@ export default function ProfileEditor({
               className="rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50"
               aria-label="Close edit profile"
             >
-              <Close className="h-5 w-5" />
+              <X className="h-5 w-5" />
             </button>
             <h3 className="text-lg font-extrabold text-gray-900">
               Edit profile
@@ -106,7 +101,8 @@ export default function ProfileEditor({
             )}
             <label className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/25 text-white transition-colors hover:bg-black/35">
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 backdrop-blur">
-                <Image className="h-5 w-5" />              </span>
+                <Image className="h-5 w-5" />
+              </span>
               <input
                 type="file"
                 accept="image/*"
@@ -135,7 +131,7 @@ export default function ProfileEditor({
               )}
               <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/30 text-white transition-colors hover:bg-black/40">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/45 backdrop-blur">
-                  <PhotoCamera className="h-5 w-5" />
+                  <Camera className="h-5 w-5" />
                 </span>
                 <input
                   type="file"
@@ -151,7 +147,7 @@ export default function ProfileEditor({
             <div className="space-y-4">
               <label className="block">
                 <span className="mb-1.5 flex items-center gap-2 text-sm font-bold text-gray-700">
-                  <PersonOutlined className="h-4 w-4 text-gray-400" />
+                  <User className="h-4 w-4 text-gray-400" />
                   Username
                 </span>
                 <input
@@ -192,9 +188,9 @@ export default function ProfileEditor({
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-pink-600 disabled:opacity-60"
               >
                 {saving ? (
-                  <CircularProgress size={16} />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <SaveAlt className="h-4 w-4" />
+                  <Save className="h-4 w-4" />
                 )}
                 Save profile
               </button>

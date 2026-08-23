@@ -1,17 +1,11 @@
-﻿import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Sidebar from './components/SideBar';
 import MainHeader from './components/MainHeader';
 import ProtectedRoute from './components/ProtectedRoute';
 import BiteLoader from './components/BiteLoader';
 import useUnreadNotifications from './hooks/useUnreadNotifications';
-import {
-  NotificationsNone,
-  Home,
-  AddCircleOutlined,
-  Search,
-  PersonOutlined,
-} from '@mui/icons-material';
+import { Bell, Home, PlusCircle, Search, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -36,14 +30,14 @@ function MobileNav({ unreadNotifications = 0 }) {
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/explore', icon: Search, label: 'Explore' },
-    { to: '/add', icon: AddCircleOutlined, label: 'Post' },
+    { to: '/add', icon: PlusCircle, label: 'Post' },
     {
       to: '/notifications',
-      icon: NotificationsNone,
+      icon: Bell,
       label: 'Alerts',
       badge: unreadNotifications,
     },
-    { to: '/profile', icon: PersonOutlined, label: 'Profile' },
+    { to: '/profile', icon: User, label: 'Profile' },
   ];
 
   return (

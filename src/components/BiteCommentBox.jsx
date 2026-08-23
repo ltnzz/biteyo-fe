@@ -1,5 +1,4 @@
-import Send from "@mui/icons-material/Send";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Loader2, Send } from "lucide-react";
 import { useState } from "react";
 import MentionText from "./MentionText";
 import MentionTextarea from "./MentionTextarea";
@@ -56,7 +55,7 @@ export default function BiteCommentBox({
           aria-label="Kirim komentar"
         >
           {submitting ? (
-            <CircularProgress size={16} />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Send className="h-4 w-4" />
           )}

@@ -1,5 +1,4 @@
-import Place from "@mui/icons-material/Place";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Loader2, MapPin } from "lucide-react";
 
 export default function LocationResults({ error, loading, query, results }) {
   if (!query) return null;
@@ -12,7 +11,7 @@ export default function LocationResults({ error, loading, query, results }) {
 
       {loading && (
         <div className="py-6 flex items-center justify-center">
-          <CircularProgress size={20} className="text-pink-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-pink-500" />
         </div>
       )}
 
@@ -31,7 +30,7 @@ export default function LocationResults({ error, loading, query, results }) {
             >
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 bg-pink-100 rounded-full flex items-center justify-center shrink-0">
-                  <Place className="w-4 h-4 text-pink-500" />
+                  <MapPin className="w-4 h-4 text-pink-500" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">{place.name}</h3>

@@ -1,12 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import LockOutlined from '@mui/icons-material/LockOutlined';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import CheckCircle from '@mui/icons-material/CheckCircle';
-import ErrorOutlined from '@mui/icons-material/ErrorOutlined';
-import ArrowBack from '@mui/icons-material/ArrowBack';
+import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { API_BASE } from "../utils/api";
 
 export default function ResetPasswordPage() {
@@ -94,7 +89,7 @@ export default function ResetPasswordPage() {
           to="/login" 
           className="inline-flex items-center gap-2 text-gray-500 hover:text-pink-500 text-sm font-medium mb-6 transition-colors"
         >
-          <ArrowBack className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" />
           Kembali ke Login
         </Link>
 
@@ -106,7 +101,7 @@ export default function ResetPasswordPage() {
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 flex items-center gap-3 rounded-r-xl">
-              <ErrorOutlined sx={{ fontSize: 18 }} />
+              <AlertCircle size={18} />
               <p className="text-sm font-medium">{error}</p>
             </div>
           )}
@@ -119,7 +114,7 @@ export default function ResetPasswordPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                  <LockOutlined sx={{ fontSize: 18 }} />
+                  <Lock size={18} />
                 </div>
                 <input
                   name="password"
@@ -135,7 +130,7 @@ export default function ResetPasswordPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               <p className="text-xs text-gray-400 mt-1.5">Min. 8 karakter</p>
@@ -148,7 +143,7 @@ export default function ResetPasswordPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                  <LockOutlined sx={{ fontSize: 18 }} />
+                  <Lock size={18} />
                 </div>
                 <input
                   name="confirm_password"
@@ -164,7 +159,7 @@ export default function ResetPasswordPage() {
                   onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600"
                 >
-                  {showConfirm ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>

@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import SearchOff from "@mui/icons-material/SearchOff";
-import ErrorOutlined from "@mui/icons-material/ErrorOutlined";
+import { AlertCircle, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
@@ -241,7 +240,7 @@ export default function ProfilePage() {
 
   const renderProfileState = (type) => {
     const isNotFound = type === "not-found";
-    const Icon = isNotFound ? SearchOff : ErrorOutlined;
+    const Icon = isNotFound ? SearchX : AlertCircle;
 
     return (
       <section className="px-6 py-20 text-center">

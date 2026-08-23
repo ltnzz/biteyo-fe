@@ -1,15 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import AlertCircleIcon from "@mui/icons-material/ErrorOutlined";
-import ChevronDown from "@mui/icons-material/ExpandMore";
-import Login from "@mui/icons-material/Login";
-import Logout from "@mui/icons-material/Logout";
-import Search from "@mui/icons-material/Search";
-import Settings from "@mui/icons-material/Settings";
-import TrendingUp from "@mui/icons-material/TrendingUp";
-import PersonOutlined from "@mui/icons-material/PersonOutlined";
-import PersonAddAlt from "@mui/icons-material/PersonAddAlt";
-import CircularProgress from "@mui/material/CircularProgress";
+import {
+  AlertCircle,
+  ChevronDown,
+  Loader2,
+  LogIn,
+  LogOut,
+  Search,
+  Settings,
+  TrendingUp,
+  User,
+  UserPlus,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { searchBites } from "../services/feedApi";
 import { AUTH_CHANGE_EVENT, clearAuth, getStoredUser, isAuthenticated } from "../utils/auth";
@@ -197,7 +199,7 @@ export default function MainHeader() {
 
               {searchLoading && (
                 <div className="flex items-center justify-center gap-2 px-4 py-6 text-sm text-gray-500">
-                  <CircularProgress size={16} className="text-pink-500" />
+                  <Loader2 className="h-4 w-4 animate-spin text-pink-500" />
                   Searching bites...
                 </div>
               )}
@@ -325,7 +327,7 @@ export default function MainHeader() {
                     }}
                     className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-pink-50 hover:text-pink-600"
                   >
-                    <PersonOutlined className="h-4 w-4" />
+                    <User className="h-4 w-4" />
                     Profile
                   </button>
                   <button
@@ -339,9 +341,9 @@ export default function MainHeader() {
                     className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50 disabled:opacity-70"
                   >
                     {logoutLoading ? (
-                      <CircularProgress size={16} />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Logout className="h-4 w-4" />
+                      <LogOut className="h-4 w-4" />
                     )}
                     {logoutLoading ? "Logging out..." : "Logout"}
                   </button>
@@ -353,7 +355,7 @@ export default function MainHeader() {
                     onClick={() => goToGuestPage("/login")}
                     className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-pink-50 hover:text-pink-600"
                   >
-                    <Login className="h-4 w-4" />
+                    <LogIn className="h-4 w-4" />
                     Login
                   </button>
                   <button
@@ -361,7 +363,7 @@ export default function MainHeader() {
                     onClick={() => goToGuestPage("/signup")}
                     className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-pink-50 hover:text-pink-600"
                   >
-                    <PersonAddAlt className="h-4 w-4" />
+                    <UserPlus className="h-4 w-4" />
                     Register
                   </button>
                 </>
@@ -369,7 +371,7 @@ export default function MainHeader() {
 
               {settingsError && (
                 <div className="flex items-start gap-2 border-t border-red-100 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
-                  <AlertCircleIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                   <span>{settingsError}</span>
                 </div>
               )}
@@ -383,7 +385,7 @@ export default function MainHeader() {
         <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm lg:hidden">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-              <Logout sx={{ fontSize: 22 }} className="text-red-500" />
+              <LogOut className="text-red-500" size={22} />
             </div>
 
             <h2 className="mb-1 text-center text-lg font-extrabold text-gray-900">
@@ -414,7 +416,7 @@ export default function MainHeader() {
               >
                 {logoutLoading ? (
                   <span className="inline-flex items-center justify-center gap-2">
-                    <CircularProgress size={16} />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Keluar...
                   </span>
                 ) : (
@@ -425,7 +427,7 @@ export default function MainHeader() {
 
             {settingsError && (
               <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                <AlertCircleIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{settingsError}</span>
               </div>
             )}

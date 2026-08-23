@@ -1,13 +1,12 @@
-﻿import Bookmark from "@mui/icons-material/Bookmark";
-import BookmarkBorder from "@mui/icons-material/BookmarkBorder";
-import Favorite from "@mui/icons-material/Favorite";
-import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
-import ChatBubbleOutlined from "@mui/icons-material/ChatBubbleOutlined";
-import EditOutlined from "@mui/icons-material/EditOutlined";
-import Star from "@mui/icons-material/Star";
-import StarBorder from "@mui/icons-material/StarBorder";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import CircularProgress from "@mui/material/CircularProgress";
+import {
+  Bookmark,
+  Heart,
+  Loader2,
+  MessageCircle,
+  Pencil,
+  Star,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import {
   getDisplayLocation,
@@ -128,7 +127,7 @@ export default function BiteCard({
                   }`}
                 >
                   {followLoading ? (
-                    <CircularProgress size={14} />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : isFollowing ? (
                     "Following"
                   ) : (
@@ -138,13 +137,16 @@ export default function BiteCard({
               )}
 
               <div className="flex gap-0.5">
-                {[...Array(5)].map((_, i) =>
-                  i < Number(bite.rating || 0) ? (
-                    <Star key={i} className="w-3.5 h-3.5 text-yellow-400" />
-                  ) : (
-                    <StarBorder key={i} className="w-3.5 h-3.5 text-gray-300" />
-                  )
-                )}
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-3.5 h-3.5 ${
+                      i < Number(bite.rating || 0)
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
               </div>
 
               {manageable && !isEditing && (
@@ -158,7 +160,7 @@ export default function BiteCard({
                     className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                     aria-label="Edit bite"
                   >
-                    <EditOutlined className="w-4 h-4" />
+                    <Pencil className="w-4 h-4" />
                   </button>
                   <button
                     type="button"
@@ -171,9 +173,9 @@ export default function BiteCard({
                     aria-label="Delete bite"
                   >
                     {deletingId === biteId ? (
-                      <CircularProgress size={16} />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <DeleteOutlined className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" />
                     )}
                   </button>
                 </div>
@@ -235,11 +237,7 @@ export default function BiteCard({
                   }`}
                   aria-label={liked ? "Unlike bite" : "Like bite"}
                 >
-                  {liked ? (
-                    <Favorite className="w-4 h-4" />
-                  ) : (
-                    <FavoriteBorder className="w-4 h-4" />
-                  )}
+                  <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
                   <span>{getLikeCount(bite)}</span>
                 </button>
                 <button
@@ -255,11 +253,9 @@ export default function BiteCard({
                   aria-label={saved ? "Unsave bite" : "Save bite"}
                 >
                   {saveLoading ? (
-                    <CircularProgress size={16} />
-                  ) : saved ? (
-                    <Bookmark className="w-4 h-4" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <BookmarkBorder className="w-4 h-4" />
+                    <Bookmark className={`w-4 h-4 ${saved ? "fill-current" : ""}`} />
                   )}
                 </button>
                 <button
@@ -274,7 +270,7 @@ export default function BiteCard({
                   aria-expanded={commentsOpen}
                   aria-label="Toggle comment box"
                 >
-                  <ChatBubbleOutlined className="w-4 h-4" />
+                  <MessageCircle className="w-4 h-4" />
                   <span>{getCommentCount(bite)}</span>
                 </button>
               </div>

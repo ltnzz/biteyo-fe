@@ -1,15 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Diamond from "@mui/icons-material/Diamond";
-import LocalCafe from "@mui/icons-material/LocalCafe";
-import LocalFireDepartment from "@mui/icons-material/LocalFireDepartment";
-import LockOutlined from "@mui/icons-material/LockOutlined";
-import Place from "@mui/icons-material/Place";
-import Restaurant from "@mui/icons-material/Restaurant";
-import Star from "@mui/icons-material/Star";
-import StarBorder from "@mui/icons-material/StarBorder";
-import TrendingUp from "@mui/icons-material/TrendingUp";
-import WineBar from "@mui/icons-material/WineBar";
-import CircularProgress from "@mui/material/CircularProgress";
+import {
+  Coffee,
+  Flame,
+  Gem,
+  LockKeyhole,
+  Loader2,
+  MapPin,
+  Star,
+  TrendingUp,
+  Utensils,
+  Wine,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getBitesByCategory, getFeedBites } from "../services/feedApi";
 import {
@@ -32,12 +33,12 @@ import {
 import { isAuthenticated } from "../utils/auth";
 
 const categoryChips = [
-  { label: "All", value: "all", icon: Restaurant },
-  { label: "Street Food", value: "street_food", icon: Restaurant },
-  { label: "Cafe", value: "cafe", icon: LocalCafe },
-  { label: "Fine Dining", value: "fine_dining", icon: WineBar },
-  { label: "Viral", value: "viral", icon: LocalFireDepartment },
-  { label: "Hidden Gems", value: "hidden_gems", icon: Diamond },
+  { label: "All", value: "all", icon: Utensils },
+  { label: "Street Food", value: "street_food", icon: Utensils },
+  { label: "Cafe", value: "cafe", icon: Coffee },
+  { label: "Fine Dining", value: "fine_dining", icon: Wine },
+  { label: "Viral", value: "viral", icon: Flame },
+  { label: "Hidden Gems", value: "hidden_gems", icon: Gem },
 ];
 
 const HOME_TRENDING_LIMIT = 6;
@@ -84,7 +85,7 @@ function TrendingBiteCard({ bite, onOpen }) {
           <img src={image} alt={title} className="h-auto w-full" loading="lazy" />
         ) : (
           <div className="flex min-h-48 w-full items-center justify-center">
-            <Restaurant className="h-9 w-9 text-pink-300" />
+            <Utensils className="h-9 w-9 text-pink-300" />
           </div>
         )}
         {primaryCategory && (
@@ -120,24 +121,20 @@ function TrendingBiteCard({ bite, onOpen }) {
 
         <div className="mt-4 flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-1.5 text-xs text-gray-500">
-            <Place className="h-3.5 w-3.5 shrink-0 text-pink-400" />
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-pink-400" />
             <span className="truncate">{getDisplayLocation(bite)}</span>
           </div>
 
           {rating > 0 && (
             <div className="flex shrink-0 items-center gap-0.5">
-              {[...Array(5)].map((_, index) => {
-                const StarIcon = index < rating ? Star : StarBorder;
-
-                return (
-                  <StarIcon
-                    key={index}
-                    className={`h-3.5 w-3.5 ${
-                      index < rating ? "text-yellow-400" : "text-gray-300"
-                    }`}
-                  />
-                );
-              })}
+              {[...Array(5)].map((_, index) => (
+                <Star
+                  key={index}
+                  className={`h-3.5 w-3.5 ${
+                    index < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                  }`}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -289,9 +286,9 @@ export default function TrendingBites() {
       {!loading && !error && bites.length === 0 && (
         <div className="rounded-lg border border-gray-100 bg-gray-50 px-6 py-12 text-center">
           {hasSession ? (
-            <CircularProgress size={24} className="text-gray-300" />
+            <Loader2 className="mx-auto mb-3 h-6 w-6 text-gray-300" />
           ) : (
-            <LockOutlined className="mx-auto mb-3 h-6 w-6 text-pink-300" />
+            <LockKeyhole className="mx-auto mb-3 h-6 w-6 text-pink-300" />
           )}
           <h3 className="text-base font-extrabold text-gray-900">
             {hasSession ? "Belum ada trending bite" : "Login untuk melihat trending bites"}

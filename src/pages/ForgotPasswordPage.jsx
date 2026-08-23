@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { EmailOutlined, ArrowBack } from '@mui/icons-material';
-import CircularProgress from "@mui/material/CircularProgress";
+import { Mail, ArrowLeft, Loader2, KeyRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from "../assets/logo.png";
 import { API_BASE } from "../utils/api";
@@ -62,7 +61,7 @@ export default function ForgotPasswordPage() {
               to="/login"
               className="inline-flex items-center gap-2 text-gray-400 hover:text-pink-500 mb-6 text-sm font-medium transition-colors"
             >
-              <ArrowBack className="h-4 w-4" /> Kembali ke Login
+              <ArrowLeft size={16} /> Kembali ke Login
             </Link>
 
             <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Lupa Kata Sandi?</h1>
@@ -88,7 +87,7 @@ export default function ForgotPasswordPage() {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                    <EmailOutlined className="h-[18px] w-[18px]" />
+                    <Mail size={18} />
                   </div>
                   <input
                     type="email"
@@ -107,7 +106,7 @@ export default function ForgotPasswordPage() {
                 className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-pink-300 text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-pink-200"
               >
                 {isLoading
-                  ? <CircularProgress size={20} />
+                  ? <Loader2 className="animate-spin" size={20} />
                   : 'Kirim Tautan Reset'
                 }
               </button>

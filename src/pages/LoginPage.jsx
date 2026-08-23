@@ -1,13 +1,13 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import {
-  EmailOutlined,
-  LockOutlined,
-  ArrowForward,
-  ErrorOutlined,
-} from "@mui/icons-material";
-import CircularProgress from "@mui/material/CircularProgress";
+  Mail,
+  Lock,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { API_BASE, normalizeAuthResponse, postJson } from "../utils/api";
@@ -33,7 +33,7 @@ const InputField = ({
       </label>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-          <Icon className="h-[18px] w-[18px]" />
+          <Icon size={18} />
         </div>
         <input
           name={name}
@@ -192,14 +192,14 @@ export default function LoginPage() {
             {/* Pesan Error */}
             {loginNotice && !error && (
               <div className="mb-6 p-4 bg-pink-50 border-l-4 border-pink-500 text-pink-700 flex items-center gap-3 rounded-r-xl animate-in fade-in duration-300">
-                <ErrorOutlined className="h-[18px] w-[18px]" />
+                <AlertCircle size={18} />
                 <p className="text-sm font-medium">{loginNotice}</p>
               </div>
             )}
 
             {error && (
               <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 flex items-center gap-3 rounded-r-xl animate-in fade-in duration-300">
-                <ErrorOutlined className="h-[18px] w-[18px]" />
+                <AlertCircle size={18} />
                 <p className="text-sm font-medium">{error}</p>
               </div>
             )}
@@ -207,7 +207,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit}>
               <InputField
                 label="Alamat Email"
-                icon={EmailOutlined}
+                icon={Mail}
                 type="email"
                 name="email"
                 value={formData.email}
@@ -217,7 +217,7 @@ export default function LoginPage() {
               />
               <InputField
                 label="Kata Sandi"
-                icon={LockOutlined}
+                icon={Lock}
                 type="password"
                 name="password"
                 value={formData.password}
@@ -241,10 +241,10 @@ export default function LoginPage() {
                 className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-pink-300 text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-pink-200"
               >
                 {loading ? (
-                  <CircularProgress size={20} />
+                  <Loader2 className="animate-spin" />
                 ) : (
                   <>
-                    Masuk <ArrowForward className="h-[18px] w-[18px]" />
+                    Masuk <ArrowRight size={18} />
                   </>
                 )}
               </button>
@@ -272,7 +272,7 @@ export default function LoginPage() {
                   </div>
                   {googleLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white/85">
-                      <CircularProgress size={20} className="text-pink-500" />
+                      <Loader2 className="w-5 h-5 animate-spin text-pink-500" />
                     </div>
                   )}
                 </div>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Loader2 } from "lucide-react";
 import { getMentionUserByUsername, getMentionUsers } from "../services/profileApi";
 
 const MENTION_DEBOUNCE_MS = 180;
@@ -239,7 +239,7 @@ export default function MentionTextarea({
         <div className="absolute left-0 right-0 top-full z-40 mt-2 max-h-64 overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl">
           {loading ? (
             <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500">
-              <CircularProgress size={16} className="text-pink-500" />
+              <Loader2 className="h-4 w-4 animate-spin text-pink-500" />
               Memuat user...
             </div>
           ) : suggestions.length > 0 ? (

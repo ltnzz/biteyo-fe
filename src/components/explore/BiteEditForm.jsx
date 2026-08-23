@@ -1,8 +1,4 @@
-import SaveAlt from "@mui/icons-material/SaveAlt";
-import Star from "@mui/icons-material/Star";
-import StarBorder from "@mui/icons-material/StarBorder";
-import Close from "@mui/icons-material/Close";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Loader2, Save, Star, X } from "lucide-react";
 import { biteCategories } from "../../utils/bites";
 
 export default function BiteEditForm({
@@ -43,11 +39,13 @@ export default function BiteEditForm({
             type="button"
             onClick={() => onEditChange("rating", star)}
           >
-            {star <= editForm.rating ? (
-              <Star className="w-5 h-5 text-yellow-400" />
-            ) : (
-              <StarBorder className="w-5 h-5 text-gray-300" />
-            )}
+            <Star
+              className={`w-5 h-5 ${
+                star <= editForm.rating
+                  ? "text-yellow-400 fill-yellow-400"
+                  : "text-gray-300"
+              }`}
+            />
           </button>
         ))}
       </div>
@@ -77,9 +75,9 @@ export default function BiteEditForm({
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-600 disabled:opacity-50"
         >
           {savingId === biteId ? (
-            <CircularProgress size={16} />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <SaveAlt className="w-4 h-4" />
+            <Save className="w-4 h-4" />
           )}
           Save
         </button>
@@ -88,7 +86,7 @@ export default function BiteEditForm({
           onClick={onCancelEdit}
           className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50"
         >
-          <Close className="w-4 h-4" />
+          <X className="w-4 h-4" />
           Cancel
         </button>
       </div>
