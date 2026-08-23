@@ -16,6 +16,7 @@ export default function ExploreFeed({
   getBiteId,
   getFollowKey,
   canFollowBite,
+  savingId,
   onAddBite,
   onCancelEdit,
   onDelete,
