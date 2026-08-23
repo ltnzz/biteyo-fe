@@ -407,17 +407,12 @@ export default function BiteDetailPage() {
               <button
                 type="button"
                 onClick={handleToggleSave}
-                disabled={saving}
-                className={`inline-flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                className={`inline-flex items-center gap-1.5 text-sm transition-colors ${
                   saved ? "text-pink-500" : "hover:text-pink-500"
                 }`}
                 aria-label={saved ? "Unsave bite" : "Save bite"}
               >
-                {saving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
-                )}
+                <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
               </button>
               <div className="inline-flex items-center gap-1.5 text-sm">
                 <MessageCircle className="h-4 w-4" />

@@ -203,17 +203,12 @@ export default function ProfileBiteCard({
                     event.stopPropagation();
                     onToggleSave?.(bite);
                   }}
-                  disabled={saveLoading}
-                  className={`flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                  className={`flex items-center gap-1.5 text-sm transition-colors ${
                     saved ? "text-pink-500" : "hover:text-pink-500"
                   }`}
                   aria-label={saved ? "Unsave bite" : "Save bite"}
                 >
-                  {saveLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Bookmark className={`w-4 h-4 ${saved ? "fill-current" : ""}`} />
-                  )}
+                  <Bookmark className={`w-4 h-4 ${saved ? "fill-current" : ""}`} />
                 </button>
                 <button
                   type="button"
