@@ -2,34 +2,15 @@ export const AUTH_CHANGE_EVENT = "biteyo-auth-change";
 
 import { clearApiCache } from "./apiCache";
 
-const TOKEN_KEY = "biteyo_token";
 const USER_KEY = "biteyo_user";
-const AUTH_EXPIRES_AT_KEY = "biteyo_auth_expires_at";
-const AUTH_EXPIRES_AT_COOKIE = "auth_expires_at";
-const AUTH_MAX_AGE = 30 * 24 * 60 * 60;
-const AUTH_MAX_AGE_MS = AUTH_MAX_AGE * 1000;
+const LEGACY_KEYS = ["biteyo_token", "biteyo_auth_expires_at"];
+const AUTH_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const UNAUTHORIZED_STATUSES = new Set([401, 419, 440]);
 
 export const SESSION_EXPIRED_MESSAGE =
   "Sesi login telah berakhir. Silakan masuk kembali.";
 
 const hasBrowserStorage = () => typeof window !== "undefined" && window.localStorage;
-
-const setCookie = (name, value) => {
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${AUTH_MAX_AGE}; SameSite=Lax`;
-};
-
-const deleteCookie = (name) => {
-  document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
-};
-
-const getCookie = (name) => {
-  const cookies = document.cookie ? document.cookie.split("; ") : [];
-  const prefix = `${name}=`;
-  const found = cookies.find((cookie) => cookie.startsWith(prefix));
-
-  return found ? decodeURIComponent(found.slice(prefix.length)) : "";
-};
 
 const parseJson = (value) => {
   if (!value) return null;
@@ -41,47 +22,41 @@ const parseJson = (value) => {
   }
 };
 
-export const getToken = () => {
-  if (!hasBrowserStorage()) return "";
-  if (clearExpiredAuth()) return "";
+// Token hanya hidup di cookie httpOnly milik backend.
+// Frontend tidak menyimpan atau membaca token sama sekali.
+export const getToken = () => "";
 
-  return localStorage.getItem(TOKEN_KEY) || getCookie("token");
+const purgeLegacyAuthArtifacts = () => {
+  if (!hasBrowserStorage()) return;
+
+  for (const key of LEGACY_KEYS) {
+    localStorage.removeItem(key);
+  }
+
+  // bersihkan cookie non-httpOnly peninggalan model lama
+  for (const name of ["token", "user", "auth_expires_at"]) {
+    document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
+    document.cookie = `${name}=; path=/; max-age=0; SameSite=None; Secure`;
+  }
 };
 
 export const getStoredUser = () => {
   if (!hasBrowserStorage()) return null;
-  if (clearExpiredAuth()) return null;
 
-  return parseJson(localStorage.getItem(USER_KEY)) || parseJson(getCookie("user"));
+  return parseJson(localStorage.getItem(USER_KEY));
 };
 
 export const notifyAuthChange = () => {
   window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
 };
 
-export const saveAuth = ({ token, user }) => {
+export const saveAuth = ({ user }) => {
   if (!hasBrowserStorage()) return;
 
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
-    setCookie("token", token);
-  }
+  purgeLegacyAuthArtifacts();
 
   if (user) {
-    const serializedUser = JSON.stringify(user);
-    localStorage.setItem(USER_KEY, serializedUser);
-    setCookie("user", serializedUser);
-  }
-
-  if (token || user) {
-    const hasExpiry =
-      localStorage.getItem(AUTH_EXPIRES_AT_KEY) || getCookie(AUTH_EXPIRES_AT_COOKIE);
-
-    if (token || !hasExpiry) {
-      const expiresAt = String(Date.now() + AUTH_MAX_AGE_MS);
-      localStorage.setItem(AUTH_EXPIRES_AT_KEY, expiresAt);
-      setCookie(AUTH_EXPIRES_AT_COOKIE, expiresAt);
-    }
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
 
   notifyAuthChange();
@@ -90,36 +65,21 @@ export const saveAuth = ({ token, user }) => {
 export const clearAuth = () => {
   if (!hasBrowserStorage()) return;
 
-  localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
-  localStorage.removeItem(AUTH_EXPIRES_AT_KEY);
-  deleteCookie("token");
-  deleteCookie("user");
-  deleteCookie(AUTH_EXPIRES_AT_COOKIE);
+
+  for (const key of LEGACY_KEYS) {
+    localStorage.removeItem(key);
+  }
+
   clearApiCache();
   notifyAuthChange();
 };
 
-export const getAuthHeaders = () => {
-  const token = getToken();
+// Kompatibilitas call site lama: header tidak lagi dibutuhkan,
+// autentikasi dikirim otomatis via cookie (credentials: "include").
+export const getAuthHeaders = () => ({});
 
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-export const isAuthenticated = () => Boolean(getToken() || getStoredUser());
-
-export const clearExpiredAuth = () => {
-  if (!hasBrowserStorage()) return false;
-
-  const expiresAt = Number(
-    localStorage.getItem(AUTH_EXPIRES_AT_KEY) || getCookie(AUTH_EXPIRES_AT_COOKIE),
-  );
-
-  if (!expiresAt || Date.now() < expiresAt) return false;
-
-  clearAuth();
-  return true;
-};
+export const isAuthenticated = () => Boolean(getStoredUser());
 
 export const handleUnauthorizedResponse = (
   response,
@@ -137,6 +97,5 @@ export const handleUnauthorizedResponse = (
     // Ignore storage failures; redirect is the important part.
   }
 
-  if (window.location.pathname.startsWith("/login")) return true;
   return true;
 };

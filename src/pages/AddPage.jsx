@@ -139,7 +139,7 @@ export default function AddPage() {
       try {
         const response = await fetch(
           `${API_BASE}/api/maps/location/search?q=${encodeURIComponent(query)}`,
-          { signal: controller.signal },
+          { signal: controller.signal, credentials: "include" },
         );
 
         if (!response.ok) {

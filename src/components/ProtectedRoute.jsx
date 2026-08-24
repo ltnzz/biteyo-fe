@@ -4,29 +4,18 @@ import LoginRequired from "./profile/LoginRequired";
 import {
   AUTH_CHANGE_EVENT,
   SESSION_EXPIRED_MESSAGE,
-  clearExpiredAuth,
   isAuthenticated,
 } from "../utils/auth";
 
 export default function ProtectedRoute({ children }) {
   const location = useLocation();
-  const [authState, setAuthState] = useState(() => {
-    const sessionExpired = clearExpiredAuth();
-
-    return {
-      hasSession: !sessionExpired && isAuthenticated(),
-      sessionExpired,
-    };
-  });
+  // Sesi dipegang cookie httpOnly; FE hanya melihat profil user
+  // yang tersimpan lokal sebagai indikator login.
+  const [hasSession, setHasSession] = useState(() => isAuthenticated());
 
   useEffect(() => {
     const syncAuthState = () => {
-      const sessionExpired = clearExpiredAuth();
-
-      setAuthState({
-        hasSession: !sessionExpired && isAuthenticated(),
-        sessionExpired,
-      });
+      setHasSession(isAuthenticated());
     };
 
     syncAuthState();
@@ -39,18 +28,12 @@ export default function ProtectedRoute({ children }) {
     };
   }, [location.pathname, location.search]);
 
-  if (!authState.hasSession) {
+  if (!hasSession) {
     return (
       <LoginRequired
         from={location}
-        description={
-          authState.sessionExpired
-            ? SESSION_EXPIRED_MESSAGE
-            : "Masuk dulu untuk mengakses halaman ini."
-        }
-        loginMessage={
-          authState.sessionExpired ? SESSION_EXPIRED_MESSAGE : "Please login first"
-        }
+        description={SESSION_EXPIRED_MESSAGE}
+        loginMessage="Please login first"
       />
     );
   }
