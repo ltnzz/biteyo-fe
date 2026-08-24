@@ -13,6 +13,7 @@ import {
   normalizeCategories,
   normalizeCategoryValue,
 } from "../../utils/bites";
+import { formatAbsoluteDateTime, formatRelativeTime } from "../../utils/relativeTime";
 import {
   getBiteAuthorAvatar,
   getBiteAuthorHandle,
@@ -22,6 +23,7 @@ import {
   isBiteLiked,
   isBiteSaved,
 } from "../../utils/biteEngagement";
+import { getBiteCreatedAt } from "../../utils/bites";
 import MentionText from "../MentionText";
 import BiteEditForm from "./BiteEditForm";
 
@@ -99,8 +101,13 @@ export default function BiteCard({
               >
                 {authorName}
               </button>
-              <p className="text-xs text-gray-500 truncate">
+              <p
+                className="text-xs text-gray-500 truncate"
+                title={formatAbsoluteDateTime(getBiteCreatedAt(bite))}
+              >
                 {displayLocation}
+                {formatRelativeTime(getBiteCreatedAt(bite)) &&
+                  ` · ${formatRelativeTime(getBiteCreatedAt(bite))}`}
               </p>
             </div>
 

@@ -62,6 +62,9 @@ export const getDisplayLocation = (bite) => {
   return location.split(",")[0].trim() || "Unknown location";
 };
 
+export const getBiteCreatedAt = (bite) =>
+  bite?.createdAt || bite?.created_at || "";
+
 export const getBiteTitle = (bite) =>
   bite?.foodName || bite?.title || bite?.name || "Untitled Bite";
 

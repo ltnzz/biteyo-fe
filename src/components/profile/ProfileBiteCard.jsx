@@ -1,11 +1,13 @@
 import { Bookmark, Heart, Loader2, MessageCircle, Pencil, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import {
+  getBiteCreatedAt,
   getDisplayLocation,
   getCategoryLabel,
   normalizeCategories,
   normalizeCategoryValue,
 } from "../../utils/bites";
+import { formatAbsoluteDateTime, formatRelativeTime } from "../../utils/relativeTime";
 import {
   getBiteAuthorAvatar,
   getBiteAuthorHandle,
@@ -90,9 +92,14 @@ export default function ProfileBiteCard({
               >
                 {authorName}
               </button>
-              <p className="text-xs text-gray-500 truncate">
+              <p
+                className="text-xs text-gray-500 truncate"
+                title={formatAbsoluteDateTime(getBiteCreatedAt(bite))}
+              >
                 {authorHandle ? `@${authorHandle} - ` : ""}
                 {displayLocation}
+                {formatRelativeTime(getBiteCreatedAt(bite)) &&
+                  ` · ${formatRelativeTime(getBiteCreatedAt(bite))}`}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">

@@ -43,11 +43,13 @@ import {
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
 import {
+  getBiteCreatedAt,
   getDisplayLocation,
   getCategoryLabel,
   normalizeCategories,
   normalizeCategoryValue,
 } from "../utils/bites";
+import { formatAbsoluteDateTime } from "../utils/relativeTime";
 
 export default function BiteDetailPage() {
   const { biteId } = useParams();
@@ -339,6 +341,8 @@ export default function BiteDetailPage() {
                   </button>
                   <p className="text-xs text-gray-500">
                     {displayLocation}
+                    {formatAbsoluteDateTime(getBiteCreatedAt(bite)) &&
+                      ` · ${formatAbsoluteDateTime(getBiteCreatedAt(bite))}`}
                   </p>
 
                   <h3 className="mt-3 text-lg font-bold text-gray-900">
