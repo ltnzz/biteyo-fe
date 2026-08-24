@@ -62,14 +62,14 @@ export default function ProfileBiteCard({
   return (
     <article
       onClick={handleOpenBite}
-      className="cursor-pointer border-b border-gray-200 bg-white px-4 py-4 transition-colors hover:bg-gray-50/80"
+      className="cursor-pointer border-b border-gray-200 bg-white px-4 py-4 transition-colors duration-150 hover:bg-gray-50/60"
     >
       <div className="flex gap-3">
         <button
           type="button"
           onClick={handleOpenProfile}
           disabled={!authorHandle}
-          className="w-11 h-11 rounded-full bg-pink-100 overflow-hidden flex items-center justify-center shrink-0 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
+          className="w-11 h-11 rounded-full bg-pink-100 overflow-hidden flex items-center justify-center shrink-0 ring-2 ring-pink-100/80 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
           aria-label={`Open ${authorName} profile`}
         >
           {authorAvatar ? (
@@ -172,7 +172,7 @@ export default function ProfileBiteCard({
                 <img
                   src={bite.photoUrl || bite.image}
                   alt={bite.foodName || bite.title || "Food"}
-                  className="mt-3 w-full max-h-[520px] rounded-2xl object-cover border border-gray-200 shadow-sm"
+                  className="mt-3 w-full max-h-[520px] rounded-xl2 object-cover border border-gray-200/80 shadow-card"
                   loading="lazy"
                 />
               )}
@@ -188,15 +188,17 @@ export default function ProfileBiteCard({
                 ))}
               </div>
 
-              <div className="mt-3 flex items-center gap-6 text-gray-400">
+              <div className="mt-3 flex items-center gap-2 -ml-2 text-gray-400">
                 <button
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
                     onToggleLike?.(bite);
                   }}
-                  className={`flex items-center gap-1.5 text-sm transition-colors ${
-                    liked ? "text-pink-500" : "hover:text-pink-500"
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 ${
+                    liked
+                      ? "text-pink-500"
+                      : "hover:bg-pink-50 hover:text-pink-500"
                   }`}
                   aria-label={liked ? "Unlike bite" : "Like bite"}
                 >
@@ -209,8 +211,10 @@ export default function ProfileBiteCard({
                     event.stopPropagation();
                     onToggleSave?.(bite);
                   }}
-                  className={`flex items-center gap-1.5 text-sm transition-colors ${
-                    saved ? "text-pink-500" : "hover:text-pink-500"
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 ${
+                    saved
+                      ? "text-pink-500"
+                      : "hover:bg-pink-50 hover:text-pink-500"
                   }`}
                   aria-label={saved ? "Unsave bite" : "Save bite"}
                 >
@@ -222,7 +226,7 @@ export default function ProfileBiteCard({
                     event.stopPropagation();
                     onOpenBite?.(bite);
                   }}
-                  className="flex items-center gap-1.5 text-sm transition-colors hover:text-pink-500"
+                  className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-gray-100 hover:text-gray-600"
                   aria-label="Lihat komentar di halaman detail"
                 >
                   <MessageCircle className="w-4 h-4" />

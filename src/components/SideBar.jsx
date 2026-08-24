@@ -139,9 +139,9 @@ export default function Sidebar({ unreadNotifications = 0 }) {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-4 px-4 py-3 rounded-full transition-colors ${
+                className={`flex items-center gap-4 px-4 py-3 rounded-full transition-colors duration-150 ${
                   isActive
-                    ? "font-bold text-gray-900"
+                    ? "bg-pink-50 font-bold text-pink-600"
                     : "font-normal text-gray-700 hover:bg-gray-50"
                 }`}
               >

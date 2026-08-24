@@ -356,7 +356,7 @@ export default function BiteDetailPage() {
                   </p>
 
                   {(bite.photoUrl || bite.image) && (
-                    <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
+                    <div className="mt-4 overflow-hidden rounded-xl2 border border-gray-200/80 bg-gray-50 shadow-card">
                       <img
                         src={bite.photoUrl || bite.image}
                         alt={bite.foodName || bite.title || "Food"}
@@ -484,12 +484,12 @@ export default function BiteDetailPage() {
                   const authorHandle = getCommentAuthorHandle(comment);
 
                   return (
-                    <article key={commentId} className="flex gap-3 px-4 py-4 transition-colors hover:bg-gray-50/70">
+                    <article key={commentId} className="flex gap-3 px-4 py-4 transition-colors duration-150 hover:bg-gray-50/60">
                       <button
                         type="button"
                         onClick={() => openUserProfile(authorHandle)}
                         disabled={!authorHandle}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xs font-bold text-gray-600 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 ring-2 ring-gray-100 text-xs font-bold text-gray-600 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
                         aria-label={`Open ${authorName} profile`}
                       >
                         {authorAvatar ? (
@@ -502,7 +502,7 @@ export default function BiteDetailPage() {
                           authorName.charAt(0).toUpperCase()
                         )}
                       </button>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 rounded-xl2 bg-gray-50/80 px-4 py-3">
                         <button
                           type="button"
                           onClick={() => openUserProfile(authorHandle)}
