@@ -1,4 +1,3 @@
-import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { API_BASE, ensureOkResponse } from "./api";
 import { getAuthHeaders } from "./auth";
 
@@ -71,30 +70,11 @@ export const markNotificationAsRead = async (notificationId) => {
 export const deleteNotification = async (notificationId) => {
   if (!notificationId) return null;
 
-  if (isSupabaseConfigured) {
-    const { error } = await supabase
-      .from("notifications")
-      .delete()
-      .eq("id", notificationId);
-
-    if (!error) return { deleted: true };
-
-    throw new Error(error.message || "Gagal menghapus notifikasi.");
-  }
-
-  const response = await fetch(`${API_BASE}/api/notifications/${notificationId}`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: getAuthHeaders(),
-  });
-
-  if (response.status === 404) {
-    return { deleted: true, alreadyGone: true };
-  }
-
-  await ensureOkResponse(response, "Gagal menghapus notifikasi.");
-
-  return response.json().catch(() => ({ deleted: true }));
+  return requestJson(
+    `/api/notifications/${notificationId}`,
+    { method: "DELETE" },
+    "Gagal menghapus notifikasi.",
+  );
 };
 
 export const getStoredFcmToken = () => {
