@@ -76,8 +76,12 @@ export const clearAuth = () => {
 };
 
 // Kompatibilitas call site lama: header tidak lagi dibutuhkan,
-// autentikasi dikirim otomatis via cookie (credentials: "include").
+// autentikasi dikirim otomatis via cookie (credentials: include).
 export const getAuthHeaders = () => ({});
+
+// Bersihkan peninggalan model auth lama (token di localStorage/JS cookie)
+// sekali saat aplikasi dimuat, bukan hanya saat login berikutnya.
+purgeLegacyAuthArtifacts();
 
 export const isAuthenticated = () => Boolean(getStoredUser());
 
