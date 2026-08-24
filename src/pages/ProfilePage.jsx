@@ -17,6 +17,7 @@ import { useProfileData } from "../hooks/useProfileData";
 import { getStoredUser } from "../utils/auth";
 import { getBiteId } from "../utils/biteEngagement";
 import { getProfileViewModel } from "../utils/profile";
+import { showSnackbar } from "../utils/snackbar";
 
 const getBiteTitle = (bite) =>
   bite?.foodName || bite?.title || bite?.locationName || "postingan ini";
@@ -188,6 +189,20 @@ export default function ProfilePage() {
   });
   useFeedSocket(savedBites, setSavedBites, { acceptNewBite: () => false });
   useFeedSocket(likedBites, setLikedBites, { acceptNewBite: () => false });
+  const handleRefreshAll = useCallback(async () => {
+    showSnackbar({ message: "Memuat ulang profil...", duration: 1500 });
+
+    try {
+      await refreshAll();
+      showSnackbar({ message: "Profil diperbarui", variant: "success" });
+    } catch (err) {
+      showSnackbar({
+        message: err.message || "Gagal memperbarui profil.",
+        variant: "error",
+      });
+    }
+  }, [refreshAll]);
+
   const closeToast = useCallback(() => setToastMessage(null), []);
 
   if (!profileUsername) return <LoginRequired />;
@@ -291,7 +306,7 @@ export default function ProfilePage() {
               <div className="flex justify-end px-4 pt-2">
                 <button
                   type="button"
-                  onClick={refreshAll}
+                  onClick={handleRefreshAll}
                   className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-pink-500"
                   aria-label="Refresh profil"
                 >

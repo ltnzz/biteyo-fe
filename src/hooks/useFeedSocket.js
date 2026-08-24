@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { getBiteDetail } from "../services/feedApi";
 import { supabase } from "../lib/supabase";
 import { getStoredUser } from "../utils/auth";
+import { notifyNewContent } from "../utils/feedSignals";
 import { getBiteId } from "../utils/biteEngagement";
 import { toFollowKey } from "../utils/followState";
 
@@ -132,6 +133,8 @@ export const useFeedSocket = (
         { event: "INSERT", schema: "public", table: "bites" },
         (payload) => {
           logRealtimeEvent("bites:insert", payload);
+          // tandai ada konten baru (bullet di icon Search/Explore nav)
+          notifyNewContent();
           insertBite(payload.new?.id, setFeed, acceptNewBiteRef.current);
         },
       )

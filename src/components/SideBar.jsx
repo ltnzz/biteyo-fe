@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { AlertCircle, Home, Search, Bell, User, LogOut, Loader2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import NewContentBullet from "./NewContentBullet";
+import useNewContentSignal from "../hooks/useNewContentSignal";
 import { getUserProfile } from "../services/profileApi";
 import { AUTH_CHANGE_EVENT, getStoredUser, saveAuth } from "../utils/auth";
 import { logoutUser } from "../utils/logout";
@@ -16,6 +18,7 @@ const isRouteActive = (pathname, targetPath) =>
 export default function Sidebar({ unreadNotifications = 0 }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const hasNewContent = useNewContentSignal();
   const [currentUser, setCurrentUser] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -104,7 +107,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
 
   const navItems = [
     { to: "/", icon: Home, label: "Home" },
-    { to: "/explore", icon: Search, label: "Explore" },
+    { to: "/explore", icon: Search, label: "Explore", bullet: true },
     {
       to: "/notifications",
       icon: Bell,
@@ -148,6 +151,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
                       isActive ? "stroke-[2.5px]" : "stroke-2"
                     }`}
                   />
+                  {item.bullet && hasNewContent && <NewContentBullet />}
                   {item.badge > 0 && (
                     <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-pink-500 px-1 text-[10px] font-extrabold leading-none text-white shadow-sm">
                       {item.badge > 99 ? "99+" : item.badge}

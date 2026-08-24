@@ -17,6 +17,7 @@ import {
 } from "../components/notifications/notificationFilters";
 import { supabase } from "../lib/supabase";
 import { getStoredUser, isAuthenticated } from "../utils/auth";
+import { showSnackbar } from "../utils/snackbar";
 import {
   deleteNotification,
   fetchNotifications,
@@ -63,6 +64,21 @@ export default function NotificationPage() {
       setLoading(false);
     }
   }, []);
+
+  // dipakai tombol refresh manual; reload realtime tidak menampilkan snackbar
+  const handleManualRefresh = useCallback(async () => {
+    showSnackbar({ message: "Memuat ulang notifikasi...", duration: 1500 });
+
+    try {
+      await loadNotifications();
+      showSnackbar({ message: "Notifikasi diperbarui", variant: "success" });
+    } catch (err) {
+      showSnackbar({
+        message: err.message || "Gagal memperbarui notifikasi.",
+        variant: "error",
+      });
+    }
+  }, [loadNotifications]);
 
   useEffect(() => {
     if (hasSession) {
@@ -242,7 +258,7 @@ export default function NotificationPage() {
               loading={loading}
               unreadCount={unreadCount}
               onMarkAllRead={handleMarkAllRead}
-              onRefresh={loadNotifications}
+              onRefresh={handleManualRefresh}
             />
           </div>
 

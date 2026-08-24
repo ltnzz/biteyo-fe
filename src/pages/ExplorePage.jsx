@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { RefreshCw } from "lucide-react";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ToastMessage from "../components/ToastMessage";
@@ -14,6 +13,11 @@ import { getBitesByCategory, getFeedBites, searchBites, toggleLikeBite } from ".
 import { followUser, unfollowUser } from "../services/profileApi";
 import { ensureOkResponse } from "../utils/api";
 import { getAuthHeaders, getStoredUser, isAuthenticated } from "../utils/auth";
+import {
+  clearNewContent,
+  NEW_CONTENT_REFRESH_EVENT,
+} from "../utils/feedSignals";
+import { showSnackbar } from "../utils/snackbar";
 import {
   getLikeCount,
   isBiteLiked,
@@ -176,10 +180,29 @@ export default function ExplorePage() {
     fetchFeed();
   }, [fetchFeed]);
 
-  const refreshFeed = useCallback(
-    () => fetchFeed({ force: true }),
-    [fetchFeed],
-  );
+  const refreshFeed = useCallback(async () => {
+    showSnackbar({ message: "Memuat ulang feed...", duration: 1500 });
+
+    try {
+      await fetchFeed({ force: true });
+      clearNewContent();
+      showSnackbar({
+        message: "Feed diperbarui",
+        variant: "success",
+      });
+    } catch (err) {
+      showSnackbar({
+        message: err.message || "Gagal memperbarui feed.",
+        variant: "error",
+      });
+    }
+  }, [fetchFeed]);
+
+  // bullet di icon Search/Explore nav diklik -> refresh dari mana pun
+  useEffect(() => {
+    window.addEventListener(NEW_CONTENT_REFRESH_EVENT, refreshFeed);
+    return () => window.removeEventListener(NEW_CONTENT_REFRESH_EVENT, refreshFeed);
+  }, [refreshFeed]);
 
   useFeedSocket(bites, hasSession ? setBites : null, { setFollowingUsers });
 
@@ -429,17 +452,6 @@ export default function ExplorePage() {
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
         <main className="min-h-screen w-full max-w-2xl border-x border-gray-200 bg-white shadow-[0_0_24px_rgba(15,23,42,0.04)]">
           <ExploreHeader category={category} query={query} />
-          <div className="flex items-center justify-end px-4 pt-2">
-            <button
-              type="button"
-              onClick={refreshFeed}
-              className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-pink-500"
-              aria-label="Refresh feed"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              Refresh
-            </button>
-          </div>
           <ActionMessage message={actionMessage} />
           <ExploreFeed
             bites={bites}
