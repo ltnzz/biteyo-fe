@@ -77,6 +77,27 @@ export const clearApiCache = () => {
 };
 
 /**
+ * Invalidasi terarah: hanya hapus cache dengan key berawalan prefix.
+ * Contoh: invalidateApiCache("feed") menghapus "feed", "feed:trending",
+ * "feed:category:viral" — tanpa menyentuh "profile:*" atau "bite:*".
+ */
+export const invalidateApiCache = (prefix) => {
+  if (!hasStorage() || !prefix) return;
+
+  try {
+    const scopePrefix = `${PREFIX}:${getUserScope()}:`;
+    const doomed = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(`${scopePrefix}${prefix}`)) doomed.push(k);
+    }
+    doomed.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // ignore
+  }
+};
+
+/**
  * Jalankan fetcher dengan cache.
  * @returns {Promise<{data: any, fromCache: boolean}>}
  */

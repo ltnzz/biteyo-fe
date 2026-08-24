@@ -2,7 +2,7 @@ import { API_BASE, ensureOkResponse } from "../utils/api";
 import { getAuthHeaders } from "../utils/auth";
 import {
   fetchWithCache,
-  clearApiCache,
+  invalidateApiCache,
   TTL_FEED_MS,
   TTL_BITE_MS,
   TTL_COMMENTS_MS,
@@ -32,7 +32,9 @@ export const toggleLikeBite = async (biteId) => {
     "Gagal memperbarui like.",
   );
 
-  clearApiCache();
+  // like mengubah counter bite + engagement di semua daftar feed
+  invalidateApiCache("feed");
+  invalidateApiCache(`bite:${biteId}`);
   return data;
 };
 
@@ -45,7 +47,8 @@ export const toggleSaveBite = async (biteId) => {
     "Gagal memperbarui saved bite.",
   );
 
-  clearApiCache();
+  invalidateApiCache("feed");
+  invalidateApiCache(`bite:${biteId}`);
   return data;
 };
 
@@ -161,6 +164,8 @@ export const postBiteComment = async (biteId, content) => {
     "Gagal mengirim komentar.",
   );
 
-  clearApiCache();
+  invalidateApiCache("feed");
+  invalidateApiCache(`bite:${biteId}`);
+  invalidateApiCache(`comments:${biteId}`);
   return data;
 };

@@ -4,7 +4,7 @@ import { normalizeBites } from "../utils/bites";
 import { normalizeProfile } from "../utils/profile";
 import {
   fetchWithCache,
-  clearApiCache,
+  invalidateApiCache,
   readCache,
   writeCache,
   TTL_PROFILE_MS,
@@ -234,7 +234,7 @@ export const followUser = async (username) => {
     fallback: "Failed to follow user",
   });
 
-  clearApiCache();
+  invalidateApiCache("profile");
   return data;
 };
 
@@ -246,6 +246,6 @@ export const unfollowUser = async (username) => {
     fallback: "Failed to unfollow user",
   });
 
-  clearApiCache();
+  invalidateApiCache("profile");
   return data;
 };
