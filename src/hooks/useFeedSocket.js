@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { getBiteDetail } from "../services/feedApi";
-import { subscribeToFeedChanges } from "../services/feedRealtime";
 import { supabase } from "../lib/supabase";
 import { getStoredUser } from "../utils/auth";
 import { getBiteId } from "../utils/biteEngagement";
@@ -40,6 +39,28 @@ const refreshBite = async (biteId, setFeed) => {
   } catch (error) {
     if (isDevelopment) console.warn("[supabase] gagal refresh bite", error);
   }
+};
+
+// Satu perubahan bisa memicu beberapa event postgres_changes beruntun
+// (mis. like -> INSERT likes + UPDATE bites). Debounce per bite agar
+// tidak fetch detail berulang dalam jendela waktu singkat.
+const REFRESH_DEBOUNCE_MS = 300;
+const createRefreshScheduler = () => {
+  const timers = new Map();
+
+  return (biteId, setFeed) => {
+    if (!biteId) return;
+
+    if (timers.has(biteId)) clearTimeout(timers.get(biteId));
+
+    timers.set(
+      biteId,
+      setTimeout(() => {
+        timers.delete(biteId);
+        refreshBite(biteId, setFeed);
+      }, REFRESH_DEBOUNCE_MS),
+    );
+  };
 };
 
 const insertBite = async (biteId, setFeed, acceptNewBite) => {
@@ -102,22 +123,8 @@ export const useFeedSocket = (
     if (!setFeed) return undefined;
 
     const currentUserId = getCurrentUserId();
+    const scheduleRefresh = createRefreshScheduler();
     const channel = supabase.channel(`feed-realtime-${crypto.randomUUID()}`);
-    const unsubscribeFeedChanges = subscribeToFeedChanges((payload) => {
-      const biteId = payload?.biteId;
-
-      if (payload?.type === "create") {
-        insertBite(biteId, setFeed, acceptNewBiteRef.current);
-      }
-
-      if (payload?.type === "refresh") {
-        refreshBite(biteId, setFeed);
-      }
-
-      if (payload?.type === "delete" && biteId) {
-        setFeed((prev) => prev.filter((bite) => getBiteId(bite) !== biteId));
-      }
-    });
 
     channel
       .on(
@@ -133,7 +140,7 @@ export const useFeedSocket = (
         { event: "UPDATE", schema: "public", table: "bites" },
         (payload) => {
           logRealtimeEvent("bites:update", payload);
-          refreshBite(payload.new?.id, setFeed);
+          scheduleRefresh(payload.new?.id, setFeed);
         },
       )
       .on(
@@ -152,7 +159,7 @@ export const useFeedSocket = (
         { event: "*", schema: "public", table: "likes" },
         (payload) => {
           logRealtimeEvent("likes", payload);
-          refreshBite(getChangedBiteId(payload), setFeed);
+          scheduleRefresh(getChangedBiteId(payload), setFeed);
         },
       )
       .on(
@@ -160,7 +167,7 @@ export const useFeedSocket = (
         { event: "*", schema: "public", table: "comments" },
         (payload) => {
           logRealtimeEvent("comments", payload);
-          refreshBite(getChangedBiteId(payload), setFeed);
+          scheduleRefresh(getChangedBiteId(payload), setFeed);
         },
       )
       .on(
@@ -228,7 +235,6 @@ export const useFeedSocket = (
       .subscribe();
 
     return () => {
-      unsubscribeFeedChanges();
       supabase.removeChannel(channel);
     };
   }, [profile, setFeed, setFollowingUsers, setProfile]);

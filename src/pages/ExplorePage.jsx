@@ -11,7 +11,6 @@ import LoginRequired from "../components/profile/LoginRequired";
 import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
 import { getBitesByCategory, getFeedBites, searchBites, toggleLikeBite } from "../services/feedApi";
-import { broadcastFeedChange } from "../services/feedRealtime";
 import { followUser, unfollowUser } from "../services/profileApi";
 import { ensureOkResponse } from "../utils/api";
 import { getAuthHeaders, getStoredUser, isAuthenticated } from "../utils/auth";
@@ -320,7 +319,6 @@ export default function ExplorePage() {
 
       setActionMessage({ type: "success", text: "Bite updated." });
       cancelEdit();
-      broadcastFeedChange({ type: "refresh", biteId });
       fetchFeed();
     } catch (err) {
       setActionMessage({ type: "error", text: err.message });
@@ -357,7 +355,6 @@ export default function ExplorePage() {
       await ensureOkResponse(res, "Failed to delete bite");
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
-      broadcastFeedChange({ type: "delete", biteId });
       setActionMessage({ type: "success", text: "Bite deleted." });
     } catch (err) {
       setActionMessage({ type: "error", text: err.message });
@@ -395,7 +392,6 @@ export default function ExplorePage() {
       if (updatedBite && getBiteId(updatedBite)) {
         updateBiteInState(biteId, (item) => ({ ...item, ...updatedBite }));
       }
-      broadcastFeedChange({ type: "refresh", biteId });
     } catch (err) {
       updateBiteInState(biteId, (item) => ({
         ...item,

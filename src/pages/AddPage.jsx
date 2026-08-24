@@ -6,7 +6,6 @@ import {
   API_BASE,
   biteCategories,
 } from "../utils/bites";
-import { broadcastFeedChange } from "../services/feedRealtime";
 import { getBiteId, normalizeUpdatedBite } from "../utils/biteEngagement";
 import { compressImageFile } from "../utils/imageCompression";
 import MentionTextarea from "../components/MentionTextarea";
@@ -274,7 +273,6 @@ export default function AddPage() {
       const createdBiteId = getBiteId(createdBite);
 
       if (createdBiteId) {
-        broadcastFeedChange({ type: "create", biteId: createdBiteId });
       }
 
       setMessage({
