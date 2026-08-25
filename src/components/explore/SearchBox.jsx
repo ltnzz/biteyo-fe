@@ -14,10 +14,15 @@ import { isAuthenticated } from "../../utils/auth";
  * Pill search dengan dropdown live:
  * - hasil bite (debounce 450ms)
  * - section keyword trending mingguan (endpoint publik)
- * Dipakai di BerandaPage; tamu yang mencari diarahkan ke login.
+ *
+ * variant:
+ * - "bar"     : drop-down ke bawah, selebar kontainer (default)
+ * - "sidebar" : panel melebar ke kanan (untuk sidebar 256px)
+ * Tamu yang mencari diarahkan ke login.
  */
-export default function SearchBox() {
+export default function SearchBox({ variant = "bar", placeholder = "Cari makanan, tempat, review..." }) {
   const navigate = useNavigate();
+  const isSidebar = variant === "sidebar";
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -147,7 +152,13 @@ export default function SearchBox() {
       </div>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-cream-300 bg-white shadow-pop">
+        <div
+          className={
+            isSidebar
+              ? "absolute left-full top-0 z-40 ml-2 w-[400px] overflow-hidden rounded-xl border border-cream-300 bg-white shadow-pop"
+              : "absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-cream-300 bg-white shadow-pop"
+          }
+        >
           {/* hasil bite */}
           <div className="border-b border-cream-200 px-4 py-2">
             <p className="text-xs font-bold uppercase tracking-wider text-gray-400">

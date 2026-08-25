@@ -8,6 +8,9 @@ import SnackbarHost from './components/SnackbarHost';
 import NewContentBullet from './components/NewContentBullet';
 import useUnreadNotifications from './hooks/useUnreadNotifications';
 import useNewContentSignal from './hooks/useNewContentSignal';
+import SideBarBeta from './components/SideBarBeta';
+import MainHeaderBeta from './components/MainHeaderBeta';
+import { SHOW_UI_BETA } from './utils/uiBeta';
 import { Bell, Home, PlusCircle, Search, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -96,11 +99,22 @@ function AppContent() {
       <div className={`flex min-h-screen w-full ${showSidebar ? 'mx-auto max-w-[96rem]' : ''}`}>
         {showSidebar && (
           <div className="hidden h-screen w-64 shrink-0 overflow-visible border-r border-cream-300 bg-white lg:sticky lg:top-0 lg:block">
-            <Sidebar unreadNotifications={unreadNotifications} />
+            {SHOW_UI_BETA ? (
+              <SideBarBeta unreadNotifications={unreadNotifications} />
+            ) : (
+              <Sidebar unreadNotifications={unreadNotifications} />
+            )}
           </div>
         )}
         <div className={`min-h-screen min-w-0 flex-1 ${showSidebar ? 'pb-20 lg:pb-0' : ''}`}>
-          {showSidebar && <MainHeader />}
+          {showSidebar &&
+            (SHOW_UI_BETA ? (
+              <div className="lg:hidden">
+                <MainHeaderBeta />
+              </div>
+            ) : (
+              <MainHeader />
+            ))}
           
           <Suspense fallback={<BiteLoader className="min-h-[calc(100vh-65px)]" />}>
             <Routes>
