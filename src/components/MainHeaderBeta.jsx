@@ -8,9 +8,11 @@ import {
   User,
   UserPlus,
 } from "lucide-react";
+import ConfirmDialog from "./ConfirmDialog";
 import SearchBox from "./explore/SearchBox";
 import { biteCategories } from "../utils/bites";
 import { getStoredUser } from "../utils/auth";
+import { logoutUser } from "../utils/logout";
 
 /**
  * MOCKUP BETA — navbar mobile satu baris:
@@ -23,6 +25,8 @@ export default function MainHeaderBeta() {
   const [showTrending, setShowTrending] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const trendingRef = useRef(null);
   const settingsRef = useRef(null);
 
@@ -35,6 +39,19 @@ export default function MainHeaderBeta() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = async () => {
+    setSettingsOpen(false);
+    setLoggingOut(true);
+
+    try {
+      await logoutUser();
+      setShowLogoutModal(false);
+      navigate("/login", { replace: true });
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   const gearMenuButton =
     "inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100";
@@ -115,10 +132,9 @@ export default function MainHeaderBeta() {
                   </button>
                   <button
                     type="button"
-                    onClick={async () => {
-                      // beta: logout sederhana tanpa modal konfirmasi
-                      await import("../utils/logout").then((m) => m.logoutUser());
-                      navigate("/login", { replace: true });
+                    onClick={() => {
+                      setSettingsOpen(false);
+                      setShowLogoutModal(true);
                     }}
                     className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50"
                   >
@@ -150,6 +166,18 @@ export default function MainHeaderBeta() {
           )}
         </div>
       </div>
+
+      {/* Konfirmasi keluar */}
+      <ConfirmDialog
+        open={showLogoutModal}
+        loading={loggingOut}
+        title="Keluar dari BiteYo?"
+        description="Kamu harus login lagi untuk mengakses akun dan fitur personalmu."
+        confirmLabel="Ya, Keluar"
+        cancelLabel="Batal"
+        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </header>
   );
 }

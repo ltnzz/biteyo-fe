@@ -10,6 +10,7 @@ import useUnreadNotifications from './hooks/useUnreadNotifications';
 import useNewContentSignal from './hooks/useNewContentSignal';
 import SideBarBeta from './components/SideBarBeta';
 import MainHeaderBeta from './components/MainHeaderBeta';
+import SessionWatcher from './components/SessionWatcher';
 import { SHOW_UI_BETA } from './utils/uiBeta';
 import { Bell, Home, PlusCircle, Search, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -96,6 +97,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SessionWatcher />
       <SnackbarHost />
       <div className={`flex min-h-screen w-full ${showSidebar ? 'mx-auto max-w-[96rem]' : ''}`}>
         {showSidebar && (

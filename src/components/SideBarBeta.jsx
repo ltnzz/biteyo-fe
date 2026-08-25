@@ -3,13 +3,12 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
   Home,
-  Loader2,
-  LogOut,
   Search,
   TrendingUp,
   User,
 } from "lucide-react";
 import logo from "../assets/logo.png";
+import ConfirmDialog from "./ConfirmDialog";
 import SearchBox from "./explore/SearchBox";
 import { biteCategories } from "../utils/bites";
 import { logoutUser } from "../utils/logout";
@@ -29,12 +28,17 @@ export default function SideBarBeta({ unreadNotifications = 0 }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [showTrending, setShowTrending] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const trendingRef = useRef(null);
+  const profileMenuRef = useRef(null);
+  const currentUser = getStoredUser();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!trendingRef.current?.contains(event.target)) setShowTrending(false);
+      if (!profileMenuRef.current?.contains(event.target)) setShowDropdown(false);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -46,13 +50,12 @@ export default function SideBarBeta({ unreadNotifications = 0 }) {
 
     try {
       await logoutUser();
+      setShowLogoutModal(false);
       navigate("/login", { replace: true });
     } finally {
       setLoggingOut(false);
     }
   };
-
-  const currentUser = getStoredUser();
 
   const navItems = [
     { to: "/", icon: Home, label: "Home" },
@@ -148,35 +151,70 @@ export default function SideBarBeta({ unreadNotifications = 0 }) {
       </button>
 
       {/* Bottom Profile Section */}
-      <div className="relative mt-auto pt-4">
-        <div className="flex items-center justify-between gap-2 p-2">
-          <button
-            type="button"
-            onClick={() => navigate("/profile")}
-            className="flex min-w-0 items-center gap-2 text-left"
-          >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-100 text-sm font-extrabold text-pink-500">
-              {(currentUser?.username || "U").charAt(0).toUpperCase()}
-            </span>
-            <span className="min-w-0 truncate text-sm font-bold text-gray-900">
-              @{currentUser?.username || "guest"}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={loggingOut}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
-            aria-label="Logout"
-          >
-            {loggingOut ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <LogOut className="h-4 w-4" />
+      <div ref={profileMenuRef} className="relative mt-auto pt-4">
+        {currentUser ? (
+          <>
+            {/* Profile Button -> dropdown Keluar */}
+            <button
+              type="button"
+              onClick={() => setShowDropdown((v) => !v)}
+              className="flex w-full items-center gap-3 rounded-full p-3 transition-colors hover:bg-gray-50"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pink-100 text-sm font-extrabold text-pink-500">
+                {(currentUser?.username || "U").charAt(0).toUpperCase()}
+              </span>
+              <span className="min-w-0 flex-1 text-left">
+                <span className="block truncate text-sm font-bold text-gray-900">
+                  @{currentUser?.username || "guest"}
+                </span>
+              </span>
+            </button>
+
+            {showDropdown && (
+              <div className="absolute bottom-full left-0 z-50 mb-2 w-full">
+                <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowLogoutModal(true);
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50"
+                  >
+                    <LogOut size={16} />
+                    Keluar
+                  </button>
+                </div>
+              </div>
             )}
-          </button>
-        </div>
+          </>
+        ) : (
+          <Link
+            to="/login"
+            className="flex w-full items-center gap-3 rounded-full p-3 transition-colors hover:bg-gray-50"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200">
+              <User className="h-5 w-5 text-gray-500" />
+            </span>
+            <span className="text-left">
+              <span className="block text-sm font-bold text-gray-900">Login</span>
+              <span className="block text-xs text-gray-500">Untuk mulai menjelajah</span>
+            </span>
+          </Link>
+        )}
       </div>
+
+      {/* Konfirmasi keluar */}
+      <ConfirmDialog
+        open={showLogoutModal}
+        loading={loggingOut}
+        title="Keluar dari BiteYo?"
+        description="Kamu harus login lagi untuk mengakses akun dan fitur personalmu."
+        confirmLabel="Ya, Keluar"
+        cancelLabel="Batal"
+        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 }

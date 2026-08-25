@@ -1,4 +1,4 @@
-import { Bookmark, Heart, Loader2, MessageCircle, Pencil, Star, Trash2 } from "lucide-react";
+import { Bookmark, Heart, Loader2, MessageCircle, Pencil, Share2, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import {
   getBiteCreatedAt,
