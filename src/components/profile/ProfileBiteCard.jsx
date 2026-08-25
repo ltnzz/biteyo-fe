@@ -62,7 +62,7 @@ export default function ProfileBiteCard({
   return (
     <article
       onClick={handleOpenBite}
-      className="cursor-pointer border-b border-cream-300 bg-white px-4 py-4 transition-colors duration-150 hover:bg-cream-200"
+      className="cursor-pointer border-b border-cream-300 bg-white px-4 py-4"
     >
       <div className="flex gap-3">
         <button

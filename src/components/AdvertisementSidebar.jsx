@@ -27,7 +27,7 @@ export default function AdvertisementSidebar() {
 
           <div className="divide-y divide-cream-200">
             {ads.map((ad) => (
-              <article key={ad.title} className="bg-white p-4 transition-colors duration-150 hover:bg-cream-200/60">
+              <article key={ad.title} className="bg-white p-4">
                 <img
                   src={ad.image}
                   alt={ad.title}
