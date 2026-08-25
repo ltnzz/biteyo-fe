@@ -6,6 +6,15 @@ export default {
   ],
   theme: {
     extend: {
+      // Kanvas hangat untuk nuansa food-app: kartu putih "pop" di atas cream.
+      colors: {
+        cream: {
+          50: "#FFFBF7",
+          100: "#FFF8F0",
+          200: "#FFF1E5",
+          300: "#F5E6D8",
+        },
+      },
       // Elevasi standar: card = permukaan naik halus, soft = paling tipis,
       // pop = elemen mengambang (snackbar, modal kecil).
       boxShadow: {

@@ -277,9 +277,9 @@ export default function BiteDetailPage() {
   const displayLocation = getDisplayLocation(bite);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream-100">
       <div className="flex w-full items-start justify-start px-4">
-        <main className="min-h-screen w-full max-w-2xl border-x border-gray-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
           <div className="sticky top-[65px] z-20 flex items-center gap-3 border-b border-gray-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
             <button
               type="button"

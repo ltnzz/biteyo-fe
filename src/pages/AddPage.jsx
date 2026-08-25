@@ -290,7 +290,7 @@ export default function AddPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans pb-24">
+    <div className="min-h-screen bg-cream-100 font-sans pb-24">
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-8">
         {/* Alert Message */}
         {message.text && (
