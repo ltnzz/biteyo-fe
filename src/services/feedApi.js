@@ -81,13 +81,13 @@ export const searchBites = async (query, options = {}) => {
 };
 
 export const getFeedBites = async (options = {}) => {
-  const { force = false, signal } = options;
+  const { force = false, signal, scope = "all" } = options;
 
   const { data } = await fetchWithCache(
-    "feed:all",
+    scope === "following" ? "feed:following" : "feed:all",
     () =>
       requestJson(
-        "/api/feed/bites",
+        `/api/feed/bites${scope === "following" ? "?scope=following" : ""}`,
         { method: "GET", signal },
         "Gagal memuat bites.",
       ),

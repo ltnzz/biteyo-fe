@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { UserPlus } from "lucide-react";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ToastMessage from "../components/ToastMessage";
@@ -133,6 +134,9 @@ export default function ExplorePage() {
   const category = normalizeCategoryValue(searchParams.get("category") || "");
   const currentUser = useMemo(() => getStoredUser(), []);
   const hasSession = useMemo(() => isAuthenticated(), []);
+  // Tab feed: "all" | "following". Sembunyikan saat mode pencarian/kategori.
+  const [scope, setScope] = useState("all");
+  const isScopedFeed = !query.trim() && !category;
 
   const fetchFeed = useCallback(async ({ force = false } = {}) => {
     if (!hasSession) {
@@ -150,7 +154,7 @@ export default function ExplorePage() {
         ? await searchBites(query)
         : category
           ? await getBitesByCategory(toCategoryParam(category), { force })
-          : await getFeedBites({ force });
+          : await getFeedBites({ force, scope });
       const normalizedBites = normalizeBites(data);
       setBites(normalizedBites);
       const followedFromFeed = normalizedBites
@@ -166,7 +170,7 @@ export default function ExplorePage() {
     } finally {
       setFeedLoading(false);
     }
-  }, [category, currentUser, hasSession, query]);
+  }, [category, currentUser, hasSession, query, scope]);
 
   const biteActions = useBiteMutations({
     currentUser,
@@ -452,7 +456,52 @@ export default function ExplorePage() {
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
         <main className="min-h-screen w-full max-w-2xl border-x border-gray-200 bg-white shadow-[0_0_24px_rgba(15,23,42,0.04)]">
           <ExploreHeader category={category} query={query} />
+          {isScopedFeed && (
+            <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setScope("all")}
+                className={`rounded-full px-4 py-1.5 text-xs font-bold transition-colors duration-150 ${
+                  scope === "all"
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-600 hover:bg-pink-50 hover:text-pink-500"
+                }`}
+              >
+                Semua
+              </button>
+              <button
+                type="button"
+                onClick={() => setScope("following")}
+                className={`rounded-full px-4 py-1.5 text-xs font-bold transition-colors duration-150 ${
+                  scope === "following"
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-600 hover:bg-pink-50 hover:text-pink-500"
+                }`}
+              >
+                Following
+              </button>
+            </div>
+          )}
           <ActionMessage message={actionMessage} />
+          {scope === "following" && isScopedFeed && !feedLoading && !feedError && bites.length === 0 ? (
+            <div className="px-6 py-20 text-center">
+              <UserPlus className="mx-auto mb-3 h-10 w-10 text-gray-300" />
+              <h2 className="text-lg font-bold text-gray-900">
+                Belum ada bite dari temuanmu
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Ikuti orang lewat kartu di tab Semua untuk melihat bite mereka
+                di sini.
+              </p>
+              <button
+                type="button"
+                onClick={() => setScope("all")}
+                className="mt-5 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-pink-600"
+              >
+                Jelajahi Semua Bite
+              </button>
+            </div>
+          ) : (
           <ExploreFeed
             bites={bites}
             canManageBite={canManageBite}
@@ -480,6 +529,7 @@ export default function ExplorePage() {
             onToggleFollow={toggleFollow}
             onUpdate={handleUpdate}
           />
+          )}
         </main>
         <AdvertisementSidebar />
       </div>
