@@ -23,6 +23,7 @@ const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const BiteDetailPage = lazy(() => import('./pages/BiteDetailPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const ActivityPage = lazy(() => import('./pages/ActivityPage'));
+const BerandaPage = lazy(() => import('./pages/BerandaPage'));
 
 const isRouteActive = (pathname, targetPath) =>
   targetPath === '/'
@@ -100,7 +101,8 @@ function AppContent() {
           
           <Suspense fallback={<BiteLoader className="min-h-[calc(100vh-65px)]" />}>
             <Routes>
-              <Route path="/" element={<Homepage />} />        
+              <Route path="/" element={<Homepage />} />
+              <Route path="/beranda" element={<BerandaPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route
