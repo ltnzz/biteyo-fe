@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { AlertCircle, Home, Search, Bell, User, LogOut, Loader2 } from "lucide-react";
+import { AlertCircle, FlaskConical, Home, Search, Bell, User, LogOut, Loader2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import NewContentBullet from "./NewContentBullet";
@@ -177,10 +177,11 @@ export default function Sidebar({ unreadNotifications = 0 }) {
         {import.meta.env.DEV && (
           <Link
             to="/beranda"
-            className="mx-2 mt-2 block rounded-full border border-dashed border-pink-300 py-2 text-center text-xs font-semibold text-pink-500 transition-colors hover:bg-pink-50"
+            className="mx-2 mt-2 inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-pink-300 py-2 text-center text-xs font-semibold text-pink-500 transition-colors hover:bg-pink-50"
             title="Mockup homepage baru"
           >
-            🧪 Beranda (beta)
+            <FlaskConical className="h-3.5 w-3.5" />
+            Beranda (beta)
           </Link>
         )}
         {/* Bottom Profile Section */}
