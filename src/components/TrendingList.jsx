@@ -58,8 +58,8 @@ export default function TrendingList({ limit = 8 }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-xl2 border border-cream-300 bg-white shadow-card">
-      <div className="border-b border-cream-200 px-4 py-3">
+    <section className="rounded-xl2 border border-cream-300 bg-white">
+      <div className="border-b border-cream-300 px-4 py-3">
         <h2 className="inline-flex items-center gap-1.5 text-base font-extrabold text-gray-900">
           <Flame className="h-4 w-4 text-orange-500" />
           Sedang Tren

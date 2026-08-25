@@ -452,9 +452,9 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="min-h-screen bg-white">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
-        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
+        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white">
           <ExploreHeader category={category} query={query} />
           {isScopedFeed && (
             <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">

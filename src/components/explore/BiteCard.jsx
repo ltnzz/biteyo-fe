@@ -211,7 +211,7 @@ export default function BiteCard({
                 <img
                   src={bite.photoUrl || bite.image}
                   alt={bite.foodName || bite.title || "Food"}
-                  className="mt-3 w-full max-h-[520px] rounded-xl2 object-cover border border-gray-200/80 shadow-card"
+                  className="mt-3 w-full max-h-[520px] rounded-xl2 object-cover border border-gray-200/80"
                   loading="lazy"
                 />
               )}

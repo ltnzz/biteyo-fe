@@ -79,9 +79,9 @@ export default function ActivityPage() {
   );
 
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="min-h-screen bg-white">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
-        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
+        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white">
           <div className="sticky top-[65px] lg:top-0 z-20 flex items-center gap-3 bg-white/85 px-4 py-3 backdrop-blur-md">
             <button
               type="button"
@@ -117,7 +117,7 @@ export default function ActivityPage() {
           ) : (
             <div className="space-y-5 p-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl2 border border-gray-200 bg-white p-4 shadow-soft">
+                <div className="rounded-xl2 border border-gray-200 bg-white p-4">
                   <p className="text-xs font-semibold text-gray-500">
                     Total Bite (6 bulan)
                   </p>
@@ -125,7 +125,7 @@ export default function ActivityPage() {
                     {totalBites}
                   </p>
                 </div>
-                <div className="rounded-xl2 border border-gray-200 bg-white p-4 shadow-soft">
+                <div className="rounded-xl2 border border-gray-200 bg-white p-4">
                   <p className="text-xs font-semibold text-gray-500">
                     Bulan Teraktif
                   </p>
@@ -139,7 +139,7 @@ export default function ActivityPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl2 border border-gray-200 bg-white p-4 shadow-soft">
+              <div className="rounded-xl2 border border-gray-200 bg-white p-4">
                 <h2 className="text-sm font-bold text-gray-900">
                   Bite per Bulan
                 </h2>

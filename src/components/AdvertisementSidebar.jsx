@@ -20,8 +20,8 @@ export default function AdvertisementSidebar() {
   return (
     <aside className="hidden lg:block lg:w-80 xl:w-96 2xl:w-[26rem] shrink-0">
       <div className="sticky top-[86px] space-y-4 px-4">
-        <div className="overflow-hidden rounded-xl2 border border-cream-300 bg-white shadow-card">
-          <div className="border-b border-cream-300 bg-cream-50 px-4 py-3">
+        <div className="overflow-hidden rounded-xl2 border border-cream-300 bg-white">
+          <div className="border-b border-cream-300 bg-white px-4 py-3">
             <h2 className="text-base font-extrabold text-gray-900">Sponsored</h2>
           </div>
 

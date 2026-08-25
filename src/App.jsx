@@ -94,7 +94,7 @@ function AppContent() {
   const unreadNotifications = useUnreadNotifications();
 
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="min-h-screen bg-white">
       <SnackbarHost />
       <div className={`flex min-h-screen w-full ${showSidebar ? 'mx-auto max-w-[96rem]' : ''}`}>
         {showSidebar && (

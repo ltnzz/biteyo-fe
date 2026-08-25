@@ -269,9 +269,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="min-h-screen bg-white">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
-        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
+        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white">
           <div className="sticky top-[65px] lg:top-0 z-20 bg-white/85 px-4 py-3 backdrop-blur-md">
             <h1 className="text-xl font-extrabold text-gray-900">
               {loading ? "Profile" : displayName}
@@ -320,7 +320,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => navigate("/activity")}
-                  className="mt-4 flex w-full items-center justify-between rounded-xl2 border border-gray-200 bg-white p-4 text-left shadow-soft transition-colors duration-150 hover:border-pink-200 hover:bg-pink-50/50"
+                  className="mt-4 flex w-full items-center justify-between rounded-xl2 border border-gray-200 bg-white p-4 text-left transition-colors duration-150 hover:border-pink-200 hover:bg-pink-50/50"
                 >
                   <span>
                     <span className="block text-sm font-bold text-gray-900">
