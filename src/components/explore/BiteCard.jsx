@@ -114,7 +114,9 @@ export default function BiteCard({
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
-              {showFollow && (
+              {/* pill follow hanya tampil saat belum mengikuti;
+                  setelah follow, unfollow dilakukan dari halaman profil */}
+              {showFollow && !isFollowing && (
                 <button
                   type="button"
                   onClick={(event) => {
@@ -122,16 +124,10 @@ export default function BiteCard({
                     onToggleFollow(bite);
                   }}
                   disabled={followLoading}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${
-                    isFollowing
-                      ? "bg-gray-900 text-white border-gray-900 hover:bg-white hover:text-red-500 hover:border-red-200"
-                      : "bg-white text-gray-900 border-gray-300 hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600"
-                  }`}
+                  className="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-gray-900 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {followLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : isFollowing ? (
-                    "Following"
                   ) : (
                     "Follow"
                   )}

@@ -27,6 +27,7 @@ const BiteDetailPage = lazy(() => import('./pages/BiteDetailPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const ActivityPage = lazy(() => import('./pages/ActivityPage'));
 const BerandaPage = lazy(() => import('./pages/BerandaPage'));
+const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 
 // Mockup homepage baru: hanya tersedia di development (localhost)
 const SHOW_BERANDA_MOCKUP = import.meta.env.DEV;
@@ -121,6 +122,7 @@ function AppContent() {
               <Route path="/" element={<Homepage />} />
               {SHOW_BERANDA_MOCKUP && (
                 <Route path="/beranda" element={<BerandaPage />} />
+              <Route path="/community" element={<CommunityPage />} />
               )}
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/login" element={<LoginPage />} />

@@ -14,6 +14,7 @@ import { getBitesByCategory, getFeedBites, searchBites, toggleLikeBite } from ".
 import { followUser, unfollowUser } from "../services/profileApi";
 import { ensureOkResponse } from "../utils/api";
 import { getAuthHeaders, getStoredUser, isAuthenticated } from "../utils/auth";
+import { invalidateApiCache } from "../utils/apiCache";
 import {
   clearNewContent,
   NEW_CONTENT_REFRESH_EVENT,
@@ -263,6 +264,10 @@ export default function ExplorePage() {
     try {
       if (wasFollowing) await unfollowUser(username);
       else await followUser(username);
+
+      // cache following pasti basi setelah perubahan follow,
+      // apa pun tab yang sedang aktif
+      invalidateApiCache("feed:following");
 
       // tab Following harus langsung mencerminkan perubahan follow
       if (scope === "following") await fetchFeed({ force: true });
