@@ -22,6 +22,7 @@ const AddPage = lazy(() => import('./pages/AddPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const BiteDetailPage = lazy(() => import('./pages/BiteDetailPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const ActivityPage = lazy(() => import('./pages/ActivityPage'));
 
 const isRouteActive = (pathname, targetPath) =>
   targetPath === '/'
@@ -125,6 +126,14 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/activity"
+                element={
+                  <ProtectedRoute>
+                    <ActivityPage />
                   </ProtectedRoute>
                 }
               />

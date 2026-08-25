@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { AlertCircle, RefreshCw, SearchX } from "lucide-react";
+import { AlertCircle, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
@@ -8,7 +8,6 @@ import ToastMessage from "../components/ToastMessage";
 import ActionMessage from "../components/profile/ActionMessage";
 import LoginRequired from "../components/profile/LoginRequired";
 import ProfileHeader from "../components/profile/ProfileHeader";
-import ProfileActivityChart from "../components/profile/ProfileActivityChart";
 import ProfileTabPlaceholder from "../components/profile/ProfileTabPlaceholder";
 import ProfileTabs from "../components/profile/ProfileTabs";
 import ProfileTimeline from "../components/profile/ProfileTimeline";
@@ -190,20 +189,6 @@ export default function ProfilePage() {
   });
   useFeedSocket(savedBites, setSavedBites, { acceptNewBite: () => false });
   useFeedSocket(likedBites, setLikedBites, { acceptNewBite: () => false });
-  const handleRefreshAll = useCallback(async () => {
-    showSnackbar({ message: "Memuat ulang profil...", duration: 1500 });
-
-    try {
-      await refreshAll();
-      showSnackbar({ message: "Profil diperbarui", variant: "success" });
-    } catch (err) {
-      showSnackbar({
-        message: err.message || "Gagal memperbarui profil.",
-        variant: "error",
-      });
-    }
-  }, [refreshAll]);
-
   const closeToast = useCallback(() => setToastMessage(null), []);
 
   if (!profileUsername) return <LoginRequired />;
@@ -304,17 +289,6 @@ export default function ProfilePage() {
             renderProfileState("error")
           ) : (
             <>
-              <div className="flex justify-end px-4 pt-2">
-                <button
-                  type="button"
-                  onClick={handleRefreshAll}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-pink-500"
-                  aria-label="Refresh profil"
-                >
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  Refresh
-                </button>
-              </div>
               <ProfileHeader
                 avatar={avatar}
                 banner={banner}
@@ -343,7 +317,21 @@ export default function ProfilePage() {
               />
 
               <div className="px-4">
-                <ProfileActivityChart username={profileUsername} />
+                <button
+                  type="button"
+                  onClick={() => navigate("/activity")}
+                  className="mt-4 flex w-full items-center justify-between rounded-xl2 border border-gray-200 bg-white p-4 text-left shadow-soft transition-colors duration-150 hover:border-pink-200 hover:bg-pink-50/50"
+                >
+                  <span>
+                    <span className="block text-sm font-bold text-gray-900">
+                      Aktivitas Posting
+                    </span>
+                    <span className="block text-xs text-gray-500">
+                      Lihat grafik bite kamu 6 bulan terakhir
+                    </span>
+                  </span>
+                  <span className="text-lg font-bold text-pink-500">→</span>
+                </button>
               </div>
 
               <ProfileTabs
