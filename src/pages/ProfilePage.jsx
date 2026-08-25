@@ -272,7 +272,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-cream-100">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
         <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
-          <div className="sticky top-[65px] z-20 border-b border-gray-200 bg-white/95 px-4 py-3 shadow-[0_1px_10px_rgba(15,23,42,0.035)] backdrop-blur">
+          <div className="sticky top-[65px] z-20 bg-white/85 px-4 py-3 backdrop-blur-md">
             <h1 className="text-xl font-extrabold text-gray-900">
               {loading ? "Profile" : displayName}
             </h1>

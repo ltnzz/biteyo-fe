@@ -82,7 +82,7 @@ export default function ActivityPage() {
     <div className="min-h-screen bg-cream-100">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
         <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
-          <div className="sticky top-[65px] z-20 flex items-center gap-3 border-b border-gray-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+          <div className="sticky top-[65px] z-20 flex items-center gap-3 bg-white/85 px-4 py-3 backdrop-blur-md">
             <button
               type="button"
               onClick={() => navigate(-1)}

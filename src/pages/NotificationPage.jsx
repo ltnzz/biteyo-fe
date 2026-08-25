@@ -253,7 +253,7 @@ export default function NotificationPage() {
         />
 
         <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
-          <div className="sticky top-[65px] z-20 border-b border-gray-200 bg-white/95 px-4 py-3 shadow-[0_1px_10px_rgba(15,23,42,0.035)] backdrop-blur">
+          <div className="sticky top-[65px] z-20 bg-white/85 px-4 py-3 backdrop-blur-md">
             <NotificationHeader
               loading={loading}
               unreadCount={unreadCount}
