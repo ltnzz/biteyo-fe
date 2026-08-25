@@ -13,7 +13,14 @@
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Realtime-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/ltnzz/biteyo-fe/actions/workflows/ci.yml"><img alt="Frontend CI" src="https://github.com/ltnzz/biteyo-fe/actions/workflows/ci.yml/badge.svg" /></a>
+  <a href="https://www.biteyo.my.id/"><img alt="Live demo" src="https://img.shields.io/badge/Live-www.biteyo.my.id-E1306C?style=flat-square" /></a>
+</p>
+
 Biteyo adalah website sosial bertema kuliner. Fokusnya bukan cuma menampilkan review makanan, tapi membuat pengalaman eksplorasi terasa hidup: cepat, visual, interaktif, dan familiar seperti social feed modern.
+
+> 🛠️ Backend API: [biteyo-be](https://github.com/ltnzz/biteyo-be) · 📚 Dokumentasi API: [/api/docs](https://biteyo-be.vercel.app/api/docs) · 🏗️ Keputusan arsitektur: [ARCHITECTURE.md](https://github.com/ltnzz/biteyo-be/blob/main/ARCHITECTURE.md)
 
 ## Preview
 
@@ -34,12 +41,14 @@ Biteyo adalah website sosial bertema kuliner. Fokusnya bukan cuma menampilkan re
 
 ## Highlights
 
-- **Food-first social feed** untuk melihat bite terbaru lengkap dengan foto, rating, kategori, lokasi, dan review.
-- **Explore experience** dengan pencarian lokasi, filter kategori, feed interaktif, serta sidebar konten pendukung.
+- **Food-first social feed** untuk melihat bite terbaru lengkap dengan foto, rating, kategori, lokasi, review, dan **waktu posting relatif** ("2 jam yang lalu").
+- **Explore experience** dengan tab feed **Semua / Following**, pencarian lokasi, filter kategori, feed interaktif, serta sidebar konten pendukung.
 - **Create bite flow** yang mendukung upload foto, preview gambar, kompresi image, rating bintang, kategori, dan validasi form.
-- **Engagement lengkap** melalui like, save, komentar, follow/unfollow, edit, delete, dan detail page per bite.
-- **Profile hub** dengan banner, avatar, bio, statistik, timeline post, saved bites, liked bites, dan public profile route.
-- **Realtime updates** untuk feed dan notifikasi memakai Supabase Realtime agar perubahan terasa langsung muncul.
+- **Engagement lengkap** melalui like, save, komentar, follow/unfollow, edit, delete, share (Web Share API + copy link), dan detail page per bite.
+- **Profile hub** dengan banner, avatar, bio, statistik, grafik aktivitas posting bulanan (SVG tanpa library), timeline post, saved bites, liked bites, dan public profile route.
+- **Realtime updates** untuk feed dan notifikasi via kanal tunggal Supabase `postgres_changes` — bullet "konten baru" muncul di icon nav saat ada bite baru, klik untuk refresh.
+- **Global snackbar feedback** (`showSnackbar({ message, variant })`) untuk aksi refresh, share, dan error.
+- **Cookie-only auth** — token hanya hidup di cookie httpOnly; semua request lewat same-origin proxy `/api/*` (lihat `vercel.json`) sehingga cookie bersifat first-party.
 - **Responsive navigation** dengan desktop sidebar, sticky header, dan bottom navigation khusus mobile.
 - **Polished motion** lewat floating food elements, fade-up hero, pulse background, modal animation, loader dots, hover states, dan micro-interaction pada tombol.
 
@@ -95,12 +104,16 @@ npm run lint
 Buat `.env.local` di root project, lalu sesuaikan value dengan backend dan service yang dipakai.
 
 ```env
-VITE_API_BASE_URL=http://localhost:3000
-VITE_API_URL=http://localhost:3000
+# Development: arahkan ke BE lokal
+VITE_API_BASE_URL=http://localhost:8000
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+> **Produksi**: biarkan `VITE_API_BASE_URL` kosong agar semua request jadi relatif
+> (`/api/...`) dan melewati same-origin proxy yang didefinisikan di `vercel.json`
+> → cookie auth menjadi first-party.
 
 Untuk Google OAuth, origin frontend harus ditambahkan di Google Cloud Console pada OAuth Client ID bagian **Authorized JavaScript origins**.
 
@@ -109,16 +122,19 @@ Untuk Google OAuth, origin frontend harus ditambahkan di Google Cloud Console pa
 ```txt
 src/
   assets/       Logo, favicon, background, dan preview page
-  components/   Reusable UI, sidebar, feed card, notification, profile sections
-  hooks/        Feed socket, profile data, dan bite mutation logic
+  components/   Reusable UI (explore/, profile/, notifications/), sidebar, snackbar host
+  hooks/        Feed socket (postgres_changes), profile data, bite mutations, sinyal konten baru
   pages/        Home, explore, post, profile, notification, auth, detail bite
-  services/     API dan realtime service layer
-  utils/        Auth, normalization, image compression, engagement helpers
+  services/     API layer (fetch credentials:include)
+  utils/        auth (cookie-only), apiCache (invalidasi per-prefix), share, relativeTime, feedSignals, snackbar
 ```
 
 ## Deployment
 
-Project sudah siap untuk SPA deployment di Vercel melalui `vercel.json`, sehingga route seperti `/explore`, `/profile/:username`, dan `/bites/:biteId` tetap diarahkan ke `index.html`.
+Deploy di Vercel dengan dua mekanisme di `vercel.json`:
+
+1. **SPA fallback** — route seperti `/explore`, `/profile/:username`, dan `/bites/:biteId` tetap diarahkan ke `index.html`.
+2. **API proxy** — `/api/(.*)` diteruskan ke backend (`biteyo-be.vercel.app`) sehingga cookie auth httpOnly bersifat first-party dan bebas masalah CORS lintas-site.
 
 ## Status
 
