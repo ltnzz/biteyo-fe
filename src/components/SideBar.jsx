@@ -174,13 +174,15 @@ export default function Sidebar({ unreadNotifications = 0 }) {
         </button>
 
         {/* TODO(hapus setelah switch): link sementara ke mockup beranda */}
-        <Link
-          to="/beranda"
-          className="mx-2 mt-2 block rounded-full border border-dashed border-pink-300 py-2 text-center text-xs font-semibold text-pink-500 transition-colors hover:bg-pink-50"
-          title="Mockup homepage baru"
-        >
-          🧪 Beranda (beta)
-        </Link>
+        {import.meta.env.DEV && (
+          <Link
+            to="/beranda"
+            className="mx-2 mt-2 block rounded-full border border-dashed border-pink-300 py-2 text-center text-xs font-semibold text-pink-500 transition-colors hover:bg-pink-50"
+            title="Mockup homepage baru"
+          >
+            🧪 Beranda (beta)
+          </Link>
+        )}
         {/* Bottom Profile Section */}
         <div ref={profileMenuRef} className="mt-auto pt-4 relative">
           {currentUser ? (
