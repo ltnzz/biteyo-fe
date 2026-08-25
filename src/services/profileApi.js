@@ -21,7 +21,7 @@ const isEmptyProfile = (data, profile) =>
   data?.data?.user === null ||
   (profile?.message && !profile?.username && !profile?.name && !profile?.id && !profile?._id);
 
-const requestJson = async (
+export const requestJson = async (
   path,
   { method = "GET", fallback = "Request failed", allowNotFound = false } = {},
 ) => {

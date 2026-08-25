@@ -8,6 +8,7 @@ import ToastMessage from "../components/ToastMessage";
 import ActionMessage from "../components/profile/ActionMessage";
 import LoginRequired from "../components/profile/LoginRequired";
 import ProfileHeader from "../components/profile/ProfileHeader";
+import ProfileActivityChart from "../components/profile/ProfileActivityChart";
 import ProfileTabPlaceholder from "../components/profile/ProfileTabPlaceholder";
 import ProfileTabs from "../components/profile/ProfileTabs";
 import ProfileTimeline from "../components/profile/ProfileTimeline";
@@ -340,6 +341,10 @@ export default function ProfilePage() {
                 onSaveProfile={handleSaveProfile}
                 onToggleFollow={handleToggleFollow}
               />
+
+              <div className="px-4">
+                <ProfileActivityChart username={profileUsername} />
+              </div>
 
               <ProfileTabs
                 activeTab={resolvedActiveTab}
