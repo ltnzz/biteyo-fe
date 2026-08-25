@@ -7,6 +7,7 @@ import {
   Loader2,
   MessageCircle,
   Send,
+  Share2,
   Star,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -50,6 +51,7 @@ import {
   normalizeCategoryValue,
 } from "../utils/bites";
 import { formatAbsoluteDateTime } from "../utils/relativeTime";
+import { notifyShareResult, shareBite } from "../utils/share";
 
 export default function BiteDetailPage() {
   const { biteId } = useParams();
@@ -418,6 +420,22 @@ export default function BiteDetailPage() {
                 <MessageCircle className="h-4 w-4" />
                 <span>{displayedCommentCount}</span>
               </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const result = await shareBite({
+                    biteId: getBiteId(bite),
+                    title: `BiteYo — ${bite.foodName || bite.title || "Food"}`,
+                    text: `Lihat ${bite.foodName || "bite ini"} di BiteYo`,
+                  });
+                  notifyShareResult(result);
+                }}
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-gray-100 hover:text-gray-600"
+                aria-label="Bagikan bite"
+              >
+                <Share2 className="h-4 w-4" />
+                Bagikan
+              </button>
               </div>
 
               <form onSubmit={handleSubmitComment} className="border-b border-gray-200 bg-white p-4">

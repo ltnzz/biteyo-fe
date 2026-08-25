@@ -4,6 +4,7 @@ import {
   Loader2,
   MessageCircle,
   Pencil,
+  Share2,
   Star,
   Trash2,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import {
   isBiteSaved,
 } from "../../utils/biteEngagement";
 import { getBiteCreatedAt } from "../../utils/bites";
+import { notifyShareResult, shareBite } from "../../utils/share";
 import MentionText from "../MentionText";
 import BiteEditForm from "./BiteEditForm";
 
@@ -256,6 +258,22 @@ export default function BiteCard({
                   aria-label={saved ? "Unsave bite" : "Save bite"}
                 >
                   <Bookmark className={`w-4 h-4 ${saved ? "fill-current" : ""}`} />
+                </button>
+                <button
+                  type="button"
+                  onClick={async (event) => {
+                    event.stopPropagation();
+                    const result = await shareBite({
+                      biteId: biteId || bite?.id || bite?._id,
+                      title: `BiteYo — ${bite.foodName || "Food"}`,
+                      text: `Lihat ${bite.foodName || "bite ini"} di BiteYo`,
+                    });
+                    notifyShareResult(result);
+                  }}
+                  className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-gray-100 hover:text-gray-600"
+                  aria-label="Bagikan bite"
+                >
+                  <Share2 className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
