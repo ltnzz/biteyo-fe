@@ -263,6 +263,9 @@ export default function ExplorePage() {
     try {
       if (wasFollowing) await unfollowUser(username);
       else await followUser(username);
+
+      // tab Following harus langsung mencerminkan perubahan follow
+      if (scope === "following") await fetchFeed({ force: true });
     } catch (err) {
       setFollowingUsers((prev) => {
         const next = new Set(prev);

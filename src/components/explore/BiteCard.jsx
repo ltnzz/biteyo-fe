@@ -248,6 +248,18 @@ export default function BiteCard({
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
+                    onOpenBite?.(bite);
+                  }}
+                  className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-gray-100 hover:text-gray-600"
+                  aria-label="Lihat komentar di halaman detail"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>{getCommentCount(bite)}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
                     onToggleSave?.(bite);
                   }}
                   className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 ${
@@ -274,18 +286,6 @@ export default function BiteCard({
                   aria-label="Bagikan bite"
                 >
                   <Share2 className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onOpenBite?.(bite);
-                  }}
-                  className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-gray-100 hover:text-gray-600"
-                  aria-label="Lihat komentar di halaman detail"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{getCommentCount(bite)}</span>
                 </button>
               </div>
             </>

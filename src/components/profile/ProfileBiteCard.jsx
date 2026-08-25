@@ -193,17 +193,13 @@ export default function ProfileBiteCard({
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    onToggleLike?.(bite);
+                    onOpenBite?.(bite);
                   }}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 ${
-                    liked
-                      ? "text-pink-500"
-                      : "hover:bg-pink-50 hover:text-pink-500"
-                  }`}
-                  aria-label={liked ? "Unlike bite" : "Like bite"}
+                  className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-gray-100 hover:text-gray-600"
+                  aria-label="Lihat komentar di halaman detail"
                 >
-                  <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
-                  <span>{getLikeCount(bite)}</span>
+                  <MessageCircle className="w-4 h-4" />
+                  <span>{getCommentCount(bite)}</span>
                 </button>
                 <button
                   type="button"
@@ -222,15 +218,19 @@ export default function ProfileBiteCard({
                 </button>
                 <button
                   type="button"
-                  onClick={(event) => {
+                  onClick={async (event) => {
                     event.stopPropagation();
-                    onOpenBite?.(bite);
+                    const result = await shareBite({
+                      biteId: bite?.id || bite?._id,
+                      title: `BiteYo — ${bite.foodName || "Food"}`,
+                      text: `Lihat ${bite.foodName || "bite ini"} di BiteYo`,
+                    });
+                    notifyShareResult(result);
                   }}
                   className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-gray-100 hover:text-gray-600"
-                  aria-label="Lihat komentar di halaman detail"
+                  aria-label="Bagikan bite"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{getCommentCount(bite)}</span>
+                  <Share2 className="w-4 h-4" />
                 </button>
               </div>
             </>
