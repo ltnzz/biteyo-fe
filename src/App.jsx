@@ -122,8 +122,8 @@ function AppContent() {
               <Route path="/" element={<Homepage />} />
               {SHOW_BERANDA_MOCKUP && (
                 <Route path="/beranda" element={<BerandaPage />} />
-              <Route path="/community" element={<CommunityPage />} />
               )}
+              <Route path="/community" element={<CommunityPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route
