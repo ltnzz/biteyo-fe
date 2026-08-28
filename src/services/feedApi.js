@@ -112,6 +112,36 @@ export const getTrendingBites = async ({ force = false, signal } = {}) => {
   return data;
 };
 
+export const getTrendingKeywords = async ({ force = false, signal } = {}) => {
+  const { data } = await fetchWithCache(
+    "trending:keywords",
+    () =>
+      requestJson(
+        "/api/feed/trending-keywords",
+        { method: "GET", signal },
+        "Gagal memuat trending keywords.",
+      ),
+    { ttlMs: TTL_FEED_MS, force },
+  );
+
+  return data;
+};
+
+export const getBiteCategories = async ({ force = false, signal } = {}) => {
+  const { data } = await fetchWithCache(
+    "feed:categories",
+    () =>
+      requestJson(
+        "/api/feed/categories",
+        { method: "GET", signal },
+        "Gagal memuat kategori.",
+      ),
+    { ttlMs: TTL_FEED_MS, force },
+  );
+
+  return data;
+};
+
 export const getBitesByCategory = async (category, options = {}) => {
   if (!category) return [];
 

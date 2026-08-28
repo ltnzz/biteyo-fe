@@ -11,6 +11,7 @@ import useNewContentSignal from './hooks/useNewContentSignal';
 import SideBarBeta from './components/SideBarBeta';
 import MainHeaderBeta from './components/MainHeaderBeta';
 import SessionWatcher from './components/SessionWatcher';
+import ScrollToTop from './components/ScrollToTop';
 import { SHOW_UI_BETA } from './utils/uiBeta';
 import { Bell, Home, PlusCircle, Search, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -97,11 +98,12 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white">
+      <ScrollToTop />
       <SessionWatcher />
       <SnackbarHost />
       <div className={`flex min-h-screen w-full ${showSidebar ? 'mx-auto max-w-[96rem]' : ''}`}>
         {showSidebar && (
-          <div className="hidden h-screen w-64 shrink-0 overflow-visible border-r border-cream-300 bg-white lg:sticky lg:top-0 lg:block">
+          <div className="hidden h-screen w-56 shrink-0 overflow-visible border-r border-gray-100 bg-white lg:sticky lg:top-0 lg:block z-40">
             {SHOW_UI_BETA ? (
               <SideBarBeta unreadNotifications={unreadNotifications} />
             ) : (
@@ -159,6 +161,30 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <ActivityPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/status/:biteId"
+                element={
+                  <ProtectedRoute>
+                    <BiteDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/biteyo/status/:biteId"
+                element={
+                  <ProtectedRoute>
+                    <BiteDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bites/status/:biteId"
+                element={
+                  <ProtectedRoute>
+                    <BiteDetailPage />
                   </ProtectedRoute>
                 }
               />
