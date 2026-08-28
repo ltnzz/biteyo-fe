@@ -7,9 +7,10 @@ import {
   getUserProfile,
   unfollowUser,
 } from "../services/profileApi";
-import { getAuthHeaders, saveAuth } from "../utils/auth";
+import { getAuthHeaders, getStoredUser, saveAuth } from "../utils/auth";
 import { API_BASE } from "../utils/bites";
 import { ensureOkResponse } from "../utils/api";
+import { invalidateApiCache } from "../utils/apiCache";
 import { cacheFollowState } from "../utils/followState";
 import { compressImageFile } from "../utils/imageCompression";
 import { getProfileUsername, normalizeProfile } from "../utils/profile";
@@ -68,6 +69,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
   const [savedLoading, setSavedLoading] = useState(false);
   const [savedError, setSavedError] = useState("");
   const [profileForm, setProfileForm] = useState({
+    name: currentUser?.name || "",
     username: initialUsername,
     bio: "",
   });
@@ -103,12 +105,18 @@ export const useProfileData = (currentUser, routeUsername = "") => {
         cacheFollowState(currentUser, profileUsername, getFollowingState(nextProfile));
       }
       setProfileForm({
+        name: nextProfile?.name || "",
         username: nextProfile?.username || profileUsername,
         bio: nextProfile?.bio || "",
       });
     } catch (err) {
       console.error("Profile error:", err);
-      setProfileError(err.message || "Profil belum bisa dimuat. Coba refresh halaman.");
+      const is500 = err.status >= 500;
+      setProfileError(
+        is500
+          ? "Server sedang mengalami gangguan. Coba lagi dalam beberapa saat."
+          : err.message || "Profil belum bisa dimuat. Coba refresh halaman.",
+      );
     } finally {
       setProfileLoading(false);
     }
@@ -124,7 +132,12 @@ export const useProfileData = (currentUser, routeUsername = "") => {
       setBites(await getUserBites(profileUsername, { force }));
     } catch (err) {
       console.error("Profile bites error:", err);
-      setBitesError(err.message || "Bite profil belum bisa dimuat.");
+      const is500 = err.status >= 500;
+      setBitesError(
+        is500
+          ? "Gagal memuat postingan. Server sedang bermasalah."
+          : err.message || "Bite profil belum bisa dimuat.",
+      );
     } finally {
       setBitesLoading(false);
     }
@@ -147,7 +160,12 @@ export const useProfileData = (currentUser, routeUsername = "") => {
       );
     } catch (err) {
       console.error("Saved bites error:", err);
-      setSavedError(err.message || "Saved bites belum bisa dimuat.");
+      const is500 = err.status >= 500;
+      setSavedError(
+        is500
+          ? "Gagal memuat saved bites. Server sedang bermasalah."
+          : err.message || "Saved bites belum bisa dimuat.",
+      );
     } finally {
       setSavedLoading(false);
     }
@@ -165,7 +183,12 @@ export const useProfileData = (currentUser, routeUsername = "") => {
       );
     } catch (err) {
       console.error("Liked bites error:", err);
-      setLikedError(err.message || "Liked bites belum bisa dimuat.");
+      const is500 = err.status >= 500;
+      setLikedError(
+        is500
+          ? "Gagal memuat liked bites. Server sedang bermasalah."
+          : err.message || "Liked bites belum bisa dimuat.",
+      );
     } finally {
       setLikedLoading(false);
     }
@@ -198,12 +221,32 @@ export const useProfileData = (currentUser, routeUsername = "") => {
   };
 
   const saveProfile = async () => {
-    const payload = {
-      username: profileForm.username.trim(),
-      bio: profileForm.bio.trim(),
-    };
+    const originalName = (profile?.name || "").trim();
+    const originalUsername = (profile?.username || profileUsername || "").trim();
+    const originalBio = (profile?.bio || "").trim();
 
-    if (!payload.username) {
+    const trimmedName = profileForm.name?.trim() ?? "";
+    const trimmedUsername = profileForm.username.trim();
+    const trimmedBio = profileForm.bio.trim();
+
+    // hanya kirim field yang benar-benar berubah (sesuai request: "yang baru diketik aja")
+    const payload = {};
+    if (trimmedName !== originalName) payload.name = trimmedName;
+    if (trimmedUsername !== originalUsername) payload.username = trimmedUsername;
+    if (trimmedBio !== originalBio) payload.bio = trimmedBio;
+
+    const hasTextChange = Object.keys(payload).length > 0;
+    const hasFileChange = Boolean(avatarFile || bannerFile);
+
+    if (!hasTextChange && !hasFileChange) {
+      throw new Error("Tidak ada perubahan untuk disimpan.");
+    }
+
+    // validasi hanya untuk field yang dikirim
+    if (payload.name !== undefined && !payload.name) {
+      throw new Error("Nama lengkap wajib diisi.");
+    }
+    if (payload.username !== undefined && !payload.username) {
       throw new Error("Username is required.");
     }
 
@@ -218,8 +261,10 @@ export const useProfileData = (currentUser, routeUsername = "") => {
 
       if (avatarFile || bannerFile) {
         const formData = new FormData();
-        formData.append("username", payload.username);
-        formData.append("bio", payload.bio);
+        if (payload.name !== undefined) formData.append("name", payload.name);
+        if (payload.username !== undefined) formData.append("username", payload.username);
+        if (payload.bio !== undefined) formData.append("bio", payload.bio);
+        // jika tidak ada perubahan teks tapi ada file, tetap kirim file saja
         if (avatarFile) formData.append("avatar", await compressImageFile(avatarFile));
         if (bannerFile) formData.append("banner", await compressImageFile(bannerFile));
 
@@ -237,16 +282,52 @@ export const useProfileData = (currentUser, routeUsername = "") => {
       await ensureOkResponse(res, "Failed to update profile");
 
       const data = await res.json().catch(() => null);
-      const updatedProfile = normalizeProfile(data) || { ...profile, ...payload };
-      const nextUsername = updatedProfile?.username || payload.username;
+      const rawUser = data?.user || data?.profile || data?.data?.user || data?.data || data;
+      const nextName =
+        rawUser?.name ?? (payload.name !== undefined ? payload.name : profile?.name ?? "");
+      const nextUsername =
+        rawUser?.username ?? (payload.username !== undefined ? payload.username : profile?.username ?? profileUsername);
+      const nextBio =
+        rawUser?.bio !== undefined
+          ? rawUser.bio
+          : payload.bio !== undefined
+            ? payload.bio
+            : profile?.bio ?? "";
 
-      setProfile(updatedProfile);
-      setOwnUsername(nextUsername);
+      const mergedProfile = {
+        ...profile,
+        ...(rawUser || {}),
+        name: nextName,
+        username: nextUsername,
+        bio: nextBio,
+      };
+
+      setProfile(mergedProfile);
+      if (nextUsername) setOwnUsername(nextUsername);
       setAvatarFile(null);
       setBannerFile(null);
-      saveAuth({ user: { ...currentUser, ...updatedProfile, username: nextUsername } });
+      setProfileForm({
+        name: nextName || "",
+        username: nextUsername || "",
+        bio: nextBio || "",
+      });
 
-      return updatedProfile;
+      const updatedStoredUser = {
+        ...(getStoredUser() || currentUser || {}),
+        ...(rawUser || {}),
+        name: nextName,
+        username: nextUsername,
+        bio: nextBio,
+      };
+      saveAuth({ user: updatedStoredUser });
+
+      invalidateApiCache(`profile:${nextUsername}`);
+      invalidateApiCache(`profile:${ownUsername}`);
+      invalidateApiCache("profile:");
+      invalidateApiCache("feed:");
+      invalidateApiCache("bites:");
+
+      return mergedProfile;
     } finally {
       setSavingProfile(false);
     }
