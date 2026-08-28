@@ -1,11 +1,9 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { AlertCircle, SearchX } from "lucide-react";
+import { AlertCircle, ArrowLeft, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
 import ConfirmDialog from "../components/ConfirmDialog";
-import ToastMessage from "../components/ToastMessage";
-import ActionMessage from "../components/profile/ActionMessage";
 import LoginRequired from "../components/profile/LoginRequired";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileTabPlaceholder from "../components/profile/ProfileTabPlaceholder";
@@ -26,10 +24,9 @@ export default function ProfilePage() {
   const { username } = useParams();
   const navigate = useNavigate();
   const currentUser = useMemo(() => getStoredUser(), []);
-  const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
-  const [toastMessage, setToastMessage] = useState(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
+  const [saveFieldError, setSaveFieldError] = useState("");
   const {
     bites,
     bitesError,
@@ -50,7 +47,6 @@ export default function ProfilePage() {
     profileForm,
     profileNotFound,
     profileUsername,
-    refreshAll,
     savedBites,
     savedError,
     savedLoading,
@@ -112,22 +108,22 @@ export default function ProfilePage() {
         likesCount: likeCount,
         likeCount,
       };
-      const syncList = (prev) =>
+
+      setBites((prev) =>
         prev.map((item) =>
           getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
-        );
-
-      setBites(syncList);
-      setSavedBites(syncList);
-      setLikedBites((prev) => {
-        if (!liked) return prev.filter((item) => getBiteId(item) !== biteId);
-
-        return prev.some((item) => getBiteId(item) === biteId)
-          ? prev.map((item) =>
-              getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
-            )
-          : [nextBite, ...prev];
-      });
+        ),
+      );
+      setLikedBites((prev) =>
+        prev.map((item) =>
+          getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
+        ),
+      );
+      setSavedBites((prev) =>
+        prev.map((item) =>
+          getBiteId(item) === biteId ? { ...item, ...nextBite } : item,
+        ),
+      );
     },
     [setBites, setLikedBites, setSavedBites],
   );
@@ -136,9 +132,7 @@ export default function ProfilePage() {
     onLikeChange: syncLikedBites,
     onSaveChange: syncSavedBites,
     refresh: fetchUserBites,
-    setActionMessage,
     setBites,
-    setToastMessage,
   });
   const savedBiteActions = useBiteMutations({
     currentUser,
@@ -146,18 +140,14 @@ export default function ProfilePage() {
     onSaveChange: syncSavedBites,
     refresh: fetchSavedBites,
     removeOnUnsave: true,
-    setActionMessage,
     setBites: setSavedBites,
-    setToastMessage,
   });
   const likedBiteActions = useBiteMutations({
     currentUser,
     onLikeChange: syncLikedBites,
     onSaveChange: syncSavedBites,
     refresh: fetchLikedBites,
-    setActionMessage,
     setBites: setLikedBites,
-    setToastMessage,
   });
   const resolvedActiveTab = !isOwnProfile && activeTab === "save" ? "posts" : activeTab;
   const acceptsProfileBite = (bite) => {
@@ -189,7 +179,6 @@ export default function ProfilePage() {
   });
   useFeedSocket(savedBites, setSavedBites, { acceptNewBite: () => false });
   useFeedSocket(likedBites, setLikedBites, { acceptNewBite: () => false });
-  const closeToast = useCallback(() => setToastMessage(null), []);
 
   if (!profileUsername) return <LoginRequired />;
 
@@ -204,36 +193,62 @@ export default function ProfilePage() {
   } = getProfileViewModel(profile, profileUsername);
 
   const handleSaveProfile = async () => {
-    setActionMessage({ type: "", text: "" });
-
     try {
-      await saveProfile();
+      setSaveFieldError("");
+      const updated = await saveProfile();
       setEditorOpen(false);
-      setActionMessage({ type: "success", text: "Profile updated." });
+      showSnackbar({
+        message: "Profil berhasil diperbarui!",
+        variant: "success",
+      });
+      if (updated?.username && updated.username !== profileUsername) {
+        navigate(`/profile/${encodeURIComponent(updated.username)}`, { replace: true });
+      } else {
+        await fetchProfile({ force: true });
+      }
     } catch (err) {
-      setActionMessage({ type: "error", text: err.message });
+      const msg = err.message || "Gagal memperbarui profil";
+      // inline field error untuk username taken agar terlihat di dalam modal (snackbar ada di belakang modal sebelumnya)
+      if (/username.*taken/i.test(msg) || /username.*dipakai/i.test(msg)) {
+        setSaveFieldError("Username sudah dipakai, coba yang lain");
+      } else {
+        setSaveFieldError("");
+      }
+      // translate generic taken message ke ID
+      const displayMsg = /Username already taken/i.test(msg) ? "Username sudah dipakai" : msg;
+      showSnackbar({
+        message: displayMsg,
+        variant: "error",
+      });
     }
   };
 
   const handleCloseEditor = () => {
     setAvatarFile(null);
     setBannerFile(null);
+    setSaveFieldError("");
     setEditorOpen(false);
   };
 
-  const handleToggleFollow = async () => {
-    setActionMessage({ type: "", text: "" });
+  const handleProfileChange = (field, value) => {
+    if (field === "username" && saveFieldError) setSaveFieldError("");
+    updateProfileForm(field, value);
+  };
 
+  const handleToggleFollow = async () => {
     try {
       await toggleFollow();
     } catch (err) {
-      setActionMessage({ type: "error", text: err.message });
+      showSnackbar({
+        message: err.message || "Gagal mengubah status follow",
+        variant: "error",
+      });
     }
   };
 
   const openBiteDetail = (bite) => {
     const biteId = bite?._id || bite?.id || bite?.biteId;
-    if (biteId) navigate(`/bites/${biteId}`);
+    if (biteId) navigate(`/status/${biteId}`);
   };
 
   const openUserProfile = (targetUsername) => {
@@ -243,24 +258,34 @@ export default function ProfilePage() {
   const renderProfileState = (type) => {
     const isNotFound = type === "not-found";
     const Icon = isNotFound ? SearchX : AlertCircle;
+    const isServerError = !isNotFound && error?.includes?.("Server");
 
     return (
       <section className="px-6 py-20 text-center">
-        <Icon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${isNotFound ? "bg-gray-50" : "bg-red-50"}`}>
+          <Icon className={`w-7 h-7 ${isNotFound ? "text-gray-300" : "text-red-400"}`} />
+        </div>
         <h2 className="text-xl font-extrabold text-gray-900">
-          {isNotFound ? "Profil tidak ditemukan" : "Profil gagal dimuat"}
+          {isNotFound
+            ? "Profil tidak ditemukan"
+            : isServerError
+              ? "Server sedang bermasalah"
+              : "Profil gagal dimuat"}
         </h2>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 max-w-xs mx-auto">
           {isNotFound
             ? "Username ini belum terdaftar atau sudah tidak tersedia."
-            : error}
+            : isServerError
+              ? "Server sedang mengalami gangguan. Coba lagi dalam beberapa saat."
+              : error}
         </p>
         {!isNotFound && (
           <button
             type="button"
-            onClick={fetchProfile}
-            className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-600"
+            onClick={() => fetchProfile({ force: true })}
+            className="inline-flex mt-5 items-center gap-2 px-5 py-2.5 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-600 transition"
           >
+            <ArrowLeft className="h-4 w-4 rotate-[135deg]" />
             Coba lagi
           </button>
         )}
@@ -271,15 +296,26 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
-        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white">
-          <div className="sticky top-[65px] lg:top-0 z-20 bg-white/85 px-4 py-3 backdrop-blur-md">
-            <h1 className="text-xl font-extrabold text-gray-900">
-              {loading ? "Profile" : displayName}
-            </h1>
-            <p className="text-sm text-gray-500">{bites.length} bites</p>
+        <main className="min-h-screen w-full max-w-2xl bg-white">
+          <div className="sticky top-[65px] lg:top-0 z-20 flex items-center gap-3 border-b border-cream-200/80 bg-white/90 px-4 py-2.5 backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100"
+              aria-label="Kembali"
+              title="Kembali"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="truncate text-base sm:text-lg font-black text-gray-900 leading-tight">
+                {loading ? "Memuat Profil..." : displayName}
+              </h1>
+              <p className="text-[11px] font-semibold text-gray-400">
+                {bites.length} {bites.length === 1 ? "bite" : "bites"}
+              </p>
+            </div>
           </div>
-
-          <ActionMessage message={actionMessage} />
 
           {loading ? (
             <BiteLoader label="Sedang memuat profil..." />
@@ -293,7 +329,6 @@ export default function ProfilePage() {
                 avatar={avatar}
                 banner={banner}
                 bio={bio}
-                bites={bites}
                 bitesCount={bites.length}
                 displayName={displayName}
                 editorOpen={editorOpen}
@@ -307,32 +342,15 @@ export default function ProfilePage() {
                 location={location}
                 profileForm={profileForm}
                 savingProfile={savingProfile}
+                usernameError={saveFieldError}
                 onAvatarChange={setAvatarFile}
                 onBannerChange={setBannerFile}
                 onCloseEditor={handleCloseEditor}
                 onEditProfile={() => setEditorOpen(true)}
-                onProfileChange={updateProfileForm}
+                onProfileChange={handleProfileChange}
                 onSaveProfile={handleSaveProfile}
                 onToggleFollow={handleToggleFollow}
               />
-
-              <div className="px-4">
-                <button
-                  type="button"
-                  onClick={() => navigate("/activity")}
-                  className="mt-4 flex w-full items-center justify-between rounded-xl2 border border-gray-200 bg-white p-4 text-left transition-colors duration-150 hover:border-pink-200 hover:bg-pink-50/50"
-                >
-                  <span>
-                    <span className="block text-sm font-bold text-gray-900">
-                      Aktivitas Posting
-                    </span>
-                    <span className="block text-xs text-gray-500">
-                      Lihat grafik bite kamu 6 bulan terakhir
-                    </span>
-                  </span>
-                  <span className="text-lg font-bold text-pink-500">→</span>
-                </button>
-              </div>
 
               <ProfileTabs
                 activeTab={resolvedActiveTab}
@@ -428,7 +446,6 @@ export default function ProfilePage() {
         onCancel={biteActions.cancelDeleteBite}
         onConfirm={biteActions.confirmDeleteBite}
       />
-      <ToastMessage message={toastMessage} onClose={closeToast} />
     </div>
   );
 }

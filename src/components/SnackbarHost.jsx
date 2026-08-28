@@ -49,7 +49,7 @@ export default function SnackbarHost() {
   if (snackbars.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-20 z-[60] flex flex-col items-center gap-2 px-4 lg:bottom-8">
+    <div className="pointer-events-none fixed inset-x-0 bottom-20 z-[10010] flex flex-col items-center gap-2 px-4 lg:bottom-8">
       {snackbars.map((snackbar) => {
         const variant = VARIANTS[snackbar.variant];
         const Icon = variant.icon;
