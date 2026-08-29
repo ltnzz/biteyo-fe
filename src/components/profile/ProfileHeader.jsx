@@ -21,8 +21,14 @@ export default function ProfileHeader({
   profileForm,
   savingProfile,
   usernameError,
+  removeAvatar,
+  removeBanner,
   onAvatarChange,
   onBannerChange,
+  onRemoveAvatar,
+  onRemoveBanner,
+  onClearRemoveAvatar,
+  onClearRemoveBanner,
   onCloseEditor,
   onEditProfile,
   onToggleFollow,
@@ -37,8 +43,8 @@ export default function ProfileHeader({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Profil ${displayName} (@${handle}) di BiteYo`,
-          text: `Lihat rekomendasi kuliner dari ${displayName} di BiteYo!`,
+          title: `Profil ${displayName} (@${handle}) di Biteyo`,
+          text: `Lihat rekomendasi kuliner dari ${displayName} di Biteyo!`,
           url,
         });
         return;
@@ -58,7 +64,7 @@ export default function ProfileHeader({
   return (
     <section className="border-b border-cream-300 bg-white">
       {/* Banner */}
-      <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400">
+      <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-gray-200">
         {banner ? (
           <img
             src={banner}
@@ -66,7 +72,7 @@ export default function ProfileHeader({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_60%)]" />
+          <div className="absolute inset-0 bg-gray-200" />
         )}
       </div>
 
@@ -199,8 +205,14 @@ export default function ProfileHeader({
           form={profileForm}
           saving={savingProfile}
           usernameError={usernameError}
+          removeAvatar={removeAvatar}
+          removeBanner={removeBanner}
           onAvatarChange={onAvatarChange}
           onBannerChange={onBannerChange}
+          onRemoveAvatar={onRemoveAvatar}
+          onRemoveBanner={onRemoveBanner}
+          onClearRemoveAvatar={onClearRemoveAvatar}
+          onClearRemoveBanner={onClearRemoveBanner}
           onCancel={onCloseEditor}
           onChange={onProfileChange}
           onSave={onSaveProfile}

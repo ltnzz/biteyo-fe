@@ -97,7 +97,7 @@ export default function NotificationItem({
     onMarkRead(notification);
 
     if (biteId) {
-      navigate(`/bites/${encodeURIComponent(biteId)}`);
+      navigate(`/status/${encodeURIComponent(biteId)}`);
     }
   };
 

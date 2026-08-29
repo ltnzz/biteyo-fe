@@ -7,12 +7,12 @@ export default function NotificationHeader({
   onRefresh,
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div>
-        <h1 className="text-xl font-extrabold text-gray-900">
+    <div className="flex items-center justify-between gap-3 w-full">
+      <div className="min-w-0">
+        <h1 className="truncate text-base sm:text-lg font-black text-gray-900 leading-tight">
           Notifications
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="truncate text-[11px] font-semibold text-gray-400">
           {unreadCount > 0
             ? `${unreadCount} belum dibaca`
             : "Semua sudah dibaca"}

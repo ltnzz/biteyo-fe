@@ -31,7 +31,21 @@ export const ensureOkResponse = async (
     throw new Error(SESSION_EXPIRED_MESSAGE);
   }
 
-  throw new Error(await parseApiError(response, fallback));
+  // Provide user-friendly messages for server errors
+  if (response.status >= 500) {
+    const serverMsg = await parseApiError(response, "").catch(() => "");
+    const err = new Error(
+      serverMsg && serverMsg !== "Internal server error"
+        ? serverMsg
+        : "Server sedang bermasalah. Silakan coba lagi nanti.",
+    );
+    err.status = response.status;
+    throw err;
+  }
+
+  const err = new Error(await parseApiError(response, fallback));
+  err.status = response.status;
+  throw err;
 };
 
 export const postJson = async (

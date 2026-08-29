@@ -73,7 +73,7 @@ export default function BiteCard({
   return (
     <article
       onClick={handleOpenBite}
-      className="cursor-pointer border-b border-cream-300 bg-white px-4 py-4"
+      className="cursor-pointer border-b border-gray-100 bg-white px-4 py-4 hover:bg-gray-50/40 transition-colors"
     >
       <div className="flex gap-3">
         <button
@@ -207,7 +207,7 @@ export default function BiteCard({
                 <img
                   src={bite.photoUrl || bite.image}
                   alt={bite.foodName || bite.title || "Food"}
-                  className="mt-3 w-full max-h-[520px] rounded-xl2 object-cover border border-gray-200/80"
+                  className="mt-3 w-full max-h-[520px] rounded-2xl object-cover"
                   loading="lazy"
                 />
               )}
@@ -273,8 +273,8 @@ export default function BiteCard({
                     event.stopPropagation();
                     const result = await shareBite({
                       biteId: biteId || bite?.id || bite?._id,
-                      title: `BiteYo — ${bite.foodName || "Food"}`,
-                      text: `Lihat ${bite.foodName || "bite ini"} di BiteYo`,
+                      title: `Biteyo — ${bite.foodName || "Food"}`,
+                      text: `Lihat ${bite.foodName || "bite ini"} di Biteyo`,
                     });
                     notifyShareResult(result);
                   }}

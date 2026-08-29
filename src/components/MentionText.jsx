@@ -1,4 +1,4 @@
-const MENTION_REGEX = /(^|[^a-zA-Z0-9_.-])@([a-zA-Z0-9_.-]+)/g;
+const MENTION_REGEX = /(^|[^a-zA-Z0-9_])@([a-zA-Z0-9_]{3,30})\b/g;
 
 const getMentionParts = (text) => {
   const value = String(text || "");

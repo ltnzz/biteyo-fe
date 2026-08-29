@@ -1,4 +1,4 @@
-import { Camera } from "lucide-react";
+import { AlertCircle, Camera, RefreshCw } from "lucide-react";
 import BiteLoader from "../BiteLoader";
 import BiteCard from "./BiteCard";
 
@@ -23,6 +23,7 @@ export default function ExploreFeed({
   onEditChange,
   onOpenBite,
   onOpenProfile,
+  onRetry,
   onStartEdit,
   onToggleLike,
   onToggleSave,
@@ -40,8 +41,26 @@ export default function ExploreFeed({
   if (feedError) {
     return (
       <section>
-        <div className="border-b border-red-200 bg-red-50 p-4 text-sm text-red-600">
-          {feedError}
+        <div className="px-6 py-16 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
+            <AlertCircle className="h-7 w-7 text-red-400" />
+          </div>
+          <h2 className="text-lg font-extrabold text-gray-900">
+            Gagal memuat feed
+          </h2>
+          <p className="mt-1.5 text-sm text-gray-500 max-w-xs mx-auto">
+            {feedError}
+          </p>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-pink-600"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Coba lagi
+            </button>
+          )}
         </div>
       </section>
     );

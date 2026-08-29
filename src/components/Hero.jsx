@@ -41,9 +41,9 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative mx-0 mt-2 overflow-hidden rounded-2xl bg-gradient-to-br from-pink-50/80 via-orange-50/60 to-white px-4 py-8 sm:mx-4 sm:mt-4 sm:rounded-3xl sm:px-6 sm:py-16 lg:px-8">
-      <div className="absolute top-10 left-1/4 hidden w-72 h-72 bg-pink-200/30 rounded-full blur-3xl animate-pulse-slow sm:block" />
-      <div className="absolute bottom-10 right-1/4 hidden w-96 h-96 bg-orange-200/20 rounded-full blur-3xl animate-pulse-slow sm:block" style={{ animationDelay: '2s' }} />
+    <section className="relative mx-0 mt-2 overflow-hidden rounded-2xl bg-gradient-to-br from-pink-50/80 via-orange-50/60 to-white px-4 py-6 sm:mx-4 sm:mt-3 sm:rounded-3xl sm:px-6 sm:py-9 lg:px-8">
+      <div className="absolute top-6 left-1/4 hidden w-60 h-60 bg-pink-200/30 rounded-full blur-3xl animate-pulse-slow sm:block" />
+      <div className="absolute bottom-6 right-1/4 hidden w-80 h-80 bg-orange-200/20 rounded-full blur-3xl animate-pulse-slow sm:block" style={{ animationDelay: '2s' }} />
 
       {mobileFloatingFoods.map((food, index) => {
         const Icon = food.icon;
@@ -51,7 +51,7 @@ export default function Hero() {
         return (
           <div
             key={index}
-            className={`absolute z-0 flex items-center justify-center rounded-full border border-white/70 shadow-sm animate-float opacity-60 sm:hidden ${food.className}`}
+            className={`absolute z-0 flex items-center justify-center rounded-full border border-white/70 shadow-sm animate-float opacity-50 sm:hidden ${food.className}`}
           >
             <Icon className="h-1/2 w-1/2" />
           </div>
@@ -64,7 +64,7 @@ export default function Hero() {
         return (
           <div
             key={index}
-            className={`absolute ${food.size} ${food.bg} ${food.color} hidden items-center justify-center rounded-full border border-white/70 shadow-sm animate-float opacity-70 transition-all duration-300 hover:scale-110 hover:opacity-100 sm:flex`}
+            className={`absolute ${food.size} ${food.bg} ${food.color} hidden items-center justify-center rounded-full border border-white/70 shadow-sm animate-float opacity-60 transition-all duration-300 hover:scale-110 hover:opacity-100 sm:flex`}
             style={{
               top: food.top,
               left: food.left,
@@ -79,78 +79,78 @@ export default function Hero() {
         );
       })}
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-pink-100 bg-white/80 px-4 py-2 shadow-sm backdrop-blur-sm animate-fade-up sm:mb-8">
+      <div className="relative z-10 max-w-3xl mx-auto text-center">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-pink-100 bg-white/80 px-3.5 py-1.5 shadow-sm backdrop-blur-sm animate-fade-up sm:mb-4">
           <span className="flex gap-1">
-            <Utensils className="h-4 w-4 text-pink-500" />
-            <Coffee className="h-4 w-4 text-orange-500" />
-            <Star className="h-4 w-4 text-yellow-500" />
+            <Utensils className="h-3.5 w-3.5 text-pink-500" />
+            <Coffee className="h-3.5 w-3.5 text-orange-500" />
+            <Star className="h-3.5 w-3.5 text-yellow-500" />
           </span>
-          <span className="text-sm font-medium text-gray-600">Discover your next bite</span>
+          <span className="text-xs font-medium text-gray-600">Discover your next bite</span>
         </div>
 
-        <h1 className="mb-4 bg-gradient-to-r from-pink-500 via-pink-600 to-orange-500 bg-clip-text text-4xl font-extrabold leading-tight text-transparent animate-fade-up sm:mb-6 sm:text-6xl lg:text-7xl">
+        <h1 className="mb-2.5 bg-gradient-to-r from-pink-500 via-pink-600 to-orange-500 bg-clip-text text-3xl font-extrabold leading-tight text-transparent animate-fade-up sm:mb-3.5 sm:text-5xl lg:text-5xl">
           Bite it. Rate it.<br />
-          <span className="text-pink-500">BiteYo.</span>
+          <span className="text-pink-500">Biteyo.</span>
         </h1>
 
-        <p className="mx-auto mb-0 max-w-sm text-sm leading-relaxed text-gray-600 animate-fade-up sm:mb-10 sm:max-w-2xl sm:text-xl" style={{ animationDelay: '0.2s' }}>
+        <p className="mx-auto mb-4 max-w-sm text-xs leading-relaxed text-gray-600 animate-fade-up sm:mb-6 sm:max-w-xl sm:text-sm md:text-base" style={{ animationDelay: '0.2s' }}>
           Discover trending foods, hidden gems, viral cafés, and honest restaurant reviews from real foodies around you.
         </p>
 
-        <div className="mt-6 flex flex-col items-center justify-center gap-3 animate-fade-up sm:hidden" style={{ animationDelay: '0.4s' }}>
+        <div className="flex flex-col items-center justify-center gap-2.5 animate-fade-up sm:hidden" style={{ animationDelay: '0.4s' }}>
           {hasSession ? (
             <>
-              <Link to="/explore" className="inline-flex w-full max-w-xs items-center justify-center rounded-full bg-pink-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-200 transition-colors hover:bg-pink-600">
+              <Link to="/explore" className="inline-flex w-full max-w-xs items-center justify-center rounded-full bg-pink-500 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-pink-200 transition-colors hover:bg-pink-600">
                 Explore Now
               </Link>
-              <Link to="/add" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
-                <PlusCircle className="h-4 w-4 text-pink-500" />
+              <Link to="/add" className="inline-flex w-full max-w-xs items-center justify-center gap-1.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+                <PlusCircle className="h-3.5 w-3.5 text-pink-500" />
                 Start Posting
               </Link>
             </>
           ) : (
             <>
-              <Link to="/login" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-pink-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-200 transition-colors hover:bg-pink-600">
-                <LogIn className="h-4 w-4" />
+              <Link to="/login" className="inline-flex w-full max-w-xs items-center justify-center gap-1.5 rounded-full bg-pink-500 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-pink-200 transition-colors hover:bg-pink-600">
+                <LogIn className="h-3.5 w-3.5" />
                 Login
               </Link>
-              <Link to="/signup" className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
-                <UserPlus className="h-4 w-4 text-pink-500" />
+              <Link to="/signup" className="inline-flex w-full max-w-xs items-center justify-center gap-1.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+                <UserPlus className="h-3.5 w-3.5 text-pink-500" />
                 Daftar
               </Link>
             </>
           )}
         </div>
 
-        <div className="hidden flex-col items-center justify-center gap-4 mb-12 animate-fade-up sm:flex sm:flex-row" style={{ animationDelay: '0.4s' }}>
-          <Link to="/explore" className="px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all hover:-translate-y-0.5 text-base">
+        <div className="hidden flex-col items-center justify-center gap-3.5 mb-6 animate-fade-up sm:flex sm:flex-row" style={{ animationDelay: '0.4s' }}>
+          <Link to="/explore" className="px-6 py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-md shadow-pink-200 hover:shadow-pink-300 transition-all hover:-translate-y-0.5 text-sm">
             Explore Now
           </Link>
-          <Link to="/add" className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 text-base flex items-center gap-2">
+          <Link to="/add" className="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 text-sm flex items-center gap-2">
             <PlusCircle className="w-4 h-4 text-pink-500" />
             Start Posting
           </Link>
         </div>
 
-        <div className="hidden flex-wrap items-center justify-center gap-6 animate-fade-up sm:flex sm:gap-10" style={{ animationDelay: '0.6s' }}>
+        <div className="hidden flex-wrap items-center justify-center gap-6 animate-fade-up sm:flex sm:gap-8" style={{ animationDelay: '0.6s' }}>
           {stats.map((stat, index) => {
             const Icon = stat.icon;
 
             return (
-              <div key={index} className="flex items-center gap-3">
-                <div className="flex -space-x-2">
+              <div key={index} className="flex items-center gap-2.5">
+                <div className="flex -space-x-1.5">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className={`w-8 h-8 rounded-full border-2 border-white ${['bg-purple-400', 'bg-blue-400', 'bg-pink-400'][i]}`} />
+                    <div key={i} className={`w-6 h-6 rounded-full border-2 border-white ${['bg-purple-400', 'bg-blue-400', 'bg-pink-400'][i]}`} />
                   ))}
                 </div>
-                <Icon className="h-4 w-4 text-pink-500" />
+                <Icon className="h-3.5 w-3.5 text-pink-500" />
                 <div className="text-left">
-                  <p className="text-sm font-bold text-gray-900">{stat.value}</p>
-                  <p className="text-xs text-gray-500">{stat.label}</p>
+                  <p className="text-xs font-bold text-gray-900 leading-none">{stat.value}</p>
+                  <p className="text-[11px] text-gray-500 leading-tight">{stat.label}</p>
                 </div>
                 {index < stats.length - 1 && (
-                  <div className="hidden sm:block w-px h-8 bg-gray-200 ml-4" />
+                  <div className="hidden sm:block w-px h-6 bg-gray-200 ml-2" />
                 )}
               </div>
             );

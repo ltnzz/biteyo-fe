@@ -99,16 +99,17 @@ export const getBiteAuthorName = (bite) => {
   const author = getBiteAuthor(bite);
 
   if (typeof author === "string") {
-    return bite?.username || bite?.authorName || bite?.createdByUsername || author;
+    return bite?.name || bite?.authorName || bite?.username || bite?.createdByUsername || author;
   }
 
   return (
-    author?.username ||
     author?.name ||
+    bite?.name ||
+    author?.username ||
     bite?.username ||
     bite?.authorName ||
     bite?.createdByUsername ||
-    "BiteYo User"
+    "Biteyo User"
   );
 };
 
@@ -151,8 +152,9 @@ export const getCommentAuthorName = (comment) => {
   if (typeof author === "string") return author;
 
   return (
-    author?.username ||
     author?.name ||
+    author?.username ||
+    comment?.name ||
     comment?.username ||
     comment?.authorName ||
     "User"

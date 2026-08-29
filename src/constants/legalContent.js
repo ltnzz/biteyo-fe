@@ -5,19 +5,19 @@ export const termsContent = {
   sections: [
     {
       heading: "1. Penerimaan Syarat",
-      text: "Dengan mengakses atau menggunakan BiteYo, Anda menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika Anda tidak setuju dengan bagian mana pun, Anda tidak diizinkan menggunakan layanan kami."
+      text: "Dengan mengakses atau menggunakan Biteyo, Anda menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika Anda tidak setuju dengan bagian mana pun, Anda tidak diizinkan menggunakan layanan kami."
     },
     {
       heading: "2. Deskripsi Layanan",
-      text: "BiteYo adalah platform ulasan kuliner yang memungkinkan pengguna untuk menemukan, menilai, dan berbagi pengalaman makan di berbagai restoran, kafe, dan tempat kuliner."
+      text: "Biteyo adalah platform ulasan kuliner yang memungkinkan pengguna untuk menemukan, menilai, dan berbagi pengalaman makan di berbagai restoran, kafe, dan tempat kuliner."
     },
     {
       heading: "3. Akun Pengguna",
-      text: "Anda bertanggung jawab untuk menjaga kerahasiaan kata sandi akun Anda. Anda setuju untuk memberikan informasi yang akurat dan lengkap saat mendaftar. BiteYo berhak menangguhkan atau menghentikan akun yang melanggar kebijakan."
+      text: "Anda bertanggung jawab untuk menjaga kerahasiaan kata sandi akun Anda. Anda setuju untuk memberikan informasi yang akurat dan lengkap saat mendaftar. Biteyo berhak menangguhkan atau menghentikan akun yang melanggar kebijakan."
     },
     {
       heading: "4. Konten Pengguna",
-      text: "Anda mempertahankan hak atas konten yang Anda posting. Namun, dengan mengunggah konten ke BiteYo, Anda memberikan kami lisensi non-eksklusif untuk menggunakan, menampilkan, dan mendistribusikan konten tersebut di platform kami."
+      text: "Anda mempertahankan hak atas konten yang Anda posting. Namun, dengan mengunggah konten ke Biteyo, Anda memberikan kami lisensi non-eksklusif untuk menggunakan, menampilkan, dan mendistribusikan konten tersebut di platform kami."
     },
     {
       heading: "5. Larangan",

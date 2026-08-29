@@ -4,7 +4,7 @@ import { getMentionUserByUsername, getMentionUsers } from "../services/profileAp
 
 const MENTION_DEBOUNCE_MS = 180;
 const MAX_SUGGESTIONS = 8;
-const USERNAME_PATTERN = /^[a-zA-Z0-9_.-]*$/;
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]*$/;
 
 let cachedMentionUsers = null;
 let mentionUsersRequest = null;
@@ -21,6 +21,7 @@ const findActiveMention = (value, caretPosition) => {
   const query = textBeforeCaret.slice(atIndex + 1);
 
   if (!/[\s([{]/.test(charBeforeAt)) return null;
+  if (query.length > 30) return null;
   if (!USERNAME_PATTERN.test(query)) return null;
 
   return {

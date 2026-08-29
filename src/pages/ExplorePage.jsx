@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { UserPlus } from "lucide-react";
+import { Check, MoreHorizontal, SlidersHorizontal, TrendingUp, UserPlus, X } from "lucide-react";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
-import ToastMessage from "../components/ToastMessage";
-import ActionMessage from "../components/explore/ActionMessage";
 import ExploreFeed from "../components/explore/ExploreFeed";
 import ExploreHeader from "../components/explore/ExploreHeader";
 import LoginRequired from "../components/profile/LoginRequired";
@@ -111,8 +109,6 @@ export default function ExplorePage() {
   const [searchParams] = useSearchParams();
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState("");
-  const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
-  const [toastMessage, setToastMessage] = useState(null);
   const [bites, setBites] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -135,9 +131,14 @@ export default function ExplorePage() {
   const category = normalizeCategoryValue(searchParams.get("category") || "");
   const currentUser = useMemo(() => getStoredUser(), []);
   const hasSession = useMemo(() => isAuthenticated(), []);
-  // Tab feed: "all" | "following". Sembunyikan saat mode pencarian/kategori.
   const [scope, setScope] = useState("all");
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const isScopedFeed = !query.trim() && !category;
+
+  const VISIBLE_CATEGORY_COUNT = 3;
+  const primaryCategories = biteCategories.slice(0, VISIBLE_CATEGORY_COUNT);
+  const extraCategories = biteCategories.slice(VISIBLE_CATEGORY_COUNT);
+  const activeExtraCategory = extraCategories.find((c) => c.value === category);
 
   const fetchFeed = useCallback(async ({ force = false } = {}) => {
     if (!hasSession) {
@@ -166,7 +167,12 @@ export default function ExplorePage() {
       setFollowingUsers(mergeFollowingUsers(currentUser, followedFromFeed));
     } catch (err) {
       console.error("Feed error:", err);
-      setFeedError("Feed belum bisa dimuat. Coba refresh halaman.");
+      const is500 = err.status >= 500;
+      setFeedError(
+        is500
+          ? "Server sedang bermasalah. Silakan coba lagi nanti."
+          : err.message || "Feed belum bisa dimuat. Coba refresh halaman.",
+      );
       setBites([]);
     } finally {
       setFeedLoading(false);
@@ -176,9 +182,7 @@ export default function ExplorePage() {
   const biteActions = useBiteMutations({
     currentUser,
     refresh: fetchFeed,
-    setActionMessage,
     setBites,
-    setToastMessage,
   });
 
   useEffect(() => {
@@ -210,8 +214,6 @@ export default function ExplorePage() {
   }, [refreshFeed]);
 
   useFeedSocket(bites, hasSession ? setBites : null, { setFollowingUsers });
-
-  const closeToast = useCallback(() => setToastMessage(null), []);
 
   if (!hasSession) return <LoginRequired />;
 
@@ -249,7 +251,6 @@ export default function ExplorePage() {
 
     const wasFollowing = followingUsers.has(followKey) || getFollowState(bite);
 
-    setActionMessage({ type: "", text: "" });
     setFollowLoadingUsers((prev) => new Set(prev).add(followKey));
     setFollowingUsers((prev) => {
       const next = new Set(prev);
@@ -281,9 +282,9 @@ export default function ExplorePage() {
         return next;
       });
       cacheFollowState(currentUser, username, wasFollowing);
-      setActionMessage({
-        type: "error",
-        text: err.message || "Gagal memperbarui follow.",
+      showSnackbar({
+        variant: "error",
+        message: err.message || "Gagal memperbarui follow.",
       });
     } finally {
       setFollowLoadingUsers((prev) => {
@@ -295,7 +296,6 @@ export default function ExplorePage() {
   };
 
   const startEdit = (bite) => {
-    setActionMessage({ type: "", text: "" });
     setEditingId(getBiteId(bite));
     setEditForm({
       foodName: bite.foodName || bite.title || "",
@@ -327,17 +327,16 @@ export default function ExplorePage() {
     };
 
     if (!payload.foodName || !payload.locationName || !payload.review) {
-      setActionMessage({ type: "error", text: "Food, location, and review are required." });
+      showSnackbar({ message: "Nama makanan, lokasi, dan review wajib diisi.", variant: "error" });
       return;
     }
 
     if (!biteCategories.some((item) => item.value === payload.category)) {
-      setActionMessage({ type: "error", text: "Please choose a valid category." });
+      showSnackbar({ message: "Pilih kategori makanan yang valid.", variant: "error" });
       return;
     }
 
     setSavingId(biteId);
-    setActionMessage({ type: "", text: "" });
 
     try {
       const res = await fetch(`${API_BASE}/api/feed/bites/${biteId}`, {
@@ -352,11 +351,11 @@ export default function ExplorePage() {
 
       await ensureOkResponse(res, "Failed to update bite");
 
-      setActionMessage({ type: "success", text: "Bite updated." });
+      showSnackbar({ message: "Postingan bite berhasil diperbarui!", variant: "success" });
       cancelEdit();
       fetchFeed();
     } catch (err) {
-      setActionMessage({ type: "error", text: err.message });
+      showSnackbar({ message: err.message || "Gagal memperbarui bite.", variant: "error" });
     } finally {
       setSavingId(null);
     }
@@ -378,10 +377,9 @@ export default function ExplorePage() {
     if (!biteId) return;
 
     setDeletingId(biteId);
-    setActionMessage({ type: "", text: "" });
 
     try {
-      const res = await fetch(`${API_BASE}/api/feed/bites/${biteId}`, {
+      const res = await fetch(`${API_BASE}/api/feed/status/${biteId}`, {
         method: "DELETE",
         credentials: "include",
         headers: getAuthHeaders(),
@@ -390,9 +388,9 @@ export default function ExplorePage() {
       await ensureOkResponse(res, "Failed to delete bite");
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
-      setActionMessage({ type: "success", text: "Bite deleted." });
+      showSnackbar({ message: "Postingan bite berhasil dihapus!", variant: "success" });
     } catch (err) {
-      setActionMessage({ type: "error", text: err.message });
+      showSnackbar({ message: err.message || "Gagal menghapus bite.", variant: "error" });
     } finally {
       setDeletingId(null);
       setPendingDeleteBite(null);
@@ -408,7 +406,6 @@ export default function ExplorePage() {
     const nextLiked = !wasLiked;
     const nextLikeCount = Math.max(0, previousLikeCount + (nextLiked ? 1 : -1));
 
-    setActionMessage({ type: "", text: "" });
     setLikingBiteIds((prev) => new Set(prev).add(biteId));
     updateBiteInState(biteId, (item) => ({
       ...item,
@@ -437,9 +434,9 @@ export default function ExplorePage() {
         likesCount: previousLikeCount,
         likeCount: previousLikeCount,
       }));
-      setActionMessage({
-        type: "error",
-        text: err.message || "Gagal memperbarui like.",
+      showSnackbar({
+        message: err.message || "Gagal memperbarui like.",
+        variant: "error",
       });
     } finally {
       setLikingBiteIds((prev) => {
@@ -452,7 +449,7 @@ export default function ExplorePage() {
 
   const openBiteDetail = (bite) => {
     const biteId = getBiteId(bite);
-    if (biteId) navigate(`/bites/${biteId}`);
+    if (biteId) navigate(`/status/${biteId}`);
   };
 
   const openUserProfile = (username) => {
@@ -462,35 +459,90 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
-        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white">
+        <main className="min-h-screen w-full max-w-2xl bg-white">
           <ExploreHeader category={category} query={query} />
-          {isScopedFeed && (
-            <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
+          <div className="flex items-center gap-2 overflow-x-auto border-b border-gray-100 px-4 py-2.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <button
+              type="button"
+              onClick={() => {
+                navigate("/explore");
+                setScope("all");
+              }}
+              className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition-colors duration-150 ${
+                !category && scope === "all"
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-50 text-gray-600 hover:bg-pink-50 hover:text-pink-600"
+              }`}
+            >
+              Semua
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                navigate("/explore");
+                setScope("following");
+              }}
+              className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition-colors duration-150 ${
+                !category && scope === "following"
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-50 text-gray-600 hover:bg-pink-50 hover:text-pink-600"
+              }`}
+            >
+              Following
+            </button>
+
+            {/* Kategori Trending Utama */}
+            {primaryCategories.map((cat) => {
+              const isCatActive = category === cat.value;
+
+              return (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => {
+                    navigate(`/explore?category=${cat.value}`);
+                  }}
+                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors duration-150 ${
+                    isCatActive
+                      ? "bg-pink-500 text-white shadow-xs"
+                      : "bg-gray-50 text-gray-600 hover:bg-pink-50 hover:text-pink-600"
+                  }`}
+                >
+                  <TrendingUp className={`h-3 w-3 ${isCatActive ? "text-white" : "text-pink-500"}`} />
+                  <span>#{cat.label?.replace(/\s+/g, "") || cat.value}</span>
+                </button>
+              );
+            })}
+
+            {/* Tampilkan kategori ekstra jika sedang aktif */}
+            {activeExtraCategory && (
               <button
                 type="button"
-                onClick={() => setScope("all")}
-                className={`rounded-full px-4 py-1.5 text-xs font-bold transition-colors duration-150 ${
-                  scope === "all"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:bg-pink-50 hover:text-pink-500"
-                }`}
+                onClick={() => {
+                  navigate(`/explore?category=${activeExtraCategory.value}`);
+                }}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-pink-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition-colors duration-150"
               >
-                Semua
+                <TrendingUp className="h-3 w-3 text-white" />
+                <span>#{activeExtraCategory.label?.replace(/\s+/g, "") || activeExtraCategory.value}</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setScope("following")}
-                className={`rounded-full px-4 py-1.5 text-xs font-bold transition-colors duration-150 ${
-                  scope === "following"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:bg-pink-50 hover:text-pink-500"
-                }`}
-              >
-                Following
-              </button>
-            </div>
-          )}
-          <ActionMessage message={actionMessage} />
+            )}
+
+            {/* Tombol Titik Tiga (...) untuk dialog sisa kategori trending */}
+            <button
+              type="button"
+              onClick={() => setShowCategoryDialog(true)}
+              className={`shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors duration-150 ${
+                activeExtraCategory || showCategoryDialog
+                  ? "bg-pink-50 text-pink-600 border border-pink-200"
+                  : "bg-gray-50 text-gray-500 hover:bg-pink-50 hover:text-pink-600"
+              }`}
+              title="Kategori & Trending Lainnya"
+              aria-label="Kategori & Trending Lainnya"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+          </div>
           {scope === "following" && isScopedFeed && !feedLoading && !feedError && bites.length === 0 ? (
             <div className="px-6 py-20 text-center">
               <UserPlus className="mx-auto mb-3 h-10 w-10 text-gray-300" />
@@ -531,6 +583,7 @@ export default function ExplorePage() {
             onEditChange={handleEditChange}
             onOpenBite={openBiteDetail}
             onOpenProfile={openUserProfile}
+            onRetry={() => fetchFeed({ force: true })}
             onStartEdit={startEdit}
             onToggleLike={handleToggleLike}
             onToggleSave={biteActions.toggleSave}
@@ -554,7 +607,103 @@ export default function ExplorePage() {
         onCancel={cancelDelete}
         onConfirm={confirmDelete}
       />
-      <ToastMessage message={toastMessage} onClose={closeToast} />
+
+      {/* Category Filter Dialog */}
+      {showCategoryDialog && (
+        <div
+          className="animate-modal-fade fixed inset-0 z-[10000] flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setShowCategoryDialog(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="animate-modal-rise flex w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-50 text-pink-500">
+                  <SlidersHorizontal className="h-4 w-4" />
+                </span>
+                <div>
+                  <h3 className="text-base font-extrabold text-gray-900">
+                    Filter Kategori Trending
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Pilih kategori untuk menyaring postingan
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCategoryDialog(false)}
+                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="max-h-[60vh] overflow-y-auto p-5">
+              <div className="grid grid-cols-2 gap-2.5">
+                {biteCategories.map((cat) => {
+                  const isCatActive = category === cat.value;
+
+                  return (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => {
+                        navigate(`/explore?category=${cat.value}`);
+                        setShowCategoryDialog(false);
+                      }}
+                      className={`flex items-center justify-between gap-2 rounded-2xl border p-3.5 text-left transition-all ${
+                        isCatActive
+                          ? "border-pink-500 bg-pink-50 text-pink-600 ring-2 ring-pink-200"
+                          : "border-gray-100 bg-gray-50/70 text-gray-800 hover:border-pink-200 hover:bg-pink-50/40 hover:text-pink-600"
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <TrendingUp className={`h-3.5 w-3.5 shrink-0 ${isCatActive ? "text-pink-500" : "text-gray-400"}`} />
+                          <span className="truncate text-xs font-bold">
+                            #{cat.label?.replace(/\s+/g, "") || cat.value}
+                          </span>
+                        </div>
+                        <span className="block truncate text-[11px] text-gray-500 mt-0.5 font-medium">
+                          {cat.label}
+                        </span>
+                      </div>
+                      {isCatActive && (
+                        <Check className="h-4 w-4 shrink-0 text-pink-500" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/60 px-5 py-3.5">
+              <button
+                type="button"
+                onClick={() => {
+                  navigate("/explore");
+                  setScope("all");
+                  setShowCategoryDialog(false);
+                }}
+                className="text-xs font-bold text-gray-500 hover:text-gray-900 transition"
+              >
+                Reset Semua
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCategoryDialog(false)}
+                className="rounded-full bg-gray-900 px-5 py-2 text-xs font-bold text-white hover:bg-pink-500 transition shadow-sm"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

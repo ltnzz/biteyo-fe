@@ -161,14 +161,18 @@ export const getBitesByCategory = async (category, options = {}) => {
   return data;
 };
 
-export const getBiteComments = async (biteId, { force = false } = {}) => {
+export const getBiteComments = async (
+  biteId,
+  { force = false, page = 1, limit = 20, sort = "desc" } = {},
+) => {
   if (!biteId) throw new Error("Bite id is required.");
 
+  const cacheKey = `comments:${biteId}:p${page}:l${limit}:${sort}`;
   const { data } = await fetchWithCache(
-    `comments:${biteId}`,
+    cacheKey,
     () =>
       requestJson(
-        `/api/feed/bites/${encodeURIComponent(biteId)}/comments`,
+        `/api/feed/bites/${encodeURIComponent(biteId)}/comments?page=${page}&limit=${limit}&sort=${encodeURIComponent(sort)}`,
         { method: "GET" },
         "Gagal memuat komentar.",
       ),
@@ -197,5 +201,38 @@ export const postBiteComment = async (biteId, content) => {
   invalidateApiCache("feed");
   invalidateApiCache(`bite:${biteId}`);
   invalidateApiCache(`comments:${biteId}`);
+  return data;
+};
+
+export const editBiteComment = async (biteId, commentId, content) => {
+  if (!biteId) throw new Error("Bite id is required.");
+  if (!commentId) throw new Error("Comment id is required.");
+  const cleaned = content?.trim();
+  if (!cleaned) throw new Error("Komentar tidak boleh kosong.");
+  const data = await requestJson(
+    `/api/feed/bites/${encodeURIComponent(biteId)}/comments/${encodeURIComponent(commentId)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: cleaned }),
+    },
+    "Gagal mengubah komentar.",
+  );
+  invalidateApiCache(`comments:${biteId}`);
+  invalidateApiCache(`bite:${biteId}`);
+  return data;
+};
+
+export const deleteBiteComment = async (biteId, commentId) => {
+  if (!biteId) throw new Error("Bite id is required.");
+  if (!commentId) throw new Error("Comment id is required.");
+  const data = await requestJson(
+    `/api/feed/bites/${encodeURIComponent(biteId)}/comments/${encodeURIComponent(commentId)}`,
+    { method: "DELETE" },
+    "Gagal menghapus komentar.",
+  );
+  invalidateApiCache(`comments:${biteId}`);
+  invalidateApiCache(`bite:${biteId}`);
+  invalidateApiCache("feed");
   return data;
 };

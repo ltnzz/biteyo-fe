@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
 import LoginRequired from "../components/profile/LoginRequired";
-import NotificationFeedback from "../components/notifications/NotificationFeedback";
 import NotificationHeader from "../components/notifications/NotificationHeader";
 import NotificationList from "../components/notifications/NotificationList";
 import NotificationSidebar from "../components/notifications/NotificationSidebar";
@@ -31,7 +30,6 @@ export default function NotificationPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [actionMessage, setActionMessage] = useState({ type: "", text: "" });
   const [activeFilter, setActiveFilter] = useState("all");
   const [readingIds, setReadingIds] = useState(() => new Set());
   const [deletingId, setDeletingId] = useState("");
@@ -138,7 +136,6 @@ export default function NotificationPage() {
       return;
     }
 
-    setActionMessage({ type: "", text: "" });
     setReadingIds((prev) => new Set(prev).add(notificationId));
     updateReadState(notificationId, true);
 
@@ -147,9 +144,9 @@ export default function NotificationPage() {
       notifyNotificationsUpdated();
     } catch (err) {
       updateReadState(notificationId, false);
-      setActionMessage({
-        type: "error",
-        text: err.message || "Gagal menandai notifikasi sebagai dibaca.",
+      showSnackbar({
+        variant: "error",
+        message: err.message || "Gagal menandai notifikasi sebagai dibaca.",
       });
     } finally {
       setReadingIds((prev) => {
@@ -167,7 +164,6 @@ export default function NotificationPage() {
 
     if (unreadItems.length === 0) return;
 
-    setActionMessage({ type: "", text: "" });
     setNotifications((prev) =>
       prev.map((item) => ({
         ...item,
@@ -200,9 +196,9 @@ export default function NotificationPage() {
           : item,
       ),
     );
-    setActionMessage({
-      type: "error",
-      text: "Sebagian notifikasi gagal ditandai sebagai dibaca.",
+    showSnackbar({
+      variant: "error",
+      message: "Sebagian notifikasi gagal ditandai sebagai dibaca.",
     });
     notifyNotificationsUpdated();
   };
@@ -221,19 +217,18 @@ export default function NotificationPage() {
     if (!notificationId) return;
 
     setDeletingId(notificationId);
-    setActionMessage({ type: "", text: "" });
 
     try {
       await deleteNotification(notificationId);
       setNotifications((prev) =>
         prev.filter((item) => getNotificationId(item) !== notificationId),
       );
-      setActionMessage({ type: "success", text: "Notifikasi dihapus." });
+      showSnackbar({ variant: "success", message: "Notifikasi berhasil dihapus." });
       notifyNotificationsUpdated();
     } catch (err) {
-      setActionMessage({
-        type: "error",
-        text: err.message || "Gagal menghapus notifikasi.",
+      showSnackbar({
+        variant: "error",
+        message: err.message || "Gagal menghapus notifikasi.",
       });
     } finally {
       setDeletingId("");
@@ -252,17 +247,17 @@ export default function NotificationPage() {
           onChange={setActiveFilter}
         />
 
-        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white">
-          <div className="sticky top-[65px] lg:top-0 z-20 bg-white/85 px-4 py-3 backdrop-blur-md">
-            <NotificationHeader
-              loading={loading}
-              unreadCount={unreadCount}
-              onMarkAllRead={handleMarkAllRead}
-              onRefresh={handleManualRefresh}
-            />
+        <main className="min-h-screen w-full max-w-2xl bg-white">
+          <div className="sticky top-[65px] lg:top-0 z-20 flex items-center gap-3 border-b border-cream-200/80 bg-white/90 px-4 py-2.5 backdrop-blur-md">
+            <div className="min-w-0 flex-1">
+              <NotificationHeader
+                loading={loading}
+                unreadCount={unreadCount}
+                onMarkAllRead={handleMarkAllRead}
+                onRefresh={handleManualRefresh}
+              />
+            </div>
           </div>
-
-          <NotificationFeedback message={actionMessage} />
 
           <section className="min-h-[calc(100vh-154px)] bg-white">
             {loading ? (

@@ -11,7 +11,7 @@ const ads = [
   },
   {
     image: "https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=600&q=80",
-    title: "BiteYo Picks",
+    title: "Biteyo Picks",
     description: "Try trending restaurants loved by food explorers near you.",
   },
 ];

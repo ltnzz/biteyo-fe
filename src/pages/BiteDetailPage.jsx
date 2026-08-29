@@ -6,20 +6,25 @@ import {
   Heart,
   Loader2,
   MessageCircle,
+  MoreHorizontal,
+  Pencil,
   Send,
   Share2,
   Star,
+  Trash2,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import BiteLoader from "../components/BiteLoader";
 import MentionText from "../components/MentionText";
 import MentionTextarea from "../components/MentionTextarea";
-import ToastMessage from "../components/ToastMessage";
+import { showSnackbar } from "../utils/snackbar";
 import {
   getBiteComments as fetchBiteComments,
   getBiteDetail,
   postBiteComment,
+  editBiteComment,
+  deleteBiteComment,
   toggleLikeBite,
   toggleSaveBite,
 } from "../services/feedApi";
@@ -50,13 +55,14 @@ import {
   normalizeCategories,
   normalizeCategoryValue,
 } from "../utils/bites";
-import { formatAbsoluteDateTime } from "../utils/relativeTime";
+import { formatAbsoluteDateTime, formatRelativeTime } from "../utils/relativeTime";
 import { notifyShareResult, shareBite } from "../utils/share";
 
 export default function BiteDetailPage() {
   const { biteId } = useParams();
   const navigate = useNavigate();
   const currentUser = useMemo(() => getStoredUser(), []);
+  const currentUserId = currentUser?.id || currentUser?._id || "";
   const [bite, setBite] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,10 +71,17 @@ export default function BiteDetailPage() {
   const [commentsError, setCommentsError] = useState("");
   const [liking, setLiking] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
   const [commentDraft, setCommentDraft] = useState("");
   const [commenting, setCommenting] = useState(false);
   const [commentError, setCommentError] = useState("");
+  const [commentPage, setCommentPage] = useState(1);
+  const [hasMoreComments, setHasMoreComments] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editingContent, setEditingContent] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [menuOpenId, setMenuOpenId] = useState(null);
 
   const loadBite = useCallback(async () => {
     setLoading(true);
@@ -97,33 +110,49 @@ export default function BiteDetailPage() {
     }
   }, [biteId]);
 
-  const loadComments = useCallback(async () => {
-    setCommentsLoading(true);
-    setCommentsError("");
+  const loadComments = useCallback(async ({ page = 1, append = false } = {}) => {
+    if (append) setLoadingMore(true);
+    else {
+      setCommentsLoading(true);
+      setCommentsError("");
+    }
 
     try {
-      const data = await fetchBiteComments(biteId);
+      const data = await fetchBiteComments(biteId, { page, limit: 20, sort: "desc" });
       const nextComments = normalizeBiteComments(data);
+      const pagination = data?.pagination || data?.data?.pagination;
+      const hasMore = pagination ? pagination.hasMore : false;
+      const total = pagination?.total ?? data?.commentsCount ?? nextComments.length;
 
-      setComments(nextComments);
+      if (append) {
+        setComments((prev) => [...prev, ...nextComments]);
+      } else {
+        setComments(nextComments);
+        setCommentPage(1);
+      }
+      setHasMoreComments(hasMore);
+      if (hasMore) setCommentPage(page + 1);
+      else if (!append) setCommentPage(2);
+
       setBite((prev) => {
         if (!prev) return prev;
-
         return {
           ...prev,
-          comments: nextComments,
-          commentsCount: nextComments.length,
-          commentCount: nextComments.length,
+          comments: append ? [...(prev.comments || []), ...nextComments] : nextComments,
+          commentsCount: total,
+          commentCount: total,
         };
       });
     } catch (err) {
       setCommentsError(err.message || "Komentar belum bisa dimuat.");
     } finally {
       setCommentsLoading(false);
+      setLoadingMore(false);
     }
   }, [biteId]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     setComments([]);
     loadBite();
     loadComments();
@@ -190,12 +219,11 @@ export default function BiteDetailPage() {
       const updatedBite = normalizeUpdatedBite(data);
 
       if (updatedBite) setBite((prev) => ({ ...prev, ...updatedBite }));
-      setToastMessage({
-        icon: "bookmark",
-        text: nextSaved
-          ? "Added to your saved posts."
-          : "Removed from your saved posts.",
-        type: "success",
+      showSnackbar({
+        message: nextSaved
+          ? "Ditambahkan ke wishlist."
+          : "Dihapus dari wishlist.",
+        variant: "success",
       });
     } catch {
       setBite((prev) => ({
@@ -207,6 +235,10 @@ export default function BiteDetailPage() {
         bookmarked: wasSaved,
         isBookmarked: wasSaved,
       }));
+      showSnackbar({
+        message: "Gagal memperbarui wishlist.",
+        variant: "error",
+      });
     } finally {
       setSaving(false);
     }
@@ -229,40 +261,82 @@ export default function BiteDetailPage() {
       const data = await postBiteComment(getBiteId(bite), content);
       const updatedBite = normalizeUpdatedBite(data);
       const nextComment = normalizeCreatedComment(data, content, currentUser);
-      const returnedComments = normalizeBiteComments(data);
 
+      // prepend newest on top (desc order) — no extra fetch
+      setComments((prev) => [nextComment, ...prev]);
       setBite((prev) => {
         if (!prev) return prev;
-
-        const nextComments =
-          returnedComments.length > 0 ? returnedComments : [...comments, nextComment];
-        const count = Math.max(getCommentCount(prev) + 1, nextComments.length);
-
+        const count = getCommentCount(prev) + 1;
         return {
           ...prev,
           ...(updatedBite && getBiteId(updatedBite) ? updatedBite : {}),
-          comments: nextComments,
           commentsCount: count,
           commentCount: count,
         };
       });
-      setComments((prev) =>
-        returnedComments.length > 0 ? returnedComments : [...prev, nextComment],
-      );
       setCommentDraft("");
-      loadComments();
+      showSnackbar({ message: "Komentar terkirim!", variant: "success" });
     } catch (err) {
-      setCommentError(err.message || "Gagal mengirim komentar.");
+      const msg = err.message || "Gagal mengirim komentar.";
+      setCommentError(msg);
+      showSnackbar({ message: msg, variant: "error" });
     } finally {
       setCommenting(false);
+    }
+  };
+
+  const handleEditComment = async () => {
+    if (!editingId) return;
+    const content = editingContent.trim();
+    if (!content) {
+      showSnackbar({ message: "Komentar tidak boleh kosong.", variant: "error" });
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const data = await editBiteComment(getBiteId(bite), editingId, content);
+      const updated = data?.comment || data?.data?.comment || { id: editingId, content };
+      const normalized = {
+        ...updated,
+        content: updated.content ?? content,
+        updatedAt: updated.updatedAt || new Date().toISOString(),
+        user: updated.user || comments.find((c) => getCommentId(c) === editingId)?.user,
+      };
+      setComments((prev) => prev.map((c) => (getCommentId(c) === editingId ? { ...c, ...normalized } : c)));
+      setEditingId(null);
+      setEditingContent("");
+      setMenuOpenId(null);
+      showSnackbar({ message: "Komentar diperbarui.", variant: "success" });
+    } catch (err) {
+      showSnackbar({ message: err.message || "Gagal mengubah komentar.", variant: "error" });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!commentId) return;
+    setDeletingId(commentId);
+    try {
+      await deleteBiteComment(getBiteId(bite), commentId);
+      setComments((prev) => prev.filter((c) => getCommentId(c) !== commentId));
+      setBite((prev) => {
+        if (!prev) return prev;
+        const count = Math.max(0, getCommentCount(prev) - 1);
+        return { ...prev, commentsCount: count, commentCount: count };
+      });
+      setMenuOpenId(null);
+      showSnackbar({ message: "Komentar dihapus.", variant: "success" });
+    } catch (err) {
+      showSnackbar({ message: err.message || "Gagal menghapus komentar.", variant: "error" });
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const openUserProfile = (username) => {
     if (username) navigate(`/profile/${encodeURIComponent(username)}`);
   };
-
-  const closeToast = useCallback(() => setToastMessage(null), []);
 
   const displayedComments = comments.length > 0 ? comments : getBiteComments(bite);
   const displayedCommentCount = Math.max(
@@ -279,19 +353,20 @@ export default function BiteDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="flex w-full items-start justify-start px-4">
-        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white">
-          <div className="sticky top-[65px] lg:top-0 z-20 flex items-center gap-3 bg-white/85 px-4 py-3 backdrop-blur-md">
+        <main className="min-h-screen w-full max-w-2xl bg-white">
+          <div className="sticky top-[65px] lg:top-0 z-20 flex items-center gap-3 border-b border-cream-200/80 bg-white/90 px-4 py-2.5 backdrop-blur-md">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100"
               aria-label="Kembali"
+              title="Kembali"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
-            <div>
-              <h1 className="text-xl font-extrabold text-gray-900">Postingan</h1>
-              <p className="text-sm text-gray-500">{displayedCommentCount} komentar</p>
+            <div className="min-w-0">
+              <h1 className="truncate text-base sm:text-lg font-black text-gray-900 leading-tight">Postingan</h1>
+              <p className="truncate text-[11px] font-semibold text-gray-400">{displayedCommentCount} komentar</p>
             </div>
           </div>
 
@@ -425,8 +500,8 @@ export default function BiteDetailPage() {
                 onClick={async () => {
                   const result = await shareBite({
                     biteId: getBiteId(bite),
-                    title: `BiteYo — ${bite.foodName || bite.title || "Food"}`,
-                    text: `Lihat ${bite.foodName || "bite ini"} di BiteYo`,
+                    title: `Biteyo — ${bite.foodName || bite.title || "Food"}`,
+                    text: `Lihat ${bite.foodName || "bite ini"} di Biteyo`,
                   });
                   notifyShareResult(result);
                 }}
@@ -439,28 +514,40 @@ export default function BiteDetailPage() {
               </div>
 
               <form onSubmit={handleSubmitComment} className="border-b border-gray-200 bg-white p-4">
-              <MentionTextarea
-                value={commentDraft}
-                onValueChange={setCommentDraft}
-                disabled={commenting}
-                placeholder="Tulis komentar..."
-                rows={3}
-                className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm outline-none transition-colors focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100 disabled:bg-gray-50"
-              />
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <p className="text-xs font-medium text-red-500">{commentError}</p>
-                <button
-                  type="submit"
-                  disabled={commenting}
-                  className="inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-pink-600 disabled:opacity-60"
-                >
-                  {commenting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+              <div className="flex gap-3">
+                <div className="hidden sm:flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pink-100 text-xs font-bold text-pink-600">
+                  {currentUser?.avatarUrl || currentUser?.avatar ? (
+                    <img src={currentUser.avatarUrl || currentUser.avatar} alt={currentUser?.username || "you"} className="h-full w-full object-cover" />
                   ) : (
-                    <Send className="h-4 w-4" />
+                    (currentUser?.username || "A").charAt(0).toUpperCase()
                   )}
-                  Kirim
-                </button>
+                </div>
+                <div className="flex-1">
+                  <MentionTextarea
+                    value={commentDraft}
+                    onValueChange={setCommentDraft}
+                    disabled={commenting}
+                    placeholder="Tulis komentar... (mention @username)"
+                    rows={3}
+                    className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm outline-none transition-colors focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100 disabled:bg-gray-50"
+                  />
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs ${commentDraft.length > 1000 ? "text-red-500 font-bold" : "text-gray-400"}`}>
+                        {commentDraft.length}/1000
+                      </span>
+                      {commentError && <span className="text-xs font-medium text-red-500">{commentError}</span>}
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={commenting || !commentDraft.trim()}
+                      className="inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-pink-600 disabled:opacity-60"
+                    >
+                      {commenting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      Kirim
+                    </button>
+                  </div>
+                </div>
               </div>
               </form>
 
@@ -494,51 +581,137 @@ export default function BiteDetailPage() {
                   </p>
                 </div>
               ) : (
-                displayedComments.map((comment, index) => {
-                  const commentId =
-                    getCommentId(comment) || `${getCommentContent(comment)}-${index}`;
-                  const authorAvatar = getCommentAuthorAvatar(comment);
-                  const authorName = getCommentAuthorName(comment);
-                  const authorHandle = getCommentAuthorHandle(comment);
+                <>
+                  {displayedComments.map((comment, index) => {
+                    const commentId = getCommentId(comment) || `${getCommentContent(comment)}-${index}`;
+                    const authorAvatar = getCommentAuthorAvatar(comment);
+                    const authorName = getCommentAuthorName(comment);
+                    const authorHandle = getCommentAuthorHandle(comment);
+                    const isOwner = String(comment?.user?.id || comment?.userId || "") === String(currentUserId);
+                    const isEditing = editingId === commentId;
+                    const createdAt = comment?.createdAt || comment?.created_at;
+                    const updatedAt = comment?.updatedAt || comment?.updated_at;
+                    const isEdited = updatedAt && createdAt && new Date(updatedAt).getTime() - new Date(createdAt).getTime() > 1000;
+                    const timeLabel = formatRelativeTime(createdAt);
+                    const timeAbsolute = formatAbsoluteDateTime(createdAt);
 
-                  return (
-                    <article key={commentId} className="flex gap-3 px-4 py-4 transition-colors duration-150 hover:bg-gray-50/60">
-                      <button
-                        type="button"
-                        onClick={() => openUserProfile(authorHandle)}
-                        disabled={!authorHandle}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 ring-2 ring-gray-100 text-xs font-bold text-gray-600 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
-                        aria-label={`Open ${authorName} profile`}
-                      >
-                        {authorAvatar ? (
-                          <img
-                            src={authorAvatar}
-                            alt={authorName}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          authorName.charAt(0).toUpperCase()
-                        )}
-                      </button>
-                      <div className="min-w-0 flex-1 rounded-xl2 bg-gray-50/80 px-4 py-3">
+                    return (
+                      <article key={commentId} className="flex gap-3 px-4 py-4 transition-colors duration-150 hover:bg-gray-50/60">
                         <button
                           type="button"
                           onClick={() => openUserProfile(authorHandle)}
                           disabled={!authorHandle}
-                          className="text-left text-sm font-bold text-gray-900 transition-colors hover:text-pink-500 disabled:hover:text-gray-900"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 ring-2 ring-gray-100 text-xs font-bold text-gray-600 transition-opacity hover:opacity-80 disabled:hover:opacity-100"
+                          aria-label={`Open ${authorName} profile`}
                         >
-                          {authorName}
+                          {authorAvatar ? (
+                            <img src={authorAvatar} alt={authorName} className="h-full w-full object-cover" />
+                          ) : (
+                            authorName.charAt(0).toUpperCase()
+                          )}
                         </button>
-                        <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-gray-700">
-                          <MentionText
-                            text={getCommentContent(comment)}
-                            onOpenProfile={openUserProfile}
-                          />
-                        </p>
-                      </div>
-                    </article>
-                  );
-                })
+                        <div className="min-w-0 flex-1">
+                          <div className="rounded-2xl bg-gray-50/90 px-4 py-3 border border-gray-100/80">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <button
+                                  type="button"
+                                  onClick={() => openUserProfile(authorHandle)}
+                                  disabled={!authorHandle}
+                                  className="text-left text-sm font-bold text-gray-900 hover:text-pink-500 disabled:hover:text-gray-900"
+                                >
+                                  {authorName}
+                                </button>
+                                <span className="ml-1.5 text-xs text-gray-400">@{authorHandle}</span>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <span title={timeAbsolute} className="text-xs text-gray-400">
+                                  {timeLabel}
+                                </span>
+                                {isOwner && !isEditing && (
+                                  <div className="relative ml-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => setMenuOpenId(menuOpenId === commentId ? null : commentId)}
+                                      className="inline-flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-white hover:text-gray-700"
+                                      aria-label="More"
+                                    >
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </button>
+                                    {menuOpenId === commentId && (
+                                      <div className="absolute right-0 top-8 z-10 w-32 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setEditingId(commentId);
+                                            setEditingContent(getCommentContent(comment));
+                                            setMenuOpenId(null);
+                                          }}
+                                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                                        >
+                                          <Pencil className="h-3.5 w-3.5" /> Edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteComment(commentId)}
+                                          disabled={deletingId === commentId}
+                                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                        >
+                                          {deletingId === commentId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} Hapus
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {isEditing ? (
+                              <div className="mt-2">
+                                <textarea
+                                  value={editingContent}
+                                  onChange={(e) => setEditingContent(e.target.value)}
+                                  rows={3}
+                                  maxLength={1000}
+                                  className="w-full resize-none rounded-xl border border-pink-200 bg-white px-3 py-2 text-sm outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                                  placeholder="Tulis komentar..."
+                                />
+                                <div className="mt-2 flex items-center justify-between">
+                                  <span className={`text-xs ${editingContent.length > 1000 ? "text-red-500" : "text-gray-400"}`}>{editingContent.length}/1000</span>
+                                  <div className="flex gap-2">
+                                    <button type="button" onClick={() => { setEditingId(null); setEditingContent(""); }} className="rounded-full px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-100">Batal</button>
+                                    <button type="button" onClick={handleEditComment} disabled={savingEdit || !editingContent.trim()} className="inline-flex items-center gap-1 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-bold text-white hover:bg-pink-600 disabled:opacity-50">
+                                      {savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Simpan
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-gray-700">
+                                  <MentionText text={getCommentContent(comment)} onOpenProfile={openUserProfile} />
+                                </p>
+                                {isEdited && <span className="mt-1 inline-block text-[11px] text-gray-400">(diedit)</span>}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                  {hasMoreComments && (
+                    <div className="flex justify-center py-4">
+                      <button
+                        type="button"
+                        onClick={() => loadComments({ page: commentPage, append: true })}
+                        disabled={loadingMore}
+                        className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Muat lebih banyak
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
               </section>
             </>
@@ -546,7 +719,6 @@ export default function BiteDetailPage() {
         </main>
         <AdvertisementSidebar />
       </div>
-      <ToastMessage message={toastMessage} onClose={closeToast} />
     </div>
   );
 }

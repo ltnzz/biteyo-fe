@@ -11,7 +11,7 @@ export default function CommunityPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
-        <main className="flex min-h-screen w-full max-w-2xl items-center justify-center border-x border-cream-300 bg-white px-6">
+        <main className="flex min-h-screen w-full max-w-2xl items-center justify-center bg-white px-6">
           <div className="text-center">
             <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-pink-50">
               <Users className="h-8 w-8 text-pink-500" />

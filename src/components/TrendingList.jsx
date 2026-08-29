@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flame } from "lucide-react";
+import { TrendingUp } from "lucide-react";
+import { getTrendingKeywords } from "../services/feedApi";
 
 /**
  * Widget vertikal "Sedang Tren" ala Twitter/X:
@@ -19,13 +20,8 @@ export default function TrendingList({ limit = 8 }) {
       setLoading(true);
 
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL || ""}/api/feed/trending-keywords`,
-          { credentials: "include" },
-        );
-        if (!response.ok) return;
-        const json = await response.json();
-        if (!cancelled) setItems(Array.isArray(json?.data) ? json.data : []);
+        const data = await getTrendingKeywords();
+        if (!cancelled) setItems(Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []));
       } catch {
         // biarkan kosong saat gagal
       } finally {
@@ -43,7 +39,7 @@ export default function TrendingList({ limit = 8 }) {
     return (
       <div className="rounded-xl2 border border-cream-300 bg-white p-4 shadow-card">
         <div className="mb-3 inline-flex items-center gap-1.5 text-sm font-extrabold text-gray-900">
-          <Flame className="h-4 w-4 text-orange-500" />
+          <TrendingUp className="h-4 w-4 text-pink-500" />
           Sedang Tren
         </div>
         <div className="space-y-3">
@@ -61,7 +57,7 @@ export default function TrendingList({ limit = 8 }) {
     <section className="rounded-xl2 border border-cream-300 bg-white">
       <div className="border-b border-cream-300 px-4 py-3">
         <h2 className="inline-flex items-center gap-1.5 text-base font-extrabold text-gray-900">
-          <Flame className="h-4 w-4 text-orange-500" />
+          <TrendingUp className="h-4 w-4 text-pink-500" />
           Sedang Tren
         </h2>
         <p className="mt-0.5 text-xs text-gray-500">

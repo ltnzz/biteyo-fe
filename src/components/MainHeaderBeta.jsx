@@ -24,7 +24,6 @@ export default function MainHeaderBeta() {
   const currentUser = getStoredUser();
   const [showTrending, setShowTrending] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [searchExpanded, setSearchExpanded] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const trendingRef = useRef(null);
@@ -59,22 +58,18 @@ export default function MainHeaderBeta() {
   return (
     <header className="sticky top-0 z-50 border-b border-cream-300 bg-white/95 py-2.5 backdrop-blur">
       <div className="flex items-center gap-2 px-3">
-        {/* Logo teks (mobile) — sembunyikan saat search expand */}
-        {!searchExpanded && (
-          <Link to="/" className="shrink-0 text-lg font-extrabold text-pink-500">
-            BiteYo
-          </Link>
-        )}
+        {/* Logo teks (mobile) */}
+        <Link to="/" className="shrink-0 text-lg font-extrabold text-pink-500">
+          Biteyo
+        </Link>
 
         {/* Search pill ringkas */}
-        <div
-          className={`min-w-0 flex-1 ${searchExpanded ? "" : "sm:max-w-none"}`}
-        >
+        <div className="min-w-0 flex-1 sm:max-w-none">
           <SearchBox placeholder="Cari di Biteyo..." />
         </div>
 
         {/* Trending */}
-        <div ref={trendingRef} className={`relative shrink-0 ${searchExpanded ? "hidden" : ""}`}>
+        <div ref={trendingRef} className="relative shrink-0">
           <button
             type="button"
             onClick={() => setShowTrending((v) => !v)}
@@ -107,7 +102,7 @@ export default function MainHeaderBeta() {
         </div>
 
         {/* Akun (mobile) */}
-        <div ref={settingsRef} className={`relative shrink-0 ${searchExpanded ? "hidden" : ""}`}>
+        <div ref={settingsRef} className="relative shrink-0">
           <button
             type="button"
             onClick={() => setSettingsOpen((v) => !v)}
@@ -171,7 +166,7 @@ export default function MainHeaderBeta() {
       <ConfirmDialog
         open={showLogoutModal}
         loading={loggingOut}
-        title="Keluar dari BiteYo?"
+        title="Keluar dari Biteyo?"
         description="Kamu harus login lagi untuk mengakses akun dan fitur personalmu."
         confirmLabel="Ya, Keluar"
         cancelLabel="Batal"

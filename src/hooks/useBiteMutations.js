@@ -2,9 +2,7 @@ import { useState } from "react";
 import { toggleLikeBite, toggleSaveBite } from "../services/feedApi";
 import { getAuthHeaders } from "../utils/auth";
 import {
-  getBiteComments,
   getBiteId as readBiteId,
-  getCommentCount,
   getLikeCount,
   isBiteLiked,
   isBiteSaved,
@@ -17,6 +15,7 @@ import {
   normalizeCategories,
   normalizeCategoryValue,
 } from "../utils/bites";
+import { showSnackbar } from "../utils/snackbar";
 
 export const getBiteId = readBiteId;
 
@@ -27,8 +26,6 @@ export const useBiteMutations = ({
   removeOnUnsave = false,
   refresh,
   setBites,
-  setActionMessage,
-  setToastMessage,
 }) => {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -51,7 +48,6 @@ export const useBiteMutations = ({
   };
 
   const startEdit = (bite) => {
-    setActionMessage({ type: "", text: "" });
     setEditingId(getBiteId(bite));
     setEditForm({
       foodName: bite.foodName || bite.title || "",
@@ -85,20 +81,19 @@ export const useBiteMutations = ({
     };
 
     if (!payload.foodName || !payload.locationName || !payload.review) {
-      setActionMessage({ type: "error", text: "Food, location, and review are required." });
+      showSnackbar({ message: "Nama makanan, lokasi, dan review wajib diisi.", variant: "error" });
       return;
     }
 
     if (!biteCategories.some((item) => item.value === payload.category)) {
-      setActionMessage({ type: "error", text: "Please choose a valid category." });
+      showSnackbar({ message: "Pilih kategori makanan yang valid.", variant: "error" });
       return;
     }
 
     setSavingBiteId(biteId);
-    setActionMessage({ type: "", text: "" });
 
     try {
-      const res = await fetch(`${API_BASE}/api/feed/bites/${biteId}`, {
+      const res = await fetch(`${API_BASE}/api/feed/status/${biteId}`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -110,11 +105,11 @@ export const useBiteMutations = ({
 
       await ensureOkResponse(res, "Failed to update bite");
 
-      setActionMessage({ type: "success", text: "Bite updated." });
+      showSnackbar({ message: "Postingan bite berhasil diperbarui!", variant: "success" });
       cancelEdit();
       refresh();
     } catch (err) {
-      setActionMessage({ type: "error", text: err.message });
+      showSnackbar({ message: err.message || "Gagal memperbarui bite.", variant: "error" });
     } finally {
       setSavingBiteId(null);
     }
@@ -137,10 +132,9 @@ export const useBiteMutations = ({
     if (!biteId) return;
 
     setDeletingBiteId(biteId);
-    setActionMessage({ type: "", text: "" });
 
     try {
-      const res = await fetch(`${API_BASE}/api/feed/bites/${biteId}`, {
+      const res = await fetch(`${API_BASE}/api/feed/status/${biteId}`, {
         method: "DELETE",
         credentials: "include",
         headers: getAuthHeaders(),
@@ -149,9 +143,9 @@ export const useBiteMutations = ({
       await ensureOkResponse(res, "Failed to delete bite");
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
-      setActionMessage({ type: "success", text: "Bite deleted." });
+      showSnackbar({ message: "Postingan bite berhasil dihapus!", variant: "success" });
     } catch (err) {
-      setActionMessage({ type: "error", text: err.message });
+      showSnackbar({ message: err.message || "Gagal menghapus bite.", variant: "error" });
     } finally {
       setDeletingBiteId(null);
       setPendingDeleteBite(null);
@@ -167,7 +161,6 @@ export const useBiteMutations = ({
     const nextLiked = !wasLiked;
     const nextLikeCount = Math.max(0, previousLikeCount + (nextLiked ? 1 : -1));
 
-    setActionMessage({ type: "", text: "" });
     setLikingBiteIds((prev) => new Set(prev).add(biteId));
     updateBiteInState(biteId, (item) => ({
       ...item,
@@ -204,9 +197,9 @@ export const useBiteMutations = ({
         likesCount: previousLikeCount,
         likeCount: previousLikeCount,
       }));
-      setActionMessage({
-        type: "error",
-        text: err.message || "Gagal memperbarui like.",
+      showSnackbar({
+        message: err.message || "Gagal memperbarui like.",
+        variant: "error",
       });
     } finally {
       setLikingBiteIds((prev) => {
@@ -224,7 +217,6 @@ export const useBiteMutations = ({
     const wasSaved = isBiteSaved(bite, currentUser);
     const nextSaved = !wasSaved;
 
-    setActionMessage({ type: "", text: "" });
     setSavingBiteIds((prev) => new Set(prev).add(biteId));
     updateBiteInState(biteId, (item) => ({
       ...item,
@@ -236,14 +228,11 @@ export const useBiteMutations = ({
       isBookmarked: nextSaved,
     }));
 
-    // toast muncul instan serentak dengan icon (optimistic);
-    // diganti pesan error jika request gagal
-    setToastMessage?.({
-      icon: "bookmark",
-      text: nextSaved
-        ? "Added to your saved posts."
-        : "Removed from your saved posts.",
-      type: "success",
+    showSnackbar({
+      message: nextSaved
+        ? "Ditambahkan ke wishlist."
+        : "Dihapus dari wishlist.",
+      variant: "success",
     });
 
     try {
@@ -274,10 +263,9 @@ export const useBiteMutations = ({
         bookmarked: wasSaved,
         isBookmarked: wasSaved,
       }));
-      setToastMessage?.({
-        icon: "bookmark",
-        text: err.message || "Gagal memperbarui saved bite.",
-        type: "error",
+      showSnackbar({
+        message: err.message || "Gagal memperbarui wishlist.",
+        variant: "error",
       });
     } finally {
       setSavingBiteIds((prev) => {

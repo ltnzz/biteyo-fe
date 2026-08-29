@@ -6,7 +6,6 @@ import {
   API_BASE,
   biteCategories,
 } from "../utils/bites";
-import { getBiteId, normalizeUpdatedBite } from "../utils/biteEngagement";
 import { compressImageFile } from "../utils/imageCompression";
 import MentionTextarea from "../components/MentionTextarea";
 import { ensureOkResponse } from "../utils/api";
@@ -267,13 +266,6 @@ export default function AddPage() {
       });
 
       await ensureOkResponse(res, "Failed to save bite");
-
-      const data = await res.json().catch(() => null);
-      const createdBite = normalizeUpdatedBite(data);
-      const createdBiteId = getBiteId(createdBite);
-
-      if (createdBiteId) {
-      }
 
       setMessage({
         type: "success",

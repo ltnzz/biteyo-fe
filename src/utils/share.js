@@ -1,7 +1,7 @@
 import { showSnackbar } from "./snackbar";
 
 export const buildShareUrl = (biteId) =>
-  `${window.location.origin}/api/feed/share/${encodeURIComponent(biteId)}`;
+  `${window.location.origin}/status/${encodeURIComponent(biteId)}`;
 
 /**
  * Bagikan bite lewat Web Share API; fallback ke copy-link.

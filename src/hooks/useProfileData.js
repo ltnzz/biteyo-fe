@@ -75,6 +75,8 @@ export const useProfileData = (currentUser, routeUsername = "") => {
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
+  const [removeBanner, setRemoveBanner] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
@@ -220,6 +222,29 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     setProfileForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleSetAvatarFile = (file) => {
+    setAvatarFile(file);
+    if (file) setRemoveAvatar(false);
+  };
+
+  const handleSetBannerFile = (file) => {
+    setBannerFile(file);
+    if (file) setRemoveBanner(false);
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarFile(null);
+    setRemoveAvatar(true);
+  };
+
+  const handleRemoveBanner = () => {
+    setBannerFile(null);
+    setRemoveBanner(true);
+  };
+
+  const handleClearRemoveAvatar = () => setRemoveAvatar(false);
+  const handleClearRemoveBanner = () => setRemoveBanner(false);
+
   const saveProfile = async () => {
     const originalName = (profile?.name || "").trim();
     const originalUsername = (profile?.username || profileUsername || "").trim();
@@ -236,7 +261,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     if (trimmedBio !== originalBio) payload.bio = trimmedBio;
 
     const hasTextChange = Object.keys(payload).length > 0;
-    const hasFileChange = Boolean(avatarFile || bannerFile);
+    const hasFileChange = Boolean(avatarFile || bannerFile || removeAvatar || removeBanner);
 
     if (!hasTextChange && !hasFileChange) {
       throw new Error("Tidak ada perubahan untuk disimpan.");
@@ -250,6 +275,10 @@ export const useProfileData = (currentUser, routeUsername = "") => {
       throw new Error("Username is required.");
     }
 
+    // sertakan flag hapus jika diminta
+    if (removeAvatar) payload.removeAvatar = true;
+    if (removeBanner) payload.removeBanner = true;
+
     setSavingProfile(true);
 
     try {
@@ -259,12 +288,13 @@ export const useProfileData = (currentUser, routeUsername = "") => {
         "Content-Type": "application/json",
       };
 
-      if (avatarFile || bannerFile) {
+      if (avatarFile || bannerFile || removeAvatar || removeBanner) {
         const formData = new FormData();
         if (payload.name !== undefined) formData.append("name", payload.name);
         if (payload.username !== undefined) formData.append("username", payload.username);
         if (payload.bio !== undefined) formData.append("bio", payload.bio);
-        // jika tidak ada perubahan teks tapi ada file, tetap kirim file saja
+        if (payload.removeAvatar) formData.append("removeAvatar", "true");
+        if (payload.removeBanner) formData.append("removeBanner", "true");
         if (avatarFile) formData.append("avatar", await compressImageFile(avatarFile));
         if (bannerFile) formData.append("banner", await compressImageFile(bannerFile));
 
@@ -293,6 +323,8 @@ export const useProfileData = (currentUser, routeUsername = "") => {
           : payload.bio !== undefined
             ? payload.bio
             : profile?.bio ?? "";
+      const nextAvatar = rawUser?.avatarUrl !== undefined ? rawUser.avatarUrl : payload.removeAvatar ? null : profile?.avatarUrl;
+      const nextBanner = rawUser?.bannerUrl !== undefined ? rawUser.bannerUrl : payload.removeBanner ? null : profile?.bannerUrl;
 
       const mergedProfile = {
         ...profile,
@@ -300,12 +332,16 @@ export const useProfileData = (currentUser, routeUsername = "") => {
         name: nextName,
         username: nextUsername,
         bio: nextBio,
+        avatarUrl: nextAvatar,
+        bannerUrl: nextBanner,
       };
 
       setProfile(mergedProfile);
       if (nextUsername) setOwnUsername(nextUsername);
       setAvatarFile(null);
       setBannerFile(null);
+      setRemoveAvatar(false);
+      setRemoveBanner(false);
       setProfileForm({
         name: nextName || "",
         username: nextUsername || "",
@@ -318,6 +354,8 @@ export const useProfileData = (currentUser, routeUsername = "") => {
         name: nextName,
         username: nextUsername,
         bio: nextBio,
+        avatarUrl: nextAvatar,
+        bannerUrl: nextBanner,
       };
       saveAuth({ user: updatedStoredUser });
 
@@ -408,6 +446,8 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     profileForm,
     avatarFile,
     bannerFile,
+    removeAvatar,
+    removeBanner,
     savingProfile,
     fetchProfile,
     fetchUserBites,
@@ -416,8 +456,14 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     refreshAll,
     toggleFollow,
     updateProfileForm,
-    setAvatarFile,
-    setBannerFile,
+    setAvatarFile: handleSetAvatarFile,
+    setBannerFile: handleSetBannerFile,
+    setRemoveAvatar,
+    setRemoveBanner,
+    handleRemoveAvatar,
+    handleRemoveBanner,
+    handleClearRemoveAvatar,
+    handleClearRemoveBanner,
     saveProfile,
   };
 };

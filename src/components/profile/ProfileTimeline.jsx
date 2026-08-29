@@ -1,4 +1,4 @@
-import { AlertCircle, Camera } from "lucide-react";
+import { AlertCircle, Bookmark, Grid3x3, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getBiteId } from "../../hooks/useBiteMutations";
 import BiteLoader from "../BiteLoader";
@@ -59,11 +59,18 @@ export default function ProfileTimeline({
     );
   }
 
+  const EmptyIcon = (() => {
+    const t = (emptyTitle || "").toLowerCase();
+    if (t.includes("like")) return Heart;
+    if (t.includes("save")) return Bookmark;
+    return Grid3x3;
+  })();
+
   return (
     <section>
       {bites.length === 0 ? (
         <div className="px-6 py-16 text-center">
-          <Camera className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <EmptyIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <h2 className="text-lg font-bold text-gray-900">{emptyTitle}</h2>
           <p className="text-sm text-gray-500 mt-1">{emptyDescription}</p>
           {showCreateAction && (

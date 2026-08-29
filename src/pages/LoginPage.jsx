@@ -170,23 +170,23 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50/40 via-pink-50/40 to-white font-sans flex items-center justify-center p-4 md:p-8">
-      <div className="max-w-6xl w-full flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+      <div className="max-w-6xl w-full flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
         {/* === LEFT: LOGIN FORM === */}
         <div className="w-full lg:w-[460px] shrink-0">
-          <Link to="/" className="inline-block">
+          <Link to="/" className="inline-block mb-3">
             <img
               src={logo}
-              alt="BiteYo Logo"
+              alt="Biteyo Logo"
               className="w-[100px] h-auto object-contain hover:opacity-80 transition-opacity"
             />
           </Link>
 
-          <div className="bg-white p-8 rounded-[2rem] shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-gray-50/50">
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
+          <div className="bg-white p-7 sm:p-8 rounded-[2rem] shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-gray-100/80">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1.5">
               Masuk
             </h1>
-            <p className="text-sm text-gray-500 mb-8">
-              Selamat datang kembali! Masuk ke akun BiteYo Anda
+            <p className="text-sm text-gray-500 mb-6 sm:mb-8">
+              Selamat datang kembali! Masuk ke akun Biteyo Anda
             </p>
 
             {/* Pesan Error */}
@@ -251,9 +251,8 @@ export default function LoginPage() {
 
               <div className="flex items-center my-6">
                 <div className="flex-1 border-t border-gray-100" />
-                <span className="px-4 text-xs text-gray-400 font-medium uppercase tracking-wider">
-                  {" "}
-                  Atau masuk dengan{" "}
+                <span className="px-4 text-xs font-medium uppercase tracking-wider text-gray-400">
+                  Atau masuk dengan
                 </span>
                 <div className="flex-1 border-t border-gray-100" />
               </div>
@@ -278,58 +277,55 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <p className="text-center text-sm text-gray-600 mt-8">
+              <p className="text-center text-sm text-gray-600 mt-7">
                 Belum punya akun?{" "}
                 <Link
                   to="/signup"
-                  className="text-pink-500 font-semibold hover:underline"
+                  className="text-pink-500 font-bold hover:underline"
                 >
-                  {" "}
-                  Daftar{" "}
+                  Daftar
                 </Link>
               </p>
             </form>
           </div>
         </div>
 
-        {/* === RIGHT: PROMO === */}
-        <div className="hidden lg:flex flex-col flex-1 justify-center py-10">
-          <h2 className="text-5xl font-extrabold text-pink-500 leading-[1.15] mb-4">
-            {" "}
-            Kembali ke Perjalanan Kuliner Anda{" "}
+        {/* === RIGHT: sejajar card kiri (bukan center) === */}
+        <div className="hidden lg:flex flex-col flex-1 self-start pt-[64px] pl-4 lg:pl-8">
+          <h2 className="text-3xl xl:text-4xl font-extrabold text-pink-500 leading-tight mb-2">
+            Kembali ke Perjalanan Kuliner Anda
           </h2>
-          <p className="text-gray-600 text-lg mb-12 max-w-md leading-relaxed">
-            {" "}
-            Masuk untuk menyimpan restoran favorit, menulis ulasan, dan
-            terhubung dengan komunitas pecinta kuliner.{" "}
+          <p className="text-sm text-gray-600 mb-6 leading-relaxed max-w-md">
+            Masuk untuk menyimpan restoran favorit, menulis ulasan, dan terhubung dengan komunitas pecinta kuliner.
           </p>
-          <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50/50 max-w-md">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Mengapa bergabung?
-            </h3>
-            <ul className="space-y-3 text-gray-600">
-              <li className="flex items-center gap-3">
-                {" "}
-                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-sm font-bold">
-                  1
-                </span>{" "}
-                Simpan restoran favorit dan buat daftar wishlist{" "}
-              </li>
-              <li className="flex items-center gap-3">
-                {" "}
-                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-sm font-bold">
-                  2
-                </span>{" "}
-                Tulis ulasan dan bantu orang lain menemukan tempat terbaik{" "}
-              </li>
-              <li className="flex items-center gap-3">
-                {" "}
-                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-sm font-bold">
-                  3
-                </span>{" "}
-                Dapatkan rekomendasi personal berdasarkan preferensi Anda{" "}
-              </li>
-            </ul>
+          <div className="space-y-3 max-w-md">
+            <div className="flex items-center gap-3.5 bg-white p-3.5 rounded-2xl shadow-xs border border-gray-100/80 transition-all hover:border-pink-200">
+              <span className="w-10 h-10 rounded-xl bg-pink-100 text-pink-500 flex items-center justify-center text-sm font-extrabold shrink-0">
+                1
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 leading-tight">Simpan Favorit & Wishlist</h3>
+                <p className="text-xs text-gray-500 mt-0.5 leading-snug">Simpan restoran dan buat daftar kuliner yang ingin dicoba.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3.5 bg-white p-3.5 rounded-2xl shadow-xs border border-gray-100/80 transition-all hover:border-pink-200">
+              <span className="w-10 h-10 rounded-xl bg-pink-100 text-pink-500 flex items-center justify-center text-sm font-extrabold shrink-0">
+                2
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 leading-tight">Tulis Ulasan & Bagikan</h3>
+                <p className="text-xs text-gray-500 mt-0.5 leading-snug">Bantu pecinta kuliner lain menemukan tempat terbaik.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3.5 bg-white p-3.5 rounded-2xl shadow-xs border border-gray-100/80 transition-all hover:border-pink-200">
+              <span className="w-10 h-10 rounded-xl bg-pink-100 text-pink-500 flex items-center justify-center text-sm font-extrabold shrink-0">
+                3
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 leading-tight">Rekomendasi Personal</h3>
+                <p className="text-xs text-gray-500 mt-0.5 leading-snug">Dapatkan inspirasi kuliner yang disesuaikan dengan seleramu.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

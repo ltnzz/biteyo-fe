@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { AlertCircle, FlaskConical, Home, Search, Bell, User, LogOut, Loader2 } from "lucide-react";
+import { AlertCircle, FlaskConical, Home, Compass, Bell, User, LogOut, Loader2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import NewContentBullet from "./NewContentBullet";
@@ -27,7 +27,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
   const profileMenuRef = useRef(null);
   const profileUsername = getProfileUsername(currentUser);
   const profileAvatar = getProfileAvatar(currentUser);
-  const profileName = currentUser?.username || currentUser?.name || "BiteYo User";
+  const profileName = currentUser?.name || currentUser?.username || "Biteyo User";
 
   useEffect(() => {
     const readUser = () => {
@@ -107,7 +107,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
 
   const navItems = [
     { to: "/", icon: Home, label: "Home" },
-    { to: "/explore", icon: Search, label: "Explore", bullet: true },
+    { to: "/explore", icon: Compass, label: "Explore", bullet: true },
     {
       to: "/notifications",
       icon: Bell,
@@ -119,13 +119,13 @@ export default function Sidebar({ unreadNotifications = 0 }) {
 
   return (
     <>
-      <div className="h-full flex flex-col px-4 py-4 relative">
+      <div className="h-full flex flex-col px-3 py-4 select-none relative">
         {/* Logo */}
         <Link to="/" className="mb-4 px-3">
           <img
             src={logo}
-            alt="BiteYo"
-            className="w-[130px] h-auto object-contain hover:opacity-80 transition-opacity"
+            alt="Biteyo"
+            className="w-[110px] h-auto object-contain hover:opacity-80 transition-opacity"
           />
         </Link>
 
@@ -139,27 +139,27 @@ export default function Sidebar({ unreadNotifications = 0 }) {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-4 px-4 py-3 rounded-full transition-colors duration-150 ${
+                className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-full transition-colors duration-150 ${
                   isActive
                     ? "bg-pink-50 font-bold text-pink-600"
-                    : "font-normal text-gray-700 hover:bg-gray-50"
+                    : "font-medium text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <span className="relative inline-flex h-6 w-6 items-center justify-center">
+                <span className="relative inline-flex h-5 w-5 items-center justify-center">
                   <Icon
-                    className={`w-6 h-6 ${
+                    className={`w-5 h-5 ${
                       isActive ? "stroke-[2.5px]" : "stroke-2"
                     }`}
                   />
                   {item.bullet && hasNewContent && <NewContentBullet />}
                   {item.badge > 0 && (
-                    <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-pink-500 px-1 text-[10px] font-extrabold leading-none text-white shadow-sm">
+                    <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-pink-500 px-1 text-[9px] font-extrabold leading-none text-white shadow-sm">
                       {item.badge > 99 ? "99+" : item.badge}
                     </span>
                   )}
                 </span>
 
-                <span className="text-base">{item.label}</span>
+                <span className="text-sm">{item.label}</span>
               </Link>
             );
           })}
@@ -168,7 +168,7 @@ export default function Sidebar({ unreadNotifications = 0 }) {
         {/* Post Button */}
         <button
           onClick={() => navigate("/add")}
-          className="mt-4 mx-2 bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-full text-sm transition-colors shadow-sm"
+          className="mt-4 mx-1 bg-pink-500 hover:bg-pink-600 text-white font-bold py-2.5 rounded-full text-sm transition-colors shadow-sm"
         >
           Post
         </button>
@@ -177,13 +177,14 @@ export default function Sidebar({ unreadNotifications = 0 }) {
         {import.meta.env.DEV && (
           <Link
             to="/beranda"
-            className="mx-2 mt-2 inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-pink-300 py-2 text-center text-xs font-semibold text-pink-500 transition-colors hover:bg-pink-50"
+            className="mx-1 mt-2 inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-pink-300 py-2 text-center text-xs font-semibold text-pink-500 transition-colors hover:bg-pink-50"
             title="Mockup homepage baru"
           >
             <FlaskConical className="h-3.5 w-3.5" />
             Beranda (beta)
           </Link>
         )}
+
         {/* Bottom Profile Section */}
         <div ref={profileMenuRef} className="mt-auto pt-4 relative">
           {currentUser ? (
@@ -194,24 +195,24 @@ export default function Sidebar({ unreadNotifications = 0 }) {
                   setLogoutError("");
                   setShowDropdown(!showDropdown);
                 }}
-                className="flex items-center gap-3 p-3 rounded-full hover:bg-gray-50 transition-colors w-full"
+                className="flex items-center gap-2.5 p-2 rounded-full hover:bg-gray-50 transition-colors w-full text-left"
               >
-                <div className="w-10 h-10 bg-pink-100 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 bg-pink-100 rounded-full overflow-hidden flex items-center justify-center shrink-0">
                   {profileAvatar ? (
                     <img src={profileAvatar} alt={profileName} className="h-full w-full object-cover" />
                   ) : (
-                    <span className="text-sm font-extrabold text-pink-500">
+                    <span className="text-xs font-extrabold text-pink-500">
                       {profileName.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
 
                 <div className="text-left overflow-hidden flex-1">
-                  <p className="text-sm font-bold text-gray-900 truncate">
+                  <p className="text-xs font-bold text-gray-900 truncate">
                     {profileName}
                   </p>
 
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-[11px] text-gray-500 truncate">
                     @{currentUser.username || profileUsername}
                   </p>
                 </div>
@@ -219,16 +220,16 @@ export default function Sidebar({ unreadNotifications = 0 }) {
 
               {/* Dropdown */}
               {showDropdown && (
-                <div className="absolute bottom-full left-0 mb-2 w-full z-50">
+                <div className="absolute bottom-full left-0 right-0 mb-2 z-50">
                   <div className="bg-white shadow-xl border border-gray-100 rounded-2xl overflow-hidden animate-in fade-in zoom-in duration-150">
                     <button
                       onClick={() => {
                         setShowDropdown(false);
                         setShowLogoutModal(true);
                       }}
-                      className="w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 text-sm font-bold flex items-center gap-2 transition-colors"
+                      className="w-full text-left px-3.5 py-2.5 text-red-500 hover:bg-red-50 text-xs font-bold flex items-center gap-2 transition-colors"
                     >
-                      <LogOut size={16} />
+                      <LogOut size={14} />
                       Keluar
                     </button>
                   </div>
@@ -238,15 +239,15 @@ export default function Sidebar({ unreadNotifications = 0 }) {
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-3 p-3 rounded-full hover:bg-gray-50 transition-colors w-full"
+              className="flex items-center gap-2.5 p-2 rounded-full hover:bg-gray-50 transition-colors w-full"
             >
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-500" />
+              <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-gray-500" />
               </div>
 
               <div className="text-left">
-                <p className="text-sm font-bold text-gray-900">Login</p>
-                <p className="text-xs text-gray-500">Untuk mulai menjelajah</p>
+                <p className="text-xs font-bold text-gray-900">Login</p>
+                <p className="text-[11px] text-gray-500">Untuk mulai menjelajah</p>
               </div>
             </Link>
           )}
@@ -257,54 +258,54 @@ export default function Sidebar({ unreadNotifications = 0 }) {
       {showLogoutModal &&
         createPortal(
           <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in duration-200">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <LogOut className="text-red-500" size={22} />
-            </div>
-
-            <h2 className="text-lg font-extrabold text-gray-900 text-center mb-1">
-              Keluar dari BiteYo?
-            </h2>
-
-            <p className="text-sm text-gray-500 text-center mb-6">
-              Kamu harus login lagi untuk mengakses akun dan fitur personalmu.
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  if (!logoutLoading) setShowLogoutModal(false);
-                }}
-                disabled={logoutLoading}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 disabled:opacity-60 transition-colors"
-              >
-                Batal
-              </button>
-
-              <button
-                onClick={handleLogout}
-                disabled={logoutLoading}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-colors disabled:opacity-70"
-              >
-                {logoutLoading ? (
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Keluar...
-                  </span>
-                ) : (
-                  "Ya, Keluar"
-                )}
-              </button>
-            </div>
-
-            {logoutError && (
-              <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                <AlertCircle className="mt-0.5 w-4 h-4 shrink-0" />
-                <span>{logoutError}</span>
+            <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in duration-200">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut className="text-red-500" size={22} />
               </div>
-            )}
-          </div>
-        </div>,
+
+              <h2 className="text-lg font-extrabold text-gray-900 text-center mb-1">
+                Keluar dari Biteyo?
+              </h2>
+
+              <p className="text-sm text-gray-500 text-center mb-6">
+                Kamu harus login lagi untuk mengakses akun dan fitur personalmu.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (!logoutLoading) setShowLogoutModal(false);
+                  }}
+                  disabled={logoutLoading}
+                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 disabled:opacity-60 transition-colors"
+                >
+                  Batal
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  disabled={logoutLoading}
+                  className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-colors disabled:opacity-70"
+                >
+                  {logoutLoading ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Keluar...
+                    </span>
+                  ) : (
+                    "Ya, Keluar"
+                  )}
+                </button>
+              </div>
+
+              {logoutError && (
+                <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                  <AlertCircle className="mt-0.5 w-4 h-4 shrink-0" />
+                  <span>{logoutError}</span>
+                </div>
+              )}
+            </div>
+          </div>,
           document.body,
         )}
     </>

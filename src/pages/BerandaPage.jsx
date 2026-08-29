@@ -61,27 +61,27 @@ export default function BerandaPage() {
       <div className="min-h-screen bg-cream-100">
         <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
           <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
-            <div className="relative overflow-hidden bg-gradient-to-br from-pink-50/80 via-orange-50/50 to-white px-6 py-14 text-center sm:px-10 sm:py-20">
-              <h1 className="bg-gradient-to-r from-pink-500 via-pink-600 to-orange-500 bg-clip-text text-4xl font-extrabold leading-tight text-transparent sm:text-5xl">
+            <div className="relative overflow-hidden bg-gradient-to-br from-pink-50/80 via-orange-50/50 to-white px-6 py-8 text-center sm:px-8 sm:py-10">
+              <h1 className="bg-gradient-to-r from-pink-500 via-pink-600 to-orange-500 bg-clip-text text-3xl font-extrabold leading-tight text-transparent sm:text-4xl">
                 Bite it. Rate it.
-                <span className="block text-pink-500">BiteYo.</span>
+                <span className="block text-pink-500">Biteyo.</span>
               </h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-gray-600 sm:text-base">
+              <p className="mx-auto mt-2.5 max-w-md text-xs leading-relaxed text-gray-600 sm:text-sm">
                 Temukan makanan trending, hidden gems, dan review jujur dari
                 foodies di sekitarmu.
               </p>
-              <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <div className="mt-5 flex flex-col items-center justify-center gap-2.5 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => navigate("/login")}
-                  className="w-full max-w-xs rounded-full bg-pink-500 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-pink-200 transition-all hover:-translate-y-0.5 hover:bg-pink-600 sm:w-auto"
+                  className="w-full max-w-xs rounded-full bg-pink-500 px-6 py-2.5 text-xs font-bold text-white shadow-md shadow-pink-200 transition-all hover:-translate-y-0.5 hover:bg-pink-600 sm:w-auto"
                 >
                   Masuk
                 </button>
                 <button
                   type="button"
                   onClick={() => navigate("/signup")}
-                  className="w-full max-w-xs rounded-full border border-gray-200 bg-white px-8 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:bg-gray-50 sm:w-auto"
+                  className="w-full max-w-xs rounded-full border border-gray-200 bg-white px-6 py-2.5 text-xs font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:bg-gray-50 sm:w-auto"
                 >
                   Daftar
                 </button>
@@ -108,7 +108,7 @@ export default function BerandaPage() {
     <div className="min-h-screen bg-cream-100">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-start px-4">
         {/* kolom tengah */}
-        <main className="min-h-screen w-full max-w-2xl border-x border-cream-300 bg-white shadow-card">
+        <main className="min-h-screen w-full max-w-2xl bg-white shadow-card">
           <div className="border-b border-cream-200 bg-gradient-to-br from-pink-50/70 via-orange-50/40 to-white px-4 py-5">
             <h1 className="inline-flex items-center gap-2 text-xl font-extrabold text-gray-900">
               <Sparkles className="h-5 w-5 text-pink-500" />
@@ -137,7 +137,7 @@ export default function BerandaPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      navigate(`/bites/${bite.id || bite._id}`)
+                      navigate(`/status/${bite.id || bite._id}`)
                     }
                     className="flex w-full items-start gap-3 px-4 py-4 text-left transition-colors duration-150 hover:bg-cream-200/50"
                   >

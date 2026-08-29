@@ -16,7 +16,7 @@ export const getActorName = (notification) => {
     notification.actorName ||
     notification.senderName ||
     notification.title ||
-    "BiteYo"
+    "Biteyo"
   );
 };
 

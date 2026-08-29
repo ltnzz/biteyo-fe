@@ -1,5 +1,4 @@
 import { Bookmark, Heart, Loader2, MessageCircle, Pencil, Share2, Star, Trash2 } from "lucide-react";
-import { useState } from "react";
 import {
   getBiteCreatedAt,
   getDisplayLocation,
@@ -17,6 +16,7 @@ import {
   isBiteLiked,
   isBiteSaved,
 } from "../../utils/biteEngagement";
+import { notifyShareResult, shareBite } from "../../utils/share";
 import MentionText from "../MentionText";
 import BiteEditForm from "./BiteEditForm";
 
@@ -62,7 +62,7 @@ export default function ProfileBiteCard({
   return (
     <article
       onClick={handleOpenBite}
-      className="cursor-pointer border-b border-cream-300 bg-white px-4 py-4"
+      className="cursor-pointer border-b border-gray-100 bg-white px-4 py-4 hover:bg-gray-50/40 transition-colors"
     >
       <div className="flex gap-3">
         <button
@@ -172,7 +172,7 @@ export default function ProfileBiteCard({
                 <img
                   src={bite.photoUrl || bite.image}
                   alt={bite.foodName || bite.title || "Food"}
-                  className="mt-3 w-full max-h-[520px] rounded-xl2 object-cover border border-gray-200/80"
+                  className="mt-3 w-full max-h-[520px] rounded-2xl object-cover"
                   loading="lazy"
                 />
               )}
@@ -189,6 +189,22 @@ export default function ProfileBiteCard({
               </div>
 
               <div className="mt-3 flex items-center gap-2 -ml-2 text-gray-400">
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onToggleLike?.(bite);
+                  }}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors duration-150 ${
+                    liked
+                      ? "text-pink-500"
+                      : "hover:bg-pink-50 hover:text-pink-500"
+                  }`}
+                  aria-label={liked ? "Unlike bite" : "Like bite"}
+                >
+                  <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
+                  <span>{getLikeCount(bite)}</span>
+                </button>
                 <button
                   type="button"
                   onClick={(event) => {
@@ -222,8 +238,8 @@ export default function ProfileBiteCard({
                     event.stopPropagation();
                     const result = await shareBite({
                       biteId: bite?.id || bite?._id,
-                      title: `BiteYo — ${bite.foodName || "Food"}`,
-                      text: `Lihat ${bite.foodName || "bite ini"} di BiteYo`,
+                      title: `Biteyo — ${bite.foodName || "Food"}`,
+                      text: `Lihat ${bite.foodName || "bite ini"} di Biteyo`,
                     });
                     notifyShareResult(result);
                   }}

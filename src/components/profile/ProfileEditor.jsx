@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Crop, Image, Loader2, Save, User, X } from "lucide-react";
+import { Camera, Crop, Image, Loader2, Save, Trash2, User, X } from "lucide-react";
+import ConfirmDialog from "../ConfirmDialog";
 import ImageCropperModal from "./ImageCropperModal";
 
 export default function ProfileEditor({
@@ -9,8 +10,14 @@ export default function ProfileEditor({
   form,
   saving,
   usernameError,
+  removeAvatar,
+  removeBanner,
   onAvatarChange,
   onBannerChange,
+  onRemoveAvatar,
+  onRemoveBanner,
+  onClearRemoveAvatar,
+  onClearRemoveBanner,
   onCancel,
   onChange,
   onSave,
@@ -23,6 +30,11 @@ export default function ProfileEditor({
   const [cropperFile, setCropperFile] = useState(null);
   const [cropperSrc, setCropperSrc] = useState("");
   const [cropTarget, setCropTarget] = useState("banner"); // "banner" | "avatar"
+  const [originalAvatarFile, setOriginalAvatarFile] = useState(null);
+  const [originalBannerFile, setOriginalBannerFile] = useState(null);
+  const [originalAvatarSrc, setOriginalAvatarSrc] = useState("");
+  const [originalBannerSrc, setOriginalBannerSrc] = useState("");
+  const [confirmDeleteTarget, setConfirmDeleteTarget] = useState(null); // "avatar" | "banner" | null
 
   const bannerInputRef = useRef(null);
   const avatarInputRef = useRef(null);
@@ -56,6 +68,8 @@ export default function ProfileEditor({
   const handleSelectBannerFile = (file) => {
     if (!file) return;
     setCropperFile(file);
+    setOriginalBannerFile(file);
+    setOriginalBannerSrc("");
     setCropperSrc("");
     setCropTarget("banner");
     setCropperOpen(true);
@@ -65,6 +79,8 @@ export default function ProfileEditor({
   const handleSelectAvatarFile = (file) => {
     if (!file) return;
     setCropperFile(file);
+    setOriginalAvatarFile(file);
+    setOriginalAvatarSrc("");
     setCropperSrc("");
     setCropTarget("avatar");
     setCropperOpen(true);
@@ -90,13 +106,33 @@ export default function ProfileEditor({
     setCropperSrc("");
   };
 
+  const handleConfirmDelete = () => {
+    if (confirmDeleteTarget === "avatar") onRemoveAvatar?.();
+    if (confirmDeleteTarget === "banner") onRemoveBanner?.();
+    setConfirmDeleteTarget(null);
+  };
+
   const openRecropBanner = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const source = bannerPreview || banner;
-    if (!source) return;
-    setCropperFile(null);
-    setCropperSrc(source);
+    // pakai original biar bisa kembali ke awal, bukan hasil crop sebelumnya
+    const source = originalBannerFile || (originalBannerSrc ? originalBannerSrc : (bannerPreview || banner));
+    const src = bannerPreview || banner;
+    if (!source && !src) return;
+    // simpan original pertama kali kalau belum ada
+    if (!originalBannerFile && !originalBannerSrc && src && typeof src === "string" && src.startsWith("http")) {
+      setOriginalBannerSrc(src);
+    }
+    if (originalBannerFile) {
+      setCropperFile(originalBannerFile);
+      setCropperSrc("");
+    } else if (originalBannerSrc) {
+      setCropperFile(null);
+      setCropperSrc(originalBannerSrc);
+    } else {
+      setCropperFile(null);
+      setCropperSrc(source);
+    }
     setCropTarget("banner");
     setCropperOpen(true);
   };
@@ -104,12 +140,50 @@ export default function ProfileEditor({
   const openRecropAvatar = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const source = avatarPreview || avatar;
-    if (!source) return;
-    setCropperFile(null);
-    setCropperSrc(source);
+    const source = originalAvatarFile || (originalAvatarSrc ? originalAvatarSrc : (avatarPreview || avatar));
+    const src = avatarPreview || avatar;
+    if (!source && !src) return;
+    if (!originalAvatarFile && !originalAvatarSrc && src && typeof src === "string" && src.startsWith("http")) {
+      setOriginalAvatarSrc(src);
+    }
+    if (originalAvatarFile) {
+      setCropperFile(originalAvatarFile);
+      setCropperSrc("");
+    } else if (originalAvatarSrc) {
+      setCropperFile(null);
+      setCropperSrc(originalAvatarSrc);
+    } else {
+      setCropperFile(null);
+      setCropperSrc(source);
+    }
     setCropTarget("avatar");
     setCropperOpen(true);
+  };
+
+  const handleResetToOriginal = () => {
+    if (cropTarget === "banner") {
+      if (originalBannerFile) {
+        setCropperFile(originalBannerFile);
+        setCropperSrc("");
+      } else if (originalBannerSrc) {
+        setCropperFile(null);
+        setCropperSrc(originalBannerSrc);
+      } else if (banner) {
+        setCropperFile(null);
+        setCropperSrc(banner);
+      }
+    } else {
+      if (originalAvatarFile) {
+        setCropperFile(originalAvatarFile);
+        setCropperSrc("");
+      } else if (originalAvatarSrc) {
+        setCropperFile(null);
+        setCropperSrc(originalAvatarSrc);
+      } else if (avatar) {
+        setCropperFile(null);
+        setCropperSrc(avatar);
+      }
+    }
   };
 
   const closeFromBackdrop = (event) => {
@@ -150,7 +224,7 @@ export default function ProfileEditor({
 
           <div className="overflow-y-auto pb-5">
             {/* Banner Section */}
-            <div className="relative h-44 bg-gradient-to-r from-pink-500 via-orange-400 to-amber-300">
+            <div className="relative z-10 h-44 bg-gray-200">
               {currentBanner && (
                 <img
                   src={currentBanner}
@@ -159,8 +233,8 @@ export default function ProfileEditor({
                 />
               )}
 
-              {/* Banner Upload & Recrop actions */}
-              <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/25 opacity-90 transition-colors hover:bg-black/35">
+              {/* Banner Upload & Recrop actions — z-20 biar tidak ketutup avatar bulat */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center gap-3 bg-black/25 opacity-90 transition-colors hover:bg-black/35">
                 <label className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 hover:scale-105" title="Ganti Banner">
                   <Image className="h-5 w-5" />
                   <input
@@ -174,7 +248,7 @@ export default function ProfileEditor({
                   />
                 </label>
 
-                {currentBanner && (
+                {currentBanner && !removeBanner && (
                   <button
                     type="button"
                     onClick={openRecropBanner}
@@ -184,12 +258,22 @@ export default function ProfileEditor({
                     <Crop className="h-5 w-5" />
                   </button>
                 )}
+                {currentBanner && !removeBanner && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDeleteTarget("banner")}
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-red-500/80 text-white backdrop-blur transition hover:bg-red-600 hover:scale-105"
+                    title="Hapus Banner"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Avatar & Form Section */}
             <div className="px-4">
-              <div className="relative -mt-12 mb-6 h-28 w-28 rounded-full border-4 border-white bg-pink-100 shadow-md">
+              <div className="relative z-30 -mt-12 mb-6 h-28 w-28 rounded-full border-4 border-white bg-pink-100 shadow-md">
                 {currentAvatar ? (
                   <img
                     src={currentAvatar}
@@ -204,7 +288,7 @@ export default function ProfileEditor({
                   </div>
                 )}
 
-                <div className="absolute inset-0 flex items-center justify-center gap-1.5 rounded-full bg-black/30 opacity-90 transition-colors hover:bg-black/40">
+                <div className="absolute inset-0 flex items-center justify-center gap-1.5 rounded-full bg-white/70 backdrop-blur-sm opacity-90 transition-colors hover:bg-white/80">
                   <label className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 hover:scale-105" title="Ganti Foto Profil">
                     <Camera className="h-4 w-4" />
                     <input
@@ -218,7 +302,7 @@ export default function ProfileEditor({
                     />
                   </label>
 
-                  {currentAvatar && (
+                  {currentAvatar && !removeAvatar && (
                     <button
                       type="button"
                       onClick={openRecropAvatar}
@@ -226,6 +310,16 @@ export default function ProfileEditor({
                       title="Sesuaikan Foto Profil"
                     >
                       <Crop className="h-4 w-4" />
+                    </button>
+                  )}
+                  {currentAvatar && !removeAvatar && (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteTarget("avatar")}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/80 text-white backdrop-blur transition hover:bg-red-600 hover:scale-105"
+                      title="Hapus Foto Profil"
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -326,8 +420,23 @@ export default function ProfileEditor({
           aspectRatio={cropTarget === "banner" ? 3 / 1 : 1}
           onComplete={handleCropComplete}
           onCancel={handleCropCancel}
+          onResetToOriginal={handleResetToOriginal}
         />
       )}
+
+      <ConfirmDialog
+        open={!!confirmDeleteTarget}
+        title={confirmDeleteTarget === "avatar" ? "Hapus foto profil?" : "Hapus banner?"}
+        description={
+          confirmDeleteTarget === "avatar"
+            ? "Foto profil akan dihapus dan kembali ke default. Lanjutkan?"
+            : "Banner akan dihapus. Lanjutkan?"
+        }
+        confirmLabel="Hapus"
+        cancelLabel="Batal"
+        onCancel={() => setConfirmDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </>
   );
 }

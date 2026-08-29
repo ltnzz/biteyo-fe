@@ -54,6 +54,14 @@ export default function ProfilePage() {
     saveProfile,
     setAvatarFile,
     setBannerFile,
+    removeAvatar,
+    removeBanner,
+    setRemoveAvatar,
+    setRemoveBanner,
+    handleRemoveAvatar,
+    handleRemoveBanner,
+    handleClearRemoveAvatar,
+    handleClearRemoveBanner,
     setBites,
     setLikedBites,
     setProfile,
@@ -226,6 +234,8 @@ export default function ProfilePage() {
   const handleCloseEditor = () => {
     setAvatarFile(null);
     setBannerFile(null);
+    setRemoveAvatar(false);
+    setRemoveBanner(false);
     setSaveFieldError("");
     setEditorOpen(false);
   };
@@ -326,8 +336,8 @@ export default function ProfilePage() {
           ) : (
             <>
               <ProfileHeader
-                avatar={avatar}
-                banner={banner}
+                avatar={removeAvatar ? "" : avatar}
+                banner={removeBanner ? "" : banner}
                 bio={bio}
                 bitesCount={bites.length}
                 displayName={displayName}
@@ -343,8 +353,14 @@ export default function ProfilePage() {
                 profileForm={profileForm}
                 savingProfile={savingProfile}
                 usernameError={saveFieldError}
+                removeAvatar={removeAvatar}
+                removeBanner={removeBanner}
                 onAvatarChange={setAvatarFile}
                 onBannerChange={setBannerFile}
+                onRemoveAvatar={handleRemoveAvatar}
+                onRemoveBanner={handleRemoveBanner}
+                onClearRemoveAvatar={handleClearRemoveAvatar}
+                onClearRemoveBanner={handleClearRemoveBanner}
                 onCloseEditor={handleCloseEditor}
                 onEditProfile={() => setEditorOpen(true)}
                 onProfileChange={handleProfileChange}
