@@ -15,6 +15,7 @@ import { useProfileData } from "../hooks/useProfileData";
 import { getStoredUser } from "../utils/auth";
 import { getBiteId } from "../utils/biteEngagement";
 import { getProfileViewModel } from "../utils/profile";
+import { getProfilePath } from "../utils/share";
 import { showSnackbar } from "../utils/snackbar";
 
 const getBiteTitle = (bite) =>
@@ -210,7 +211,7 @@ export default function ProfilePage() {
         variant: "success",
       });
       if (updated?.username && updated.username !== profileUsername) {
-        navigate(`/profile/${encodeURIComponent(updated.username)}`, { replace: true });
+        navigate(getProfilePath(updated.username), { replace: true });
       } else {
         await fetchProfile({ force: true });
       }
@@ -262,7 +263,7 @@ export default function ProfilePage() {
   };
 
   const openUserProfile = (targetUsername) => {
-    if (targetUsername) navigate(`/profile/${encodeURIComponent(targetUsername)}`);
+    if (targetUsername) navigate(getProfilePath(targetUsername));
   };
 
   const renderProfileState = (type) => {

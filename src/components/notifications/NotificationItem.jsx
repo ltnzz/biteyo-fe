@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getNotificationId, isNotificationRead } from "../../utils/notifications";
+import { getProfilePath } from "../../utils/share";
 import {
   formatNotificationTime,
   getActorAvatar,
@@ -106,7 +107,7 @@ export default function NotificationItem({
     if (!actorHandle) return;
 
     onMarkRead(notification);
-    navigate(`/profile/${encodeURIComponent(actorHandle)}`);
+    navigate(getProfilePath(actorHandle));
   };
 
   const handleKeyDown = (event) => {

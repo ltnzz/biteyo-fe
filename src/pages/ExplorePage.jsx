@@ -18,6 +18,7 @@ import {
   NEW_CONTENT_REFRESH_EVENT,
 } from "../utils/feedSignals";
 import { showSnackbar } from "../utils/snackbar";
+import { getProfilePath } from "../utils/share";
 import {
   getLikeCount,
   isBiteLiked,
@@ -453,7 +454,7 @@ export default function ExplorePage() {
   };
 
   const openUserProfile = (username) => {
-    if (username) navigate(`/profile/${encodeURIComponent(username)}`);
+    if (username) navigate(getProfilePath(username));
   };
 
   return (

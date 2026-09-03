@@ -156,6 +156,23 @@ function AppContent() {
                   </ProtectedRoute>
                 }
               />
+              {/* Short unique prefix — shareable profile URL /u/:username & /@:username (alias kanonik, bukan /profile tanpa USN) */}
+              <Route
+                path="/u/:username"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/@:username"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/activity"
                 element={

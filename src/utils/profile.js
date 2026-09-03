@@ -42,6 +42,42 @@ export const formatProfileDate = (date) => {
 
 export const getProfileUsername = (user) => user?.username || user?.name || "";
 
+export const normalizeUsernameForUrl = (username) =>
+  String(username || "")
+    .trim()
+    .replace(/^@+/, "");
+
+export const getProfilePath = (username) => {
+  const clean = normalizeUsernameForUrl(username);
+  return clean ? `/u/${encodeURIComponent(clean)}` : "/profile";
+};
+
+export const getProfileLegacyPath = (username) => {
+  const clean = normalizeUsernameForUrl(username);
+  return clean ? `/profile/${encodeURIComponent(clean)}` : "/profile";
+};
+
+// prefix /u/:username — pendek, unik per user, shareable (fallback ke /profile jika tanpa username)
+export const buildProfileShareUrl = (username) => {
+  if (typeof window === "undefined") return "";
+  const clean = normalizeUsernameForUrl(username);
+  if (!clean) return window.location.href;
+  return `${window.location.origin}/u/${encodeURIComponent(clean)}`;
+};
+
+// alias @username — alternatif shareable: /@username
+export const getProfileAtPath = (username) => {
+  const clean = normalizeUsernameForUrl(username);
+  return clean ? `/@${encodeURIComponent(clean)}` : "/profile";
+};
+
+export const buildProfileAtShareUrl = (username) => {
+  if (typeof window === "undefined") return "";
+  const clean = normalizeUsernameForUrl(username);
+  if (!clean) return window.location.href;
+  return `${window.location.origin}/@${encodeURIComponent(clean)}`;
+};
+
 export const getProfileViewModel = (profile, fallbackUsername) => {
   const displayName = profile?.name || profile?.username || fallbackUsername;
   const handle = profile?.username || fallbackUsername;

@@ -1,6 +1,6 @@
 import { Bot, CalendarDays, Loader2, MapPin, Pencil, Share2, UserCheck, UserPlus } from "lucide-react";
 import { formatProfileDate } from "../../utils/profile";
-import { notifyShareResult } from "../../utils/share";
+import { notifyProfileShareResult, shareProfile } from "../../utils/share";
 import ProfileEditor from "./ProfileEditor";
 
 export default function ProfileHeader({
@@ -38,27 +38,10 @@ export default function ProfileHeader({
   const isBot = handle === "biteyo_bot";
 
   const handleShareProfile = async () => {
-    if (typeof window === "undefined") return;
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Profil ${displayName} (@${handle}) di Biteyo`,
-          text: `Lihat rekomendasi kuliner dari ${displayName} di Biteyo!`,
-          url,
-        });
-        return;
-      } catch (err) {
-        if (err?.name === "AbortError") return;
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      notifyShareResult({ copied: true });
-    } catch {
-      notifyShareResult({ failed: true });
-    }
+    if (typeof window === "undefined" || !handle) return;
+    // URL kanonik unik /u/:username — bukan window.location.href yang di /profile tanpa USN (tidak shareable)
+    const result = await shareProfile({ username: handle, displayName });
+    notifyProfileShareResult(result);
   };
 
   return (

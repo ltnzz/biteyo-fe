@@ -56,6 +56,7 @@ import {
   normalizeCategoryValue,
 } from "../utils/bites";
 import { formatAbsoluteDateTime, formatRelativeTime } from "../utils/relativeTime";
+import { getProfilePath } from "../utils/share";
 import { notifyShareResult, shareBite } from "../utils/share";
 
 export default function BiteDetailPage() {
@@ -335,7 +336,7 @@ export default function BiteDetailPage() {
   };
 
   const openUserProfile = (username) => {
-    if (username) navigate(`/profile/${encodeURIComponent(username)}`);
+    if (username) navigate(getProfilePath(username));
   };
 
   const displayedComments = comments.length > 0 ? comments : getBiteComments(bite);
