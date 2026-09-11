@@ -16,8 +16,6 @@ export default function ProfileEditor({
   onBannerChange,
   onRemoveAvatar,
   onRemoveBanner,
-  onClearRemoveAvatar,
-  onClearRemoveBanner,
   onCancel,
   onChange,
   onSave,

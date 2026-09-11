@@ -13,7 +13,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import { getBiteCategories, getFeedBites } from "../services/feedApi";
 import { biteCategories } from "../utils/bites";
 import { logoutUser } from "../utils/logout";
-import { getStoredUser } from "../utils/auth";
+import { AUTH_CHANGE_EVENT, getStoredUser } from "../utils/auth";
 
 const isRouteActive = (pathname, targetPath) =>
   targetPath === "/"
@@ -41,11 +41,11 @@ export default function SideBarBeta({ unreadNotifications = 0 }) {
     };
 
     window.addEventListener("storage", handleAuthChange);
-    window.addEventListener("biteyo-auth-change", handleAuthChange);
+    window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
 
     return () => {
       window.removeEventListener("storage", handleAuthChange);
-      window.removeEventListener("biteyo-auth-change", handleAuthChange);
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
     };
   }, []);
 

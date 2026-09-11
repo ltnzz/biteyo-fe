@@ -4,8 +4,7 @@ import { clearApiCache } from "./apiCache";
 
 const USER_KEY = "biteyo_user";
 const LEGACY_KEYS = ["biteyo_token", "biteyo_auth_expires_at"];
-const AUTH_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-const UNAUTHORIZED_STATUSES = new Set([401, 419, 440]);
+const UNAUTHORIZED_STATUSES = new Set([401, 403, 419, 440]);
 
 export const SESSION_EXPIRED_MESSAGE =
   "Sesi login telah berakhir. Silakan masuk kembali.";

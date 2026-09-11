@@ -1,31 +1,56 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { clearAuth, isAuthenticated, SESSION_EXPIRED_MESSAGE } from "../utils/auth";
+import { useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { clearAuth, isAuthenticated, saveAuth, SESSION_EXPIRED_MESSAGE } from "../utils/auth";
+import { API_BASE } from "../utils/api";
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 menit
 
+// Prefix route yang membutuhkan login aktif
+const PROTECTED_PREFIXES = [
+  "/profile",
+  "/add",
+  "/notifications",
+  "/explore",
+  "/activity",
+  "/status",
+];
+
 /**
- * Pemeriksaan sesi proaktif: token bisa kedaluwarsa diam-diam
- * (tidak ada request yang gagal bila user idle). Komponen ini
- * memanggil /api/auth/me berkala; jika 401, anggap sesi berakhir:
- * bersihkan state lokal + arahkan ke login dengan pesan.
+ * Validasi sesi dari sumber data backend:
+ * FE hanya menerima data dari server tanpa melakukan perhitungan kadaluwarsa sendiri.
+ * Backend /api/auth/me adalah single source of truth:
+ * - 200 OK: perbarui state user dengan data terbaru dari database.
+ * - 401/403/419/440: sesi berakhir/tidak sah, bersihkan data lokal (clearAuth)
+ *   dan redirect ke /login bila user berada di route terproteksi.
+ *
+ * Dijalankan langsung saat komponen dimount (on load), dan secara berkala via interval.
  */
 export default function SessionWatcher() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationRef = useRef(location);
 
   useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
+
+  useEffect(() => {
+    // Jika tidak ada data sesi di storage, tidak perlu periksa
     if (!isAuthenticated()) return undefined;
 
+    let cancelled = false;
+
     const check = async () => {
-      if (!isAuthenticated()) return;
+      if (!isAuthenticated() || cancelled) return;
 
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL || ""}/api/auth/me`,
-          { credentials: "include" },
-        );
+        const response = await fetch(`${API_BASE}/api/auth/me`, {
+          credentials: "include",
+        });
 
-        if ([401, 419, 440].includes(response.status)) {
+        if (cancelled) return;
+
+        if ([401, 403, 419, 440].includes(response.status)) {
           clearAuth();
           try {
             window.sessionStorage.setItem(
@@ -35,15 +60,40 @@ export default function SessionWatcher() {
           } catch {
             // abaikan kegagalan storage
           }
-          navigate("/login", { replace: true });
+
+          const currentPath = locationRef.current?.pathname || "";
+          const isCurrentlyProtected = PROTECTED_PREFIXES.some((prefix) =>
+            currentPath.startsWith(prefix),
+          );
+
+          if (isCurrentlyProtected) {
+            navigate("/login", {
+              replace: true,
+              state: { from: locationRef.current },
+            });
+          }
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json().catch(() => null);
+          if (data?.user && !cancelled) {
+            saveAuth({ user: data.user });
+          }
         }
       } catch {
-        // offline / network error — coba lagi di interval berikutnya
+        // offline / network error — abaikan, coba lagi di interval berikutnya
       }
     };
 
+    // Panggil langsung saat mount
+    check();
+
     const id = setInterval(check, CHECK_INTERVAL_MS);
-    return () => clearInterval(id);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, [navigate]);
 
   return null;
