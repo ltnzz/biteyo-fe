@@ -13,7 +13,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getBiteCategories, getFeedBites, searchBites } from "../services/feedApi";
+import { getBiteCategories, searchBites } from "../services/feedApi";
 import { AUTH_CHANGE_EVENT, clearAuth, getStoredUser, isAuthenticated } from "../utils/auth";
 import {
   biteCategories,
@@ -54,48 +54,19 @@ export default function MainHeader() {
 
     const loadCategoryCounts = async () => {
       try {
-        const [catRes, bitesRes] = await Promise.allSettled([
-          getBiteCategories(),
-          getFeedBites(),
-        ]);
+        const catRes = await getBiteCategories();
 
-        const list =
-          catRes.status === "fulfilled"
-            ? Array.isArray(catRes.value)
-              ? catRes.value
-              : Array.isArray(catRes.value?.data)
-                ? catRes.value.data
-                : []
+        const list = Array.isArray(catRes)
+          ? catRes
+          : Array.isArray(catRes?.data)
+            ? catRes.data
             : [];
 
-        const rawBites =
-          bitesRes.status === "fulfilled" ? bitesRes.value : null;
-        const bitesList = Array.isArray(rawBites)
-          ? rawBites
-          : Array.isArray(rawBites?.bites)
-            ? rawBites.bites
-            : Array.isArray(rawBites?.data)
-              ? rawBites.data
-              : [];
-
-        const bitesCountMap = {};
-        for (const b of bitesList) {
-          const cat = b?.category
-            ? String(b.category).toLowerCase().replace(/[\s-]/g, "_")
-            : "";
-          if (cat) bitesCountMap[cat] = (bitesCountMap[cat] || 0) + 1;
-        }
-
         const baseCategories = list.length > 0 ? list : biteCategories;
-        const mapped = baseCategories.map((c) => {
-          const catVal = String(c.value || "").toLowerCase().replace(/[\s-]/g, "_");
-          const backendCount = Number(c.count) || 0;
-          const localCount = bitesCountMap[catVal] || 0;
-          return {
-            ...c,
-            count: Math.max(backendCount, localCount),
-          };
-        });
+        const mapped = baseCategories.map((c) => ({
+          ...c,
+          count: Number(c.count) || 0,
+        }));
 
         const sorted = [...mapped].sort(
           (a, b) => (Number(b.count) || 0) - (Number(a.count) || 0),
