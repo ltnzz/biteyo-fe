@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, FileText, ShieldCheck } from 'lucide-react';
 import { termsContent, privacyContent } from '../constants/legalContent';
 
@@ -11,7 +11,23 @@ export default function LegalModal({ isOpen, onClose, type }) {
   const isTerms = type === 'terms';
   const content = isTerms ? termsContent : privacyContent;
   const ModalIcon = isTerms ? FileText : ShieldCheck;
-  
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
