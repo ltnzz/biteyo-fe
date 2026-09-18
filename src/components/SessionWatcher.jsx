@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { clearAuth, isAuthenticated, saveAuth, SESSION_EXPIRED_MESSAGE } from "../utils/auth";
+import { AUTH_CHANGE_EVENT, clearAuth, isAuthenticated, saveAuth, SESSION_EXPIRED_MESSAGE } from "../utils/auth";
 import { API_BASE } from "../utils/api";
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 menit
@@ -13,6 +13,11 @@ const PROTECTED_PREFIXES = [
   "/explore",
   "/activity",
   "/status",
+  "/u/",
+  "/@",
+  "/bites/",
+  "/biteyo/",
+  "/post",
 ];
 
 /**
@@ -29,14 +34,28 @@ export default function SessionWatcher() {
   const navigate = useNavigate();
   const location = useLocation();
   const locationRef = useRef(location);
+  const [authed, setAuthed] = useState(() => isAuthenticated());
 
   useEffect(() => {
     locationRef.current = location;
   }, [location]);
 
   useEffect(() => {
+    const syncAuthState = () => setAuthed(isAuthenticated());
+
+    syncAuthState();
+    window.addEventListener("storage", syncAuthState);
+    window.addEventListener(AUTH_CHANGE_EVENT, syncAuthState);
+
+    return () => {
+      window.removeEventListener("storage", syncAuthState);
+      window.removeEventListener(AUTH_CHANGE_EVENT, syncAuthState);
+    };
+  }, []);
+
+  useEffect(() => {
     // Jika tidak ada data sesi di storage, tidak perlu periksa
-    if (!isAuthenticated()) return undefined;
+    if (!authed) return undefined;
 
     let cancelled = false;
 
@@ -94,7 +113,7 @@ export default function SessionWatcher() {
       cancelled = true;
       clearInterval(id);
     };
-  }, [navigate]);
+  }, [authed, navigate]);
 
   return null;
 }
