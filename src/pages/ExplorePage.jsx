@@ -154,11 +154,19 @@ export default function ExplorePage() {
 
     try {
       const data = query.trim()
-        ? await searchBites(query)
+        ? await searchBites(query, {
+            category: category ? toCategoryParam(category) : undefined,
+          })
         : category
           ? await getBitesByCategory(toCategoryParam(category), { force })
           : await getFeedBites({ force, scope });
-      const normalizedBites = normalizeBites(data);
+      const normalizedBites = normalizeBites(data).filter((bite) => {
+        if (!query.trim() || !category) return true;
+        const biteCategory = normalizeCategoryValue(
+          bite.category || normalizeCategories(bite.categories)[0] || "",
+        );
+        return biteCategory === category;
+      });
       setBites(normalizedBites);
       const followedFromFeed = normalizedBites
         .filter(getFollowState)

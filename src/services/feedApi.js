@@ -73,9 +73,13 @@ export const searchBites = async (query, options = {}) => {
   const cleanedQuery = query?.trim();
   if (!cleanedQuery) return [];
 
+  const { category, ...fetchOptions } = options;
+  const params = new URLSearchParams({ q: cleanedQuery });
+  if (category) params.set("category", category);
+
   return requestJson(
-    `/api/feed/bites/search?q=${encodeURIComponent(cleanedQuery)}`,
-    { method: "GET", ...options },
+    `/api/feed/bites/search?${params.toString()}`,
+    { method: "GET", ...fetchOptions },
     "Gagal mencari bites.",
   );
 };
