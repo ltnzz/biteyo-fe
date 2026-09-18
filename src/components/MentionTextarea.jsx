@@ -1,15 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { getMentionUserByUsername, getMentionUsers } from "../services/profileApi";
+import { AUTH_CHANGE_EVENT } from "../utils/auth";
 
 const MENTION_DEBOUNCE_MS = 180;
 const MAX_SUGGESTIONS = 8;
+const MAX_CACHED_QUERIES = 50;
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]*$/;
 
 let cachedMentionUsers = null;
 let mentionUsersRequest = null;
 const mentionUsersByQuery = new Map();
 const mentionUsersRequestByQuery = new Map();
+let mentionCacheGeneration = 0;
+
+const clearMentionUserCache = () => {
+  mentionCacheGeneration += 1;
+  cachedMentionUsers = null;
+  mentionUsersRequest = null;
+  mentionUsersByQuery.clear();
+  mentionUsersRequestByQuery.clear();
+};
+
+const rememberMentionQuery = (query, users) => {
+  if (mentionUsersByQuery.has(query)) mentionUsersByQuery.delete(query);
+  mentionUsersByQuery.set(query, users);
+  while (mentionUsersByQuery.size > MAX_CACHED_QUERIES) {
+    mentionUsersByQuery.delete(mentionUsersByQuery.keys().next().value);
+  }
+};
 
 const findActiveMention = (value, caretPosition) => {
   const textBeforeCaret = value.slice(0, caretPosition);
@@ -49,9 +68,10 @@ const loadMentionUsers = async () => {
   if (cachedMentionUsers) return cachedMentionUsers;
 
   if (!mentionUsersRequest) {
+    const generation = mentionCacheGeneration;
     mentionUsersRequest = getMentionUsers()
       .then((users) => {
-        cachedMentionUsers = users;
+        if (generation === mentionCacheGeneration) cachedMentionUsers = users;
         return users;
       })
       .finally(() => {
@@ -71,6 +91,7 @@ const loadMentionUsersByQuery = async (query) => {
   }
 
   if (!mentionUsersRequestByQuery.has(normalizedQuery)) {
+    const generation = mentionCacheGeneration;
     mentionUsersRequestByQuery.set(
       normalizedQuery,
       Promise.all([
@@ -79,7 +100,9 @@ const loadMentionUsersByQuery = async (query) => {
       ])
         .then(([users, exactUser]) => {
           const nextUsers = mergeMentionUsers(users, [exactUser]);
-          mentionUsersByQuery.set(normalizedQuery, nextUsers);
+          if (generation === mentionCacheGeneration) {
+            rememberMentionQuery(normalizedQuery, nextUsers);
+          }
           return nextUsers;
         })
         .finally(() => {
@@ -106,6 +129,22 @@ export default function MentionTextarea({
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState(() => cachedMentionUsers || []);
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      clearMentionUserCache();
+      setUsers([]);
+      setOpen(false);
+    };
+
+    window.addEventListener("storage", handleAuthChange);
+    window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+
+    return () => {
+      window.removeEventListener("storage", handleAuthChange);
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+    };
+  }, []);
 
   const activeMention = useMemo(
     () => (disabled ? null : findActiveMention(value, caretPosition)),
