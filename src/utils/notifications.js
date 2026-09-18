@@ -1,7 +1,6 @@
 import { API_BASE, ensureOkResponse } from "./api";
 import { getAuthHeaders } from "./auth";
 
-export const FCM_TOKEN_KEY = "biteyo_fcm_token";
 export const NOTIFICATIONS_UPDATED_EVENT = "biteyo:notifications-updated";
 
 export const notifyNotificationsUpdated = () => {
@@ -113,73 +112,4 @@ export const deleteNotification = async (notificationId) => {
     { method: "DELETE" },
     "Gagal menghapus notifikasi.",
   );
-};
-
-export const getStoredFcmToken = () => {
-  if (typeof window === "undefined") return "";
-
-  return window.localStorage.getItem(FCM_TOKEN_KEY) || "";
-};
-
-export const saveStoredFcmToken = (token) => {
-  if (typeof window === "undefined" || !token) return;
-
-  window.localStorage.setItem(FCM_TOKEN_KEY, token);
-};
-
-export const clearStoredFcmToken = () => {
-  if (typeof window === "undefined") return;
-
-  window.localStorage.removeItem(FCM_TOKEN_KEY);
-};
-
-export const registerFcmToken = async (token) => {
-  const cleanedToken = typeof token === "string" ? token.trim() : "";
-
-  if (!cleanedToken) {
-    return {
-      skipped: true,
-      message: "FCM token kosong, request register dilewati.",
-    };
-  }
-
-  const data = await requestJson(
-    "/api/notifications/fcm-token",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: cleanedToken }),
-    },
-    "Gagal mendaftarkan push notification.",
-  );
-
-  saveStoredFcmToken(cleanedToken);
-
-  return data;
-};
-
-export const unregisterFcmToken = async () => {
-  const storedToken = getStoredFcmToken();
-
-  if (!storedToken) {
-    clearStoredFcmToken();
-    return {
-      skipped: true,
-      message: "FCM token kosong, request unregister dilewati.",
-    };
-  }
-
-  const data = await requestJson(
-    "/api/notifications/fcm-token",
-    {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: storedToken }),
-    },
-    "Gagal menonaktifkan push notification.",
-  );
-
-  clearStoredFcmToken();
-
-  return data;
 };
