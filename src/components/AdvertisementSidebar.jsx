@@ -1,3 +1,5 @@
+import { showSnackbar } from "../utils/snackbar";
+
 const ads = [
   {
     image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80",
@@ -40,12 +42,28 @@ export default function AdvertisementSidebar() {
                 <p className="mt-1 text-xs leading-relaxed text-gray-500">
                   {ad.description}
                 </p>
-                <button
-                  type="button"
-                  className="mt-3 w-full rounded-full bg-gray-900 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-pink-500"
-                >
-                  Learn More
-                </button>
+                {ad.url ? (
+                  <a
+                    href={ad.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 block w-full rounded-full bg-gray-900 px-4 py-2 text-center text-xs font-bold text-white transition-colors hover:bg-pink-500"
+                  >
+                    Learn More
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      showSnackbar({
+                        message: `${ad.title} — detail promo segera hadir.`,
+                      })
+                    }
+                    className="mt-3 w-full rounded-full bg-gray-900 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-pink-500"
+                  >
+                    Learn More
+                  </button>
+                )}
               </article>
             ))}
           </div>
