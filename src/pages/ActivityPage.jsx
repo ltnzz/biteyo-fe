@@ -36,8 +36,7 @@ export default function ActivityPage() {
     if (!hasSession) return undefined;
 
     let cancelled = false;
-    const username =
-      currentUser?.username || currentUser?.name || currentUser?.id;
+    const username = currentUser?.username;
 
     if (!username) {
       setLoading(false);
@@ -72,10 +71,13 @@ export default function ActivityPage() {
   if (!hasSession) return <LoginRequired />;
 
   const totalBites = data?.reduce((sum, item) => sum + item.count, 0) ?? 0;
-  const mostActive = data?.reduce(
-    (best, item) => (item.count > (best?.count ?? -1) ? item : best),
-    null,
-  );
+  const mostActive =
+    totalBites > 0
+      ? data?.reduce(
+          (best, item) => (item.count > (best?.count ?? -1) ? item : best),
+          null,
+        )
+      : null;
 
   return (
     <div className="min-h-screen bg-white">
