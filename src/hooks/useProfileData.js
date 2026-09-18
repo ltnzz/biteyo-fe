@@ -222,6 +222,14 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     setProfileForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const resetProfileForm = useCallback(() => {
+    setProfileForm({
+      name: profile?.name || "",
+      username: profile?.username || profileUsername,
+      bio: profile?.bio || "",
+    });
+  }, [profile, profileUsername]);
+
   const handleSetAvatarFile = (file) => {
     setAvatarFile(file);
     if (file) setRemoveAvatar(false);
@@ -456,6 +464,7 @@ export const useProfileData = (currentUser, routeUsername = "") => {
     refreshAll,
     toggleFollow,
     updateProfileForm,
+    resetProfileForm,
     setAvatarFile: handleSetAvatarFile,
     setBannerFile: handleSetBannerFile,
     setRemoveAvatar,

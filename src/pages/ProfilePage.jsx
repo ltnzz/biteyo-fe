@@ -69,6 +69,7 @@ export default function ProfilePage() {
     setSavedBites,
     toggleFollow,
     updateProfileForm,
+    resetProfileForm,
   } = useProfileData(currentUser, username);
   const syncSavedBites = useCallback(
     ({ bite, biteId, saved, updatedBite }) => {
@@ -237,6 +238,7 @@ export default function ProfilePage() {
     setBannerFile(null);
     setRemoveAvatar(false);
     setRemoveBanner(false);
+    resetProfileForm();
     setSaveFieldError("");
     setEditorOpen(false);
   };

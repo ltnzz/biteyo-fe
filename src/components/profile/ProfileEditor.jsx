@@ -105,8 +105,18 @@ export default function ProfileEditor({
   };
 
   const handleConfirmDelete = () => {
-    if (confirmDeleteTarget === "avatar") onRemoveAvatar?.();
-    if (confirmDeleteTarget === "banner") onRemoveBanner?.();
+    if (confirmDeleteTarget === "avatar") {
+      onRemoveAvatar?.();
+      setAvatarPreview("");
+      setOriginalAvatarFile(null);
+      setOriginalAvatarSrc("");
+    }
+    if (confirmDeleteTarget === "banner") {
+      onRemoveBanner?.();
+      setBannerPreview("");
+      setOriginalBannerFile(null);
+      setOriginalBannerSrc("");
+    }
     setConfirmDeleteTarget(null);
   };
 
