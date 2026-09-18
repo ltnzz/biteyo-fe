@@ -164,8 +164,15 @@ export default function AddPage() {
     };
   }, [location, selectedLocation]);
 
+  useEffect(() => {
+    return () => {
+      if (photoPreview) URL.revokeObjectURL(photoPreview);
+    };
+  }, [photoPreview]);
+
   const handlePhoto = (e) => {
     const file = e.target.files[0];
+    e.target.value = "";
     if (file) {
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
