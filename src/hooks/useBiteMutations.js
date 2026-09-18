@@ -9,6 +9,7 @@ import {
   normalizeUpdatedBite,
 } from "../utils/biteEngagement";
 import { ensureOkResponse } from "../utils/api";
+import { invalidateApiCache } from "../utils/apiCache";
 import {
   API_BASE,
   biteCategories,
@@ -105,6 +106,12 @@ export const useBiteMutations = ({
 
       await ensureOkResponse(res, "Failed to update bite");
 
+      invalidateApiCache("feed");
+      invalidateApiCache(`bite:${biteId}`);
+      invalidateApiCache("profile");
+      invalidateApiCache("bites");
+      invalidateApiCache("saved");
+
       showSnackbar({ message: "Postingan bite berhasil diperbarui!", variant: "success" });
       cancelEdit();
       refresh();
@@ -141,6 +148,13 @@ export const useBiteMutations = ({
       });
 
       await ensureOkResponse(res, "Failed to delete bite");
+
+      invalidateApiCache("feed");
+      invalidateApiCache(`bite:${biteId}`);
+      invalidateApiCache(`comments:${biteId}`);
+      invalidateApiCache("profile");
+      invalidateApiCache("bites");
+      invalidateApiCache("saved");
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
       showSnackbar({ message: "Postingan bite berhasil dihapus!", variant: "success" });

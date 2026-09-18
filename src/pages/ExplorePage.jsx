@@ -360,6 +360,12 @@ export default function ExplorePage() {
 
       await ensureOkResponse(res, "Failed to update bite");
 
+      invalidateApiCache("feed");
+      invalidateApiCache(`bite:${biteId}`);
+      invalidateApiCache("profile");
+      invalidateApiCache("bites");
+      invalidateApiCache("saved");
+
       showSnackbar({ message: "Postingan bite berhasil diperbarui!", variant: "success" });
       cancelEdit();
       fetchFeed();
@@ -395,6 +401,13 @@ export default function ExplorePage() {
       });
 
       await ensureOkResponse(res, "Failed to delete bite");
+
+      invalidateApiCache("feed");
+      invalidateApiCache(`bite:${biteId}`);
+      invalidateApiCache(`comments:${biteId}`);
+      invalidateApiCache("profile");
+      invalidateApiCache("bites");
+      invalidateApiCache("saved");
 
       setBites((prev) => prev.filter((item) => getBiteId(item) !== biteId));
       showSnackbar({ message: "Postingan bite berhasil dihapus!", variant: "success" });
