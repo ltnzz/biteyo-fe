@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2, Trophy } from "lucide-react";
 import {
@@ -13,7 +13,7 @@ import {
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import LoginRequired from "../components/profile/LoginRequired";
 import { requestJson } from "../services/profileApi";
-import { getStoredUser, isAuthenticated } from "../utils/auth";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 const MONTH_LABELS = [
   "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
@@ -27,8 +27,7 @@ const formatMonth = (key) => {
 
 export default function ActivityPage() {
   const navigate = useNavigate();
-  const currentUser = useMemo(() => getStoredUser(), []);
-  const hasSession = useMemo(() => isAuthenticated(), []);
+  const { user: currentUser, hasSession } = useCurrentUser();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

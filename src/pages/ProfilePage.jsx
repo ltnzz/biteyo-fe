@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { AlertCircle, ArrowLeft, SearchX } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
@@ -12,7 +12,7 @@ import ProfileTimeline from "../components/profile/ProfileTimeline";
 import { useBiteMutations } from "../hooks/useBiteMutations";
 import { useFeedSocket } from "../hooks/useFeedSocket";
 import { useProfileData } from "../hooks/useProfileData";
-import { getStoredUser } from "../utils/auth";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { getBiteId } from "../utils/biteEngagement";
 import { getProfileViewModel } from "../utils/profile";
 import { getProfilePath } from "../utils/share";
@@ -24,7 +24,7 @@ const getBiteTitle = (bite) =>
 export default function ProfilePage() {
   const { username } = useParams();
   const navigate = useNavigate();
-  const currentUser = useMemo(() => getStoredUser(), []);
+  const { user: currentUser } = useCurrentUser();
   const [editorOpen, setEditorOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const [saveFieldError, setSaveFieldError] = useState("");

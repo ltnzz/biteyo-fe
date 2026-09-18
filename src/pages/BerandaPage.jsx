@@ -5,7 +5,7 @@ import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import SearchBox from "../components/explore/SearchBox";
 import TrendingList from "../components/TrendingList";
 import { getFeedBites } from "../services/feedApi";
-import { getStoredUser, isAuthenticated } from "../utils/auth";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { normalizeBites } from "../utils/bites";
 
 /**
@@ -16,8 +16,7 @@ import { normalizeBites } from "../utils/bites";
  */
 export default function BerandaPage() {
   const navigate = useNavigate();
-  const currentUser = useMemo(() => getStoredUser(), []);
-  const hasSession = useMemo(() => isAuthenticated(), []);
+  const { user: currentUser, hasSession } = useCurrentUser();
   const [bites, setBites] = useState([]);
   const [loading, setLoading] = useState(hasSession);
 

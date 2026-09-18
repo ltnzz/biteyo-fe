@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Check, MoreHorizontal, SlidersHorizontal, TrendingUp, UserPlus, X } from "lucide-react";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
@@ -11,7 +11,8 @@ import { useFeedSocket } from "../hooks/useFeedSocket";
 import { getBitesByCategory, getFeedBites, searchBites, toggleLikeBite } from "../services/feedApi";
 import { followUser, unfollowUser } from "../services/profileApi";
 import { ensureOkResponse } from "../utils/api";
-import { getAuthHeaders, getStoredUser, isAuthenticated } from "../utils/auth";
+import { getAuthHeaders, getStoredUser } from "../utils/auth";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { invalidateApiCache } from "../utils/apiCache";
 import {
   clearNewContent,
@@ -130,8 +131,7 @@ export default function ExplorePage() {
 
   const query = searchParams.get("q") || "";
   const category = normalizeCategoryValue(searchParams.get("category") || "");
-  const currentUser = useMemo(() => getStoredUser(), []);
-  const hasSession = useMemo(() => isAuthenticated(), []);
+  const { user: currentUser, hasSession } = useCurrentUser();
   const [scope, setScope] = useState("all");
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const isScopedFeed = !query.trim() && !category;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -28,7 +28,7 @@ import {
   toggleLikeBite,
   toggleSaveBite,
 } from "../services/feedApi";
-import { getStoredUser } from "../utils/auth";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import {
   getBiteComments,
   getBiteAuthorAvatar,
@@ -62,7 +62,7 @@ import { notifyShareResult, shareBite } from "../utils/share";
 export default function BiteDetailPage() {
   const { biteId } = useParams();
   const navigate = useNavigate();
-  const currentUser = useMemo(() => getStoredUser(), []);
+  const { user: currentUser } = useCurrentUser();
   const currentUserId = currentUser?.id || currentUser?._id || "";
   const [bite, setBite] = useState(null);
   const [comments, setComments] = useState([]);

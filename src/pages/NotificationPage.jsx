@@ -15,7 +15,8 @@ import {
   getNotificationFilterCounts,
 } from "../components/notifications/notificationFilters";
 import { supabase } from "../lib/supabase";
-import { getStoredUser, isAuthenticated } from "../utils/auth";
+import { useCurrentUser } from "../hooks/useCurrentUser";
+import { getStoredUser } from "../utils/auth";
 import { showSnackbar } from "../utils/snackbar";
 import {
   deleteNotification,
@@ -35,7 +36,7 @@ export default function NotificationPage() {
   const [deletingId, setDeletingId] = useState("");
   const [pendingDeleteNotification, setPendingDeleteNotification] =
     useState(null);
-  const hasSession = useMemo(() => isAuthenticated(), []);
+  const { hasSession } = useCurrentUser();
 
   const unreadCount = notifications.filter(
     (item) => !isNotificationRead(item),
