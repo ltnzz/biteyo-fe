@@ -1,4 +1,5 @@
-import { Bot, CalendarDays, Loader2, MapPin, Pencil, Share2, UserCheck, UserPlus } from "lucide-react";
+import { Activity, Bot, CalendarDays, Loader2, MapPin, Pencil, Share2, UserCheck, UserPlus } from "lucide-react";
+import { Link } from "react-router-dom";
 import { formatProfileDate } from "../../utils/profile";
 import { notifyProfileShareResult, shareProfile } from "../../utils/share";
 import ProfileEditor from "./ProfileEditor";
@@ -83,6 +84,17 @@ export default function ProfileHeader({
             >
               <Share2 className="h-4 w-4" />
             </button>
+
+            {isOwnProfile && (
+              <Link
+                to="/activity"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cream-300 bg-white text-gray-600 shadow-sm transition-all hover:border-pink-200 hover:bg-pink-50/50 hover:text-pink-600"
+                aria-label="Lihat aktivitas posting"
+                title="Aktivitas Posting"
+              >
+                <Activity className="h-4 w-4" />
+              </Link>
+            )}
 
             {isOwnProfile ? (
               <button
