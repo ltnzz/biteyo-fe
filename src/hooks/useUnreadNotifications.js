@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { AUTH_CHANGE_EVENT, getStoredUser, isAuthenticated } from "../utils/auth";
 import {
-  fetchNotifications,
-  isNotificationRead,
+  fetchUnreadCount,
   NOTIFICATIONS_UPDATED_EVENT,
 } from "../utils/notifications";
 
@@ -41,10 +40,7 @@ export default function useUnreadNotifications(user = null) {
     }
 
     try {
-      const notifications = await fetchNotifications();
-      setUnreadCount(
-        notifications.filter((item) => !isNotificationRead(item)).length,
-      );
+      setUnreadCount(await fetchUnreadCount());
     } catch (err) {
       console.warn("Failed to load unread notifications:", err);
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ArrowRight,
   Flame,
@@ -9,7 +9,7 @@ import {
   Utensils,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getFeedBites } from "../services/feedApi";
+import { getTrendingBites } from "../services/feedApi";
 import {
   getBiteDescription,
   getBiteImage,
@@ -27,6 +27,7 @@ import {
   getBiteId,
 } from "../utils/biteEngagement";
 import { isAuthenticated } from "../utils/auth";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 const HOME_TRENDING_LIMIT = 6;
 
@@ -111,7 +112,7 @@ export default function TrendingBites() {
   const [bites, setBites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const hasSession = useMemo(() => isAuthenticated(), []);
+  const { hasSession } = useCurrentUser();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -129,7 +130,7 @@ export default function TrendingBites() {
       setError("");
 
       try {
-        const data = await getFeedBites({ signal: controller.signal });
+        const data = await getTrendingBites({ signal: controller.signal });
         setBites(normalizeBites(data).slice(0, HOME_TRENDING_LIMIT));
       } catch (err) {
         if (err.name === "AbortError") return;
@@ -203,7 +204,7 @@ export default function TrendingBites() {
           <p className="mt-1 text-sm text-gray-500">
             {!hasSession
               ? "Feed saat ini membutuhkan sesi login."
-              : "Postingan terbaru akan muncul di sini."}
+              : "Bite populer akan muncul di sini."}
           </p>
         </div>
       )}

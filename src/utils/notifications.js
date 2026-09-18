@@ -47,14 +47,52 @@ export const isNotificationRead = (notification) =>
       notification?.seen,
   );
 
-export const fetchNotifications = async () => {
+export const fetchNotifications = async ({ page = 1, limit = 20 } = {}) => {
+  const params = new URLSearchParams({
+    page: String(Math.max(page, 1)),
+    limit: String(Math.min(Math.max(limit, 1), 50)),
+  });
   const data = await requestJson(
-    "/api/notifications/",
+    `/api/notifications/?${params.toString()}`,
     {},
     "Gagal memuat notifikasi.",
   );
 
-  return normalizeNotifications(data);
+  const items = normalizeNotifications(data);
+  const pagination = data?.pagination || data?.data?.pagination || null;
+  const total = Number(pagination?.total ?? pagination?.count);
+  const hasMore =
+    typeof pagination?.hasMore === "boolean"
+      ? pagination.hasMore
+      : Number.isFinite(total) && total > 0
+        ? Math.max(page, 1) * Math.min(Math.max(limit, 1), 50) < total
+        : items.length >= Math.min(Math.max(limit, 1), 50);
+
+  return {
+    items,
+    page: Math.max(page, 1),
+    hasMore,
+    total: Number.isFinite(total) && total > 0 ? total : null,
+  };
+};
+
+export const fetchUnreadCount = async () => {
+  try {
+    const data = await requestJson(
+      "/api/notifications/unread-count",
+      {},
+      "Gagal memuat jumlah notifikasi.",
+    );
+    const count = Number(
+      data?.unreadCount ?? data?.count ?? data?.data?.unreadCount ?? data?.data?.count,
+    );
+    if (Number.isFinite(count)) return Math.max(0, count);
+  } catch {
+    // backend belum menyediakan endpoint — fallback ke halaman pertama
+  }
+
+  const { items } = await fetchNotifications({ page: 1, limit: 20 });
+  return items.filter((item) => !isNotificationRead(item)).length;
 };
 
 export const markNotificationAsRead = async (notificationId) => {

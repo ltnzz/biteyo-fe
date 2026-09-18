@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Loader2 } from "lucide-react";
 import AdvertisementSidebar from "../components/AdvertisementSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
 import LoginRequired from "../components/profile/LoginRequired";
@@ -30,6 +31,9 @@ import {
 export default function NotificationPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [readingIds, setReadingIds] = useState(() => new Set());
@@ -50,19 +54,39 @@ export default function NotificationPage() {
     [activeFilter, notifications],
   );
 
-  const loadNotifications = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  const loadNotifications = useCallback(
+    async ({ page: targetPage = 1, append = false } = {}) => {
+      if (append) setLoadingMore(true);
+      else {
+        setLoading(true);
+        setError("");
+      }
 
-    try {
-      setNotifications(await fetchNotifications());
-    } catch (err) {
-      setNotifications([]);
-      setError(err.message || "Gagal memuat notifikasi.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      try {
+        const { items, hasMore: more } = await fetchNotifications({
+          page: targetPage,
+          limit: 20,
+        });
+        setNotifications((prev) => (append ? [...prev, ...items] : items));
+        setPage(targetPage);
+        setHasMore(more);
+      } catch (err) {
+        if (!append) {
+          setNotifications([]);
+          setError(err.message || "Gagal memuat notifikasi.");
+        } else {
+          showSnackbar({
+            variant: "error",
+            message: err.message || "Gagal memuat notifikasi.",
+          });
+        }
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [],
+  );
 
   // dipakai tombol refresh manual; reload realtime tidak menampilkan snackbar
   const handleManualRefresh = useCallback(async () => {
@@ -277,13 +301,32 @@ export default function NotificationPage() {
                 </p>
               </div>
             ) : (
-              <NotificationList
-                deletingId={deletingId}
-                notifications={visibleNotifications}
-                readingIds={readingIds}
-                onDelete={handleDelete}
-                onMarkRead={handleMarkRead}
-              />
+              <>
+                <NotificationList
+                  deletingId={deletingId}
+                  notifications={visibleNotifications}
+                  readingIds={readingIds}
+                  onDelete={handleDelete}
+                  onMarkRead={handleMarkRead}
+                />
+                {hasMore && (
+                  <div className="flex justify-center py-4">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        loadNotifications({ page: page + 1, append: true })
+                      }
+                      disabled={loadingMore}
+                      className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      {loadingMore ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : null}
+                      Muat lebih banyak
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </section>
         </main>
